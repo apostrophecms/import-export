@@ -1,5 +1,3 @@
-**TODO:** Update the badge URLs for the new module's repo.
-
 <div align="center">
   <img src="https://raw.githubusercontent.com/apostrophecms/apostrophe/main/logo.svg" alt="ApostropheCMS logo" width="80" height="80">
 
@@ -14,43 +12,31 @@
     <a aria-label="Join the community on Discord" href="http://chat.apostrophecms.org">
       <img alt="" src="https://img.shields.io/discord/517772094482677790?color=5865f2&label=Join%20the%20Discord&logo=discord&logoColor=fff&labelColor=000&style=for-the-badge&logoWidth=20">
     </a>
-    <a aria-label="License" href="https://github.com/apostrophecms/module-template/blob/main/LICENSE.md">
+    <a aria-label="License" href="https://github.com/apostrophecms/import-export/blob/main/LICENSE.md">
       <img alt="" src="https://img.shields.io/static/v1?style=for-the-badge&labelColor=000000&label=License&message=MIT&color=3DA639">
     </a>
   </p>
 </div>
 
-This module template serves as a starting point for new official Apostrophe modules. This is where you would describe what the purpose of the module is.
+This module enables import and export pages and pieces with or without their relationships and associated files and images within A3 projects.
 
 ## Installation
 
 To install the module, use the command line to run this command in an Apostrophe project's root directory:
 
 ```
-npm install @apostrophecms/module-template
+npm install @apostrophecms/import-export
 ```
 
 ## Usage
 
-Configure the _______ module in the `app.js` file:
+Configure the module in the `app.js` file:
 
 ```javascript
 require('apostrophe')({
   shortName: 'my-project',
   modules: {
-    '@apostrophecms/module-template': {}
+    '@apostrophecms/import-export': {}
   }
 });
 ```
-
-### Additional usage sections
-
-### Pre-release checks
-
-- [ ] If the module does not include CSS, remove the Stylelint config file and dependency `npm remove --save-dev stylelint stylelint-config-apostrophe`
-- [ ] If the module does not include any Vue.js components, remove 
-  - [ ] set in `package.json`, `"eslint": "eslint .",`
-  - [ ] remove Vue.js packages `npm remove --save-dev eslint-plugin-vue vue-eslint-parser`
-- [ ] If the module does not contains any tests, remove mocha `npm remove --save-dev mocha`
-- [ ] If this file contains images, please use public static endpoint to load the images.
-- [ ] If any template includes a script with inline code, include the `nonce` attribute set like this: `<script nonce="{{ nonce }}">`.
