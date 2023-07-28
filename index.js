@@ -5,7 +5,15 @@ module.exports = {
   bundle: {
     directory: 'modules',
     modules: getBundleModuleNames()
-  }
+  },
+
+  options: {
+    name: '@apostrophecms/import-export',
+    i18n: {
+      ns: 'aposImportExport',
+      browser: true
+    },
+  },
 };
 
 function getBundleModuleNames() {
