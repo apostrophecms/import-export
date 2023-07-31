@@ -4,14 +4,6 @@ module.exports = {
   improve: '@apostrophecms/doc-type',
 
   init(self) {
-    if (self.options.export === false) {
-      excludedTypes.push({
-        type: {
-          $ne: self.__meta.name
-        }
-      });
-    }
-
     const criteria = {
       action: 'export',
       context: 'update',
@@ -19,7 +11,10 @@ module.exports = {
       modal: 'AposExportPiecesModal'
     };
 
-    if (excludedTypes.length) {
+    if (self.options.export === false) {
+      excludedTypes.push({
+        type: { $ne: self.__meta.name }
+      });
       criteria.if = { $and: excludedTypes };
     }
 
