@@ -13,9 +13,13 @@ module.exports = {
 
     if (self.options.export === false) {
       excludedTypes.push({
-        type: { $ne: self.__meta.name }
+        type: {
+          $ne: self.__meta.name
+        }
       });
-      criteria.if = { $and: excludedTypes };
+      criteria.if = {
+        $and: excludedTypes
+      };
     }
 
     self.apos.doc.addContextOperation(self.__meta.name, criteria);
