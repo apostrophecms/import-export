@@ -1,7 +1,7 @@
 module.exports = {
   improve: '@apostrophecms/piece-type',
 
-  cascades: ['batchOperations'],
+  cascades: [ 'batchOperations' ],
 
   batchOperations(self) {
     if (self.options.export === false) {
@@ -15,7 +15,7 @@ module.exports = {
           messages: {
             progress: 'aposImportExport:exporting'
           },
-          modal: 'AposExportPiecesModal',
+          modal: 'AposExportPiecesModal'
         }
       },
       group: {
@@ -24,6 +24,6 @@ module.exports = {
           operations: [ 'export' ]
         }
       }
-    }
-  },
-}
+    };
+  }
+};

@@ -12,8 +12,8 @@ module.exports = {
     i18n: {
       ns: 'aposImportExport',
       browser: true
-    },
-  },
+    }
+  }
 };
 
 function getBundleModuleNames() {
