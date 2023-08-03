@@ -12,13 +12,12 @@
       <AposModalBody>
         <template #bodyMain>
           <h2 class="apos-export-pieces__heading">
-            {{ title }}
+            {{ $t('aposImportExport:export') }} {{ moduleName }}
           </h2>
           <p
-            v-if="description"
             class="apos-export-pieces__description"
           >
-            {{ description }}
+            {{ $t('aposImportExport:exportModalDescription', { count, type: moduleName }) }}
           </p>
           <div class="apos-export-pieces__btns">
             <AposButton
@@ -29,7 +28,7 @@
             <AposButton
               ref="exportPieces"
               class="apos-export-pieces__btn"
-              :label="label"
+              label="aposImportExport:export"
               type="primary"
               @click="exportPieces"
             />
@@ -43,26 +42,20 @@
 <script>
 export default {
   props: {
-    title: {
+    moduleName: {
       type: String,
       default: ''
     },
-    description: {
-      type: String,
-      default: ''
-    },
-    label: {
-      type: String,
-      default: 'Export'
+    count: {
+      type: Number,
+      default: 1
     }
   },
   emits: [ 'safe-close', 'modal-result' ],
   data() {
     return {
       modal: {
-        title: '',
         active: false,
-        type: 'overlay',
         showModal: false,
         disableHeader: true
       },
@@ -151,5 +144,6 @@ export default {
   justify-content: space-between;
   margin-top: 10px;
   width: 100%;
+  gap: 20px;
 }
 </style>
