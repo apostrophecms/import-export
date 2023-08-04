@@ -4,7 +4,7 @@ module.exports = {
   improve: '@apostrophecms/doc-type',
 
   init(self) {
-    const criteria = {
+    const operation = {
       action: 'export',
       context: 'update',
       label: 'aposImportExport:export',
@@ -17,11 +17,11 @@ module.exports = {
           $ne: self.__meta.name
         }
       });
-      criteria.if = {
+      operation.if = {
         $and: excludedTypes
       };
     }
 
-    self.apos.doc.addContextOperation(self.__meta.name, criteria);
+    self.apos.doc.addContextOperation(operation);
   }
 };
