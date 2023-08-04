@@ -51,7 +51,9 @@ export default {
       default: 1
     }
   },
+
   emits: [ 'safe-close', 'modal-result' ],
+
   data() {
     return {
       modal: {
