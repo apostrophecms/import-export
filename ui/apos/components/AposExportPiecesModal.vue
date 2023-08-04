@@ -12,12 +12,12 @@
       <AposModalBody>
         <template #bodyMain>
           <h2 class="apos-export-pieces__heading">
-            {{ $t('aposImportExport:export') }} {{ moduleName }}
+            {{ $t('aposImportExport:export') }} {{ moduleLabel }}
           </h2>
           <p
             class="apos-export-pieces__description"
           >
-            {{ $t('aposImportExport:exportModalDescription', { count, type: moduleName }) }}
+            {{ $t('aposImportExport:exportModalDescription', { count, type: moduleLabel }) }}
           </p>
           <div class="apos-export-pieces__btns">
             <AposButton
@@ -63,9 +63,18 @@ export default {
     };
   },
 
+  computed: {
+    moduleLabel() {
+      const moduleOptions = window.apos.modules[this.moduleName];
+      const label = this.count > 1 ? moduleOptions.pluralLabel : moduleOptions.label;
+      return this.$t(label).toLowerCase();
+    }
+  },
+
   async mounted() {
     this.modal.active = true;
   },
+
   methods: {
     ready() {
       this.$refs.exportPieces.$el.querySelector('button').focus();

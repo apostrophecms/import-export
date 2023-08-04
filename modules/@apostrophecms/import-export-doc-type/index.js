@@ -8,8 +8,7 @@ module.exports = {
       action: 'export',
       context: 'update',
       label: 'aposImportExport:export',
-      modal: 'AposExportPiecesModal',
-      currentModuleName: true
+      modal: 'AposExportPiecesModal'
     };
 
     if (self.options.export === false) {
@@ -23,6 +22,6 @@ module.exports = {
       };
     }
 
-    self.apos.doc.addContextOperation(self.__meta.name, criteria);
+    self.apos.doc.addContextOperation(criteria);
   }
 };
