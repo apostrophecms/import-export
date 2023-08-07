@@ -19,6 +19,30 @@
           >
             {{ $t('aposImportExport:exportModalDescription', { count, type: moduleLabel }) }}
           </p>
+          <div class="apos-export-pieces__settings">
+            Export settings
+          </div>
+          <div class="apos-export-pieces__separator"></div>
+          <div class="apos-export-pieces__settings-row apos-export-pieces__settings-row--red-colored">
+            <div>Document format</div>
+            <AposContextMenu
+              :menu="[{
+                label: 'JSONP',
+                modifiers: ['selected', 'disabled']
+              }]"
+              :button="{
+                label: 'JSONP',
+                icon: 'chevron-down-icon',
+                modifiers: ['icon-right', 'disabled', 'export-pieces-format']
+              }"
+            />
+          </div>
+          <div class="apos-export-pieces__settings-row">
+            <div>Include related documents</div>
+            <AposToggle v-model="unrelatedDocumentsDisabled" />
+          </div>
+          <div class="apos-export-pieces__separator apos-export-pieces__separator--full-width"></div>
+
           <div class="apos-export-pieces__btns">
             <AposButton
               class="apos-export-pieces__btn"
@@ -61,7 +85,8 @@ export default {
         showModal: false,
         disableHeader: true
       },
-      formValues: null
+      formValues: null,
+      unrelatedDocumentsDisabled: true
     };
   },
 
@@ -124,13 +149,19 @@ export default {
 }
 
 ::v-deep .apos-modal__body {
-  padding: 60px;
+  padding: 30px;
 }
 
 ::v-deep .apos-modal__body-main {
   display: flex;
   flex-direction: column;
   align-items: baseline;
+}
+
+::v-deep .apos-button.apos-button--export-pieces-format {
+  background-color: var(--a-danger);
+  color: var(--a-text-primary);
+  border: 1px solid var(--a-text-primary);
 }
 
 .apos-export-pieces__heading {
@@ -142,8 +173,57 @@ export default {
 
 .apos-export-pieces__description {
   @include type-base;
+  font-size: var(--a-type-large);
   max-width: 370px;
   line-height: var(--a-line-tallest);
+}
+
+.apos-export-pieces__settings {
+  font-size: var(--a-type-large);
+  font-weight: 600;
+  color: var(--a-base-3);
+  margin-top: 20px;
+}
+
+.apos-export-pieces__settings-row {
+  font-size: var(--a-type-large);
+  display: flex;
+  align-items: center;
+  gap: 70px;
+  height: 43px;
+}
+
+.apos-export-pieces__settings-row--red-colored {
+  background-color: var(--a-danger);
+  opacity: 0.5;
+  position: relative;
+
+  &::before {
+    content: "";
+    background-color: var(--a-danger);
+    position: absolute;
+    height: 100%;
+    width: 110%;
+    left: -5%;
+    z-index: -1;
+  }
+}
+
+.apos-export-pieces__separator {
+  background-color: var(--a-base-8);
+  position: relative;
+  height: 1px;
+  width: 100%;
+  margin: 10px 0;
+}
+
+.apos-export-pieces__separator--full-width::before {
+  content: "";
+  background-color: var(--a-base-8);
+  position: absolute;
+  height: 100%;
+  width: 120%;
+  left: -10%;
 }
 
 ::v-deep .apos-schema .apos-field {
