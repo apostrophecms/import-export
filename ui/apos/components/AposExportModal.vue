@@ -22,7 +22,7 @@
           <div class="apos-export-pieces__settings">
             Export settings
           </div>
-          <div class="apos-export-pieces__separator"></div>
+          <div class="apos-export-pieces__separator" />
           <div class="apos-export-pieces__settings-row apos-export-pieces__settings-row--red-colored">
             <div>Document format</div>
             <AposContextMenu
@@ -39,9 +39,13 @@
           </div>
           <div class="apos-export-pieces__settings-row">
             <div>Include related documents</div>
-            <AposToggle v-model="unrelatedDocumentsDisabled" />
+            <AposToggle
+              v-model="relatedDocumentsDisabled"
+              class="apos-export-pieces__toggle"
+              @toggle="toggleRelatedDocuments"
+            />
           </div>
-          <div class="apos-export-pieces__separator apos-export-pieces__separator--full-width"></div>
+          <div class="apos-export-pieces__separator apos-export-pieces__separator--full-width" />
 
           <div class="apos-export-pieces__btns">
             <AposButton
@@ -50,11 +54,11 @@
               @click="cancel"
             />
             <AposButton
-              ref="exportPieces"
+              ref="exportDocs"
               class="apos-export-pieces__btn"
               label="aposImportExport:export"
               type="primary"
-              @click="exportPieces"
+              @click="exportDocs"
             />
           </div>
         </template>
@@ -86,7 +90,7 @@ export default {
         disableHeader: true
       },
       formValues: null,
-      unrelatedDocumentsDisabled: true
+      relatedDocumentsDisabled: true
     };
   },
 
@@ -104,9 +108,9 @@ export default {
 
   methods: {
     ready() {
-      this.$refs.exportPieces.$el.querySelector('button').focus();
+      this.$refs.exportDocs.$el.querySelector('button').focus();
     },
-    exportPieces() {
+    exportDocs() {
       this.modal.showModal = false;
       const result = true;
       this.$emit('modal-result', result);
@@ -114,6 +118,9 @@ export default {
     async cancel() {
       this.modal.showModal = false;
       this.$emit('modal-result', false);
+    },
+    toggleRelatedDocuments() {
+      this.relatedDocumentsDisabled = !this.relatedDocumentsDisabled;
     }
   }
 };
@@ -162,6 +169,10 @@ export default {
   background-color: var(--a-danger);
   color: var(--a-text-primary);
   border: 1px solid var(--a-text-primary);
+}
+
+::v-deep .apos-toggle__slider:before {
+  left: 4px;
 }
 
 .apos-export-pieces__heading {
