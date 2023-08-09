@@ -200,7 +200,7 @@ export default {
     left: auto;
     max-width: 700px;
     height: auto;
-    text-align: center;
+    text-align: left;
   }
 
   .apos-modal__body-main {
