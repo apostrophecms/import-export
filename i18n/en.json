@@ -1,4 +1,9 @@
 {
+  "import": "Import",
+  "importType": "Import {{ type }}",
+  "importModalDescriptionStart": "Importing content requires a zip file. See our",
+  "importModalDescriptionLink": "guide to importing content",
+  "importModalDescriptionEnd": "in Apostrophe.",
   "export": "Export",
   "exporting": "Exporting",
   "exportModalDescription": "You've selected {{ count }} {{ type }} for export",
