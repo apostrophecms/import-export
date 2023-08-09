@@ -2,7 +2,11 @@
   <AposModal
     class="apos-import"
     :modal="modal"
+    @esc="cancel"
+    @no-modal="$emit('safe-close')"
+    @inactive="modal.active = false"
     @show-modal="modal.showModal = true"
+    @ready="ready"
   >
     <template #main>
       <AposModalBody>
@@ -32,6 +36,7 @@
           />
           <div class="apos-import__btns">
             <AposButton
+              ref="cancelButton"
               class="apos-import__btn"
               label="apostrophe:cancel"
               @click="cancel"
@@ -90,6 +95,7 @@ export default {
       default: null
     }
   },
+  emits: [ 'safe-close' ],
   data () {
     return {
       modal: {
@@ -106,6 +112,9 @@ export default {
     this.modal.active = true;
   },
   methods: {
+    ready() {
+      this.$refs.cancelButton.$el.querySelector('button').focus();
+    },
     uploadImportFile (file) {
       this.selectedFile = file || null;
     },
@@ -114,6 +123,7 @@ export default {
     },
     cancel () {
       this.modal.active = false;
+      this.modal.showModal = false;
     },
     async runImport () {
       // try {
@@ -138,7 +148,7 @@ export default {
       //   });
       // }
 
-      this.modal.active = false;
+      this.modal.showModal = false;
     }
   }
 };
