@@ -1,7 +1,7 @@
 <template>
   <AposModal
     :modal="modal"
-    class="apos-export-pieces"
+    class="apos-export"
     v-on="{ esc: cancel }"
     @no-modal="$emit('safe-close')"
     @inactive="modal.active = false"
@@ -11,51 +11,88 @@
     <template #main>
       <AposModalBody>
         <template #bodyMain>
-          <h2 class="apos-export-pieces__heading">
+          <h2 class="apos-export__heading">
             {{ $t('aposImportExport:export') }} {{ moduleLabel }}
           </h2>
           <p
-            class="apos-export-pieces__description"
+            class="apos-export__description"
           >
             {{ $t('aposImportExport:exportModalDescription', { count, type: moduleLabel }) }}
           </p>
-          <div class="apos-export-pieces__settings">
-            Export settings
-          </div>
-          <div class="apos-export-pieces__separator" />
-          <div class="apos-export-pieces__settings-row apos-export-pieces__settings-row--red-colored">
-            <div>Document format</div>
-            <AposContextMenu
-              :menu="[{
-                label: 'JSONP',
-                modifiers: ['selected', 'disabled']
-              }]"
-              :button="{
-                label: 'JSONP',
-                icon: 'chevron-down-icon',
-                modifiers: ['icon-right', 'disabled', 'export-pieces-format']
-              }"
-            />
-          </div>
-          <div class="apos-export-pieces__settings-row">
-            <div>Include related documents</div>
-            <AposToggle
-              v-model="relatedDocumentsDisabled"
-              class="apos-export-pieces__toggle"
-              @toggle="toggleRelatedDocuments"
-            />
-          </div>
-          <div class="apos-export-pieces__separator apos-export-pieces__separator--full-width" />
 
-          <div class="apos-export-pieces__btns">
+          <div class="apos-export__section">
+            <div class="apos-export__settings">
+              Export Settings
+            </div>
+            <div class="apos-export__separator" />
+            <div class="apos-export__settings-row apos-export__settings-row--red-colored">
+              <div>Document format</div>
+              <AposContextMenu
+                :menu="[{
+                  label: 'JSONP',
+                  modifiers: ['selected', 'disabled']
+                }]"
+                :button="{
+                  label: 'JSONP',
+                  icon: 'chevron-down-icon',
+                  modifiers: ['icon-right', 'disabled', 'export-pieces-format']
+                }"
+              />
+            </div>
+            <div class="apos-export__settings-row">
+              <div>Include related documents</div>
+              <AposToggle
+                v-model="relatedDocumentsDisabled"
+                class="apos-export__toggle"
+                @toggle="toggleRelatedDocuments"
+              />
+            </div>
+          </div>
+
+          <div
+            v-show="!relatedDocumentsDisabled"
+            class="apos-export__section"
+          >
+            <div class="apos-export__settings">
+              Related Documents Settings
+            </div>
+            <div class="apos-export__separator" />
+            <div class="apos-export__settings-row apos-export__settings-row--column">
+              <div>Include the following document types</div>
+              <div v-if="relatedTypes && relatedTypes.length">
+                <AposCheckbox
+                  v-for="relatedType in relatedTypes"
+                  :key="relatedType"
+                  v-model="checkedProxy"
+                  tabindex="-1"
+                  :choice="{
+                    value: relatedType,
+                    label: relatedType
+                  }"
+                  :field="{
+                    label: relatedType,
+                    name: relatedType
+                  }"
+                  @updated="checkRelatedTypes"
+                />
+              </div>
+              <div v-else>
+                No Types
+              </div>
+            </div>
+          </div>
+
+          <div class="apos-export__separator apos-export__separator--full-width" />
+
+          <div class="apos-export__btns">
             <AposButton
-              class="apos-export-pieces__btn"
+              class="apos-export__btn"
               label="apostrophe:cancel"
               @click="cancel"
             />
             <AposButton
               ref="exportDocs"
-              class="apos-export-pieces__btn"
+              class="apos-export__btn"
               label="aposImportExport:export"
               type="primary"
               @click="exportDocs"
@@ -90,7 +127,9 @@ export default {
         disableHeader: true
       },
       formValues: null,
-      relatedDocumentsDisabled: true
+      relatedDocumentsDisabled: true,
+      relatedTypes: null,
+      checkedRelatedTypes: []
     };
   },
 
@@ -99,6 +138,15 @@ export default {
       const moduleOptions = window.apos.modules[this.moduleName];
       const label = this.count > 1 ? moduleOptions.pluralLabel : moduleOptions.label;
       return this.$t(label).toLowerCase();
+    },
+
+    checkedProxy: {
+      get() {
+        return this.checkedRelatedTypes;
+      },
+      set(val) {
+        this.$emit('change', val);
+      }
     }
   },
 
@@ -119,15 +167,31 @@ export default {
       this.modal.showModal = false;
       this.$emit('modal-result', false);
     },
-    toggleRelatedDocuments() {
+    async toggleRelatedDocuments() {
       this.relatedDocumentsDisabled = !this.relatedDocumentsDisabled;
+
+      if (!this.relatedDocumentsDisabled && !Array.isArray(this.relatedTypes)) {
+        this.relatedTypes = await apos.http.get('/api/v1/@apostrophecms/import-export/related', {
+          busy: true,
+          qs: {
+            moduleName: this.moduleName
+          }
+        });
+      }
+    },
+    checkRelatedTypes(evt) {
+      if (evt.target.checked) {
+        this.checkedRelatedTypes.push(evt.target.value);
+      } else {
+        this.checkedRelatedTypes = this.checkedRelatedTypes.filter(relatedType => relatedType !== evt.target.value);
+      }
     }
   }
 };
 </script>
 
 <style lang="scss" scoped>
-.apos-export-pieces {
+.apos-export {
   z-index: $z-index-modal;
   position: fixed;
   top: 0;
@@ -144,19 +208,18 @@ export default {
   right: auto;
   bottom: auto;
   left: auto;
-  max-width: 700px;
   height: auto;
-  text-align: center;
+  text-align: left;
 }
 
 ::v-deep .apos-modal__overlay {
-  .apos-modal+.apos-export-pieces & {
+  .apos-modal+.apos-export & {
     display: block;
   }
 }
 
 ::v-deep .apos-modal__body {
-  padding: 30px;
+  padding: 20px 35px;
 }
 
 ::v-deep .apos-modal__body-main {
@@ -171,40 +234,50 @@ export default {
   border: 1px solid var(--a-text-primary);
 }
 
-::v-deep .apos-toggle__slider:before {
-  left: 4px;
+::v-deep .apos-toggle__slider {
+  display: flex;
 }
 
-.apos-export-pieces__heading {
+.apos-export__heading {
   @include type-title;
   line-height: var(--a-line-tall);
   margin: 0;
   text-transform: capitalize;
 }
 
-.apos-export-pieces__description {
+.apos-export__description {
   @include type-base;
   font-size: var(--a-type-large);
-  max-width: 370px;
+  text-align: left;
   line-height: var(--a-line-tallest);
 }
 
-.apos-export-pieces__settings {
+.apos-export__section {
+  display: flex;
+  flex-direction: column;
+  align-items: baseline;
+  min-width: 340px;
+  font-size: var(--a-type-large);
+}
+
+.apos-export__settings {
   font-size: var(--a-type-large);
   font-weight: 600;
   color: var(--a-base-3);
   margin-top: 20px;
 }
 
-.apos-export-pieces__settings-row {
+.apos-export__settings-row {
   font-size: var(--a-type-large);
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 70px;
   height: 43px;
+  width: 100%;
 }
 
-.apos-export-pieces__settings-row--red-colored {
+.apos-export__settings-row--red-colored {
   background-color: var(--a-danger);
   opacity: 0.5;
   position: relative;
@@ -220,7 +293,15 @@ export default {
   }
 }
 
-.apos-export-pieces__separator {
+.apos-export__settings-row--column {
+  flex-direction: column;
+  gap: 20px;
+  align-items: baseline;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.apos-export__separator {
   background-color: var(--a-base-8);
   position: relative;
   height: 1px;
@@ -228,7 +309,7 @@ export default {
   margin: 10px 0;
 }
 
-.apos-export-pieces__separator--full-width::before {
+.apos-export__separator--full-width::before {
   content: "";
   background-color: var(--a-base-8);
   position: absolute;
@@ -241,7 +322,7 @@ export default {
   margin-bottom: $spacing-base;
 }
 
-.apos-export-pieces__btns {
+.apos-export__btns {
   display: flex;
   justify-content: space-between;
   margin-top: 10px;

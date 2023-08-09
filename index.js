@@ -28,7 +28,7 @@ module.exports = {
           }
           const schema = self.apos.modules[moduleName].schema;
 
-          const relatedTypes = schema.reduce((acc, cur) => {
+          return [ ...new Set(schema.reduce((acc, cur) => {
             if (cur.type === 'relationship') {
               acc.push(cur.withType);
             } else if (cur.type === 'array' || cur.type === 'object') {
@@ -42,14 +42,7 @@ module.exports = {
             }
 
             return acc;
-          }, []);
-
-          console.log('relatedTypes', require('util').inspect([ ...new Set(relatedTypes) ], {
-            colors: true,
-            depth: 1
-          }));
-
-          return { success: true };
+          }, [])) ];
         }
       }
     };
