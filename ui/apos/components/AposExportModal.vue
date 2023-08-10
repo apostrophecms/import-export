@@ -116,7 +116,7 @@ export default {
     }
   },
 
-  emits: [ 'safe-close', 'modal-result' ],
+  emits: [ 'change', 'safe-close', 'modal-result' ],
 
   data() {
     return {
@@ -138,8 +138,14 @@ export default {
       const label = this.count > 1 ? moduleOptions.pluralLabel : moduleOptions.label;
       return this.$t(label).toLowerCase();
     },
-    checkedProxy() {
-      return this.checkedRelatedTypes;
+
+    checkedProxy: {
+      get() {
+        return this.checkedRelatedTypes;
+      },
+      set(val) {
+        this.$emit('change', val);
+      }
     }
   },
 
