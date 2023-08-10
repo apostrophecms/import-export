@@ -15,6 +15,10 @@ module.exports = {
     }
   },
 
+  init(self) {
+    self.apos.asset.iconMap['apos-import-export-download-icon'] = 'Download';
+  },
+
   apiRoutes(self) {
     return {
       get: {
@@ -22,27 +26,29 @@ module.exports = {
           if (!req.user) {
             throw self.apos.error('forbidden');
           }
+
           const moduleName = self.apos.launder.string(req.query.moduleName);
           if (!moduleName) {
-            return { success: false };
+            throw self.apos.error('invalid');
           }
-          const schema = self.apos.modules[moduleName].schema;
 
-          return [ ...new Set(schema.reduce((acc, cur) => {
-            if (cur.type === 'relationship') {
-              acc.push(cur.withType);
-            } else if (cur.type === 'array' || cur.type === 'object') {
-              for (const field of cur.schema) {
-                if (field.type === 'relationship') {
-                  acc.push(field.withType);
-                }
-              }
-              // } else if (cur.type === 'area') {
+          const { schema } = self.apos.modules[moduleName];
+          const relatedTypes = schema.flatMap(searchRelationships).filter(Boolean);
 
+          return [ ...new Set(relatedTypes) ];
+
+          function searchRelationships(obj) {
+            if (obj.type === 'relationship') {
+              return obj.withType;
+            } else if (obj.type === 'array' || obj.type === 'object') {
+              return obj.schema.flatMap(searchRelationships);
+            } else if (obj.type === 'area') {
+              return Object.keys(obj.options.widgets).flatMap(widget => {
+                const schema = self.apos.modules[`${widget}-widget`]?.schema || [];
+                return schema.map(searchRelationships);
+              });
             }
-
-            return acc;
-          }, [])) ];
+          }
         }
       }
     };

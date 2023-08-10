@@ -91,6 +91,7 @@
             />
             <AposButton
               ref="exportDocs"
+              icon="apos-import-export-download-icon"
               class="apos-export__btn"
               label="aposImportExport:export"
               type="primary"
@@ -169,7 +170,7 @@ export default {
     async toggleRelatedDocuments() {
       this.relatedDocumentsDisabled = !this.relatedDocumentsDisabled;
 
-      if (!this.relatedDocumentsDisabled && !Array.isArray(this.relatedTypes)) {
+      if (!this.relatedDocumentsDisabled && this.relatedTypes === null) {
         this.relatedTypes = await window.apos.http.get('/api/v1/@apostrophecms/import-export/related', {
           busy: true,
           qs: {
