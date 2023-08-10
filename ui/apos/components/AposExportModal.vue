@@ -22,25 +22,22 @@
 
           <div class="apos-export__section">
             <div class="apos-export__settings">
-              Export Settings
+              {{ $t('aposImportExport:exportModalSettingsLabel') }}
             </div>
             <div class="apos-export__separator" />
             <div class="apos-export__settings-row apos-export__settings-row--red-colored">
-              <div>Document format</div>
+              <div>{{ $t('aposImportExport:exportModalDocumentFormat') }}</div>
               <AposContextMenu
-                :menu="[{
-                  label: 'JSONP',
-                  modifiers: ['selected', 'disabled']
-                }]"
+                disabled
                 :button="{
-                  label: 'JSONP',
+                  label: 'ZIP',
                   icon: 'chevron-down-icon',
-                  modifiers: ['icon-right', 'disabled', 'export-pieces-format']
+                  modifiers: ['icon-right', 'disabled', 'export-format']
                 }"
               />
             </div>
             <div class="apos-export__settings-row">
-              <div>Include related documents</div>
+              <div>{{ $t('aposImportExport:exportModalIncludeRelated') }}</div>
               <AposToggle
                 v-model="relatedDocumentsDisabled"
                 class="apos-export__toggle"
@@ -54,11 +51,13 @@
             class="apos-export__section"
           >
             <div class="apos-export__settings">
-              Related Documents Settings
+              {{ $t('aposImportExport:exportModalIncludeRelatedSettings') }}
             </div>
             <div class="apos-export__separator" />
             <div class="apos-export__settings-row apos-export__settings-row--column">
-              <div>Include the following document types</div>
+              <div class="apos-export__related-description">
+                {{ $t('aposImportExport:exportModalRelatedDocumentDescription') }}
+              </div>
               <div v-if="relatedTypes && relatedTypes.length">
                 <AposCheckbox
                   v-for="relatedType in relatedTypes"
@@ -67,17 +66,17 @@
                   tabindex="-1"
                   :choice="{
                     value: relatedType,
-                    label: relatedType
+                    label: getRelatedTypeLabel(relatedType)
                   }"
                   :field="{
-                    label: relatedType,
+                    label: getRelatedTypeLabel(relatedType),
                     name: relatedType
                   }"
                   @updated="checkRelatedTypes"
                 />
               </div>
               <div v-else>
-                No Types
+                {{ $t('aposImportExport:exportModalNoRelatedTypes') }}
               </div>
             </div>
           </div>
@@ -139,14 +138,8 @@ export default {
       const label = this.count > 1 ? moduleOptions.pluralLabel : moduleOptions.label;
       return this.$t(label).toLowerCase();
     },
-
-    checkedProxy: {
-      get() {
-        return this.checkedRelatedTypes;
-      },
-      set(val) {
-        this.$emit('change', val);
-      }
+    checkedProxy() {
+      return this.checkedRelatedTypes;
     }
   },
 
@@ -171,7 +164,7 @@ export default {
       this.relatedDocumentsDisabled = !this.relatedDocumentsDisabled;
 
       if (!this.relatedDocumentsDisabled && !Array.isArray(this.relatedTypes)) {
-        this.relatedTypes = await apos.http.get('/api/v1/@apostrophecms/import-export/related', {
+        this.relatedTypes = await window.apos.http.get('/api/v1/@apostrophecms/import-export/related', {
           busy: true,
           qs: {
             moduleName: this.moduleName
@@ -185,6 +178,10 @@ export default {
       } else {
         this.checkedRelatedTypes = this.checkedRelatedTypes.filter(relatedType => relatedType !== evt.target.value);
       }
+    },
+    getRelatedTypeLabel(moduleName) {
+      const moduleOptions = window.apos.modules[moduleName];
+      return this.$t(moduleOptions.label);
     }
   }
 };
@@ -219,7 +216,7 @@ export default {
 }
 
 ::v-deep .apos-modal__body {
-  padding: 20px 35px;
+  padding: 20px 30px;
 }
 
 ::v-deep .apos-modal__body-main {
@@ -228,7 +225,7 @@ export default {
   align-items: baseline;
 }
 
-::v-deep .apos-button.apos-button--export-pieces-format {
+::v-deep .apos-button.apos-button--export-format {
   background-color: var(--a-danger);
   color: var(--a-text-primary);
   border: 1px solid var(--a-text-primary);
@@ -256,7 +253,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: baseline;
-  min-width: 340px;
+  min-width: 325px;
   font-size: var(--a-type-large);
 }
 
@@ -301,6 +298,10 @@ export default {
   margin-bottom: 20px;
 }
 
+.apos-export__related-description {
+  white-space: pre-line;
+}
+
 .apos-export__separator {
   background-color: var(--a-base-8);
   position: relative;
@@ -314,8 +315,9 @@ export default {
   background-color: var(--a-base-8);
   position: absolute;
   height: 100%;
-  width: 120%;
-  left: -10%;
+  width: calc(100% + 60px);
+  left: -30px;
+  right: 0;
 }
 
 ::v-deep .apos-schema .apos-field {
