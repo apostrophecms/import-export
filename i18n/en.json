@@ -1,5 +1,12 @@
 {
   "export": "Export",
   "exporting": "Exporting",
-  "exportModalDescription": "You've selected {{ count }} {{ type }} for export"
+  "exportModalDescription": "You've selected {{ count }} {{ type }} for export",
+  "exportModalRelatedDocumentDescription": "Include the following document types where applicable",
+  "exportModalSettingsLabel": "Export Settings",
+  "exportModalDocumentFormat": "Document Format",
+  "exportModalIncludeRelated": "Include related documents",
+  "exportModalIncludeChildren": "Include children of this page",
+  "exportModalIncludeRelatedSettings": "Related Documents Settings",
+  "exportModalNoRelatedTypes": "No Related Types"
 }

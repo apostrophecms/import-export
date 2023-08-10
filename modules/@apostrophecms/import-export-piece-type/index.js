@@ -15,7 +15,7 @@ module.exports = {
           messages: {
             progress: 'aposImportExport:exporting'
           },
-          modal: 'AposExportPiecesModal'
+          modal: 'AposExportModal'
         }
       },
       group: {

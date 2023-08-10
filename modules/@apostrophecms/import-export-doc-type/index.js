@@ -8,7 +8,7 @@ module.exports = {
       action: 'export',
       context: 'update',
       label: 'aposImportExport:export',
-      modal: 'AposExportPiecesModal'
+      modal: 'AposExportModal'
     };
 
     if (self.options.export === false) {
