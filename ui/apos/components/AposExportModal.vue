@@ -25,17 +25,31 @@
               {{ $t('aposImportExport:exportModalSettingsLabel') }}
             </div>
             <div class="apos-export__separator" />
-            <div class="apos-export__settings-row apos-export__settings-row--red-colored">
+
+            <div class="apos-export__settings-row">
               <div>{{ $t('aposImportExport:exportModalDocumentFormat') }}</div>
               <AposContextMenu
                 disabled
                 :button="{
                   label: 'ZIP',
                   icon: 'chevron-down-icon',
-                  modifiers: ['icon-right', 'disabled', 'export-format']
+                  modifiers: ['icon-right', 'disabled']
                 }"
               />
             </div>
+
+            <div
+              v-if="moduleName === '@apostrophecms/page'"
+              class="apos-export__settings-row"
+            >
+              <div>{{ $t('aposImportExport:exportModalIncludeChildren') }}</div>
+              <AposToggle
+                v-model="relatedChildrenDisabled"
+                class="apos-export__toggle"
+                @toggle="toggleRelatedChildren"
+              />
+            </div>
+
             <div class="apos-export__settings-row">
               <div>{{ $t('aposImportExport:exportModalIncludeRelated') }}</div>
               <AposToggle
@@ -128,8 +142,10 @@ export default {
       },
       formValues: null,
       relatedDocumentsDisabled: true,
+      relatedChildrenDisabled: true,
       relatedTypes: null,
-      checkedRelatedTypes: []
+      checkedRelatedTypes: [],
+      type: this.moduleName
     };
   },
 
@@ -152,6 +168,10 @@ export default {
 
   async mounted() {
     this.modal.active = true;
+
+    if (this.type === '@apostrophecms/page') {
+      this.type = this.$attrs.doc?.type;
+    }
   },
 
   methods: {
@@ -174,10 +194,13 @@ export default {
         this.relatedTypes = await window.apos.http.get('/api/v1/@apostrophecms/import-export/related', {
           busy: true,
           qs: {
-            moduleName: this.moduleName
+            type: this.type
           }
         });
       }
+    },
+    toggleRelatedChildren() {
+      this.relatedChildrenDisabled = !this.relatedChildrenDisabled;
     },
     checkRelatedTypes(evt) {
       if (evt.target.checked) {
@@ -233,12 +256,6 @@ export default {
   align-items: baseline;
 }
 
-::v-deep .apos-button.apos-button--export-format {
-  background-color: var(--a-danger);
-  color: var(--a-text-primary);
-  border: 1px solid var(--a-text-primary);
-}
-
 ::v-deep .apos-toggle__slider {
   display: flex;
 }
@@ -280,22 +297,6 @@ export default {
   gap: 70px;
   height: 43px;
   width: 100%;
-}
-
-.apos-export__settings-row--red-colored {
-  background-color: var(--a-danger);
-  opacity: 0.5;
-  position: relative;
-
-  &::before {
-    content: "";
-    background-color: var(--a-danger);
-    position: absolute;
-    height: 100%;
-    width: 110%;
-    left: -5%;
-    z-index: -1;
-  }
 }
 
 .apos-export__settings-row--column {

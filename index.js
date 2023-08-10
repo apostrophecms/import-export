@@ -27,12 +27,12 @@ module.exports = {
             throw self.apos.error('forbidden');
           }
 
-          const moduleName = self.apos.launder.string(req.query.moduleName);
-          if (!moduleName) {
+          const type = self.apos.launder.string(req.query.type);
+          if (!type) {
             throw self.apos.error('invalid');
           }
 
-          const { schema = [] } = self.apos.modules[moduleName];
+          const { schema = [] } = self.apos.modules[type];
           const relatedTypes = schema.flatMap(searchRelationships).filter(Boolean);
 
           return [ ...new Set(relatedTypes) ];

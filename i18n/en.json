@@ -6,6 +6,7 @@
   "exportModalSettingsLabel": "Export Settings",
   "exportModalDocumentFormat": "Document Format",
   "exportModalIncludeRelated": "Include related documents",
+  "exportModalIncludeChildren": "Include children of this page",
   "exportModalIncludeRelatedSettings": "Related Documents Settings",
   "exportModalNoRelatedTypes": "No Related Types"
 }
