@@ -2,7 +2,7 @@
   "export": "Export",
   "exporting": "Exporting",
   "exportModalDescription": "You've selected {{ count }} {{ type }} for export",
-  "exportModalRelatedDocumentDescription": "Include the following document types\nwhere applicable",
+  "exportModalRelatedDocumentDescription": "Include the following document types where applicable",
   "exportModalSettingsLabel": "Export Settings",
   "exportModalDocumentFormat": "Document Format",
   "exportModalIncludeRelated": "Include related documents",

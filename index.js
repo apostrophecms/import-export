@@ -32,7 +32,7 @@ module.exports = {
             throw self.apos.error('invalid');
           }
 
-          const { schema } = self.apos.modules[moduleName];
+          const { schema = [] } = self.apos.modules[moduleName];
           const relatedTypes = schema.flatMap(searchRelationships).filter(Boolean);
 
           return [ ...new Set(relatedTypes) ];
@@ -44,7 +44,7 @@ module.exports = {
               return obj.schema.flatMap(searchRelationships);
             } else if (obj.type === 'area') {
               return Object.keys(obj.options.widgets).flatMap(widget => {
-                const schema = self.apos.modules[`${widget}-widget`]?.schema || [];
+                const { schema = [] } = self.apos.modules[`${widget}-widget`];
                 return schema.map(searchRelationships);
               });
             }

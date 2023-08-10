@@ -2,7 +2,7 @@
   <AposModal
     :modal="modal"
     class="apos-export"
-    v-on="{ esc: cancel }"
+    @esc="cancel"
     @no-modal="$emit('safe-close')"
     @inactive="modal.active = false"
     @show-modal="modal.showModal = true"
@@ -224,6 +224,7 @@ export default {
 
 ::v-deep .apos-modal__body {
   padding: 20px 30px;
+  width: 335px;
 }
 
 ::v-deep .apos-modal__body-main {
@@ -260,7 +261,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: baseline;
-  min-width: 325px;
+  min-width: 100%;
   font-size: var(--a-type-large);
 }
 
@@ -303,10 +304,6 @@ export default {
   align-items: baseline;
   height: auto;
   margin-bottom: 20px;
-}
-
-.apos-export__related-description {
-  white-space: pre-line;
 }
 
 .apos-export__separator {
