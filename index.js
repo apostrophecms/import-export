@@ -34,7 +34,9 @@ module.exports = {
           }
 
           const { schema = [] } = self.apos.modules[type];
-          const relatedTypes = schema.flatMap(searchRelationships).filter(Boolean);
+          const relatedTypes = schema
+            .flatMap(searchRelationships)
+            .filter(Boolean);
 
           return [ ...new Set(relatedTypes) ];
 
@@ -46,7 +48,7 @@ module.exports = {
             } else if (obj.type === 'area') {
               return Object.keys(obj.options.widgets).flatMap(widget => {
                 const { schema = [] } = self.apos.modules[`${widget}-widget`];
-                return schema.map(searchRelationships);
+                return schema.flatMap(searchRelationships);
               });
             }
           }
