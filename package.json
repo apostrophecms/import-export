@@ -1,7 +1,7 @@
 {
-  "name": "@apostrophecms/module-template",
+  "name": "@apostrophecms/import-export",
   "version": "1.0.0",
-  "description": "A template for creating an ApostropheCMS 3 module.",
+  "description": "Import Export Documents for ApostropheCMS 3.",
   "main": "index.js",
   "scripts": {
     "eslint": "eslint --ext .js,.vue .",
@@ -10,11 +10,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/apostrophecms/module-template.git"
+    "url": "git+https://github.com/apostrophecms/import-export.git"
   },
-  "homepage": "https://github.com/apostrophecms/module-template#readme",
+  "homepage": "https://github.com/apostrophecms/import-export#readme",
   "author": "Apostrophe Technologies",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "devDependencies": {
     "apostrophe": "github:apostrophecms/apostrophe",
     "eslint": "^8.44.0",
