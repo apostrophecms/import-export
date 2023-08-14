@@ -11,19 +11,13 @@
     <template #main>
       <AposModalBody>
         <template #bodyMain>
-          <AposLogoIcon
-            class="apos-import__logo"
-          />
-          <h2
-            v-if="title"
-            class="apos-import__heading"
-          >
-            {{ $t(title) }}
+          <h2 class="apos-import__heading">
+            {{ $t('aposImportExport:importDocuments') }}
           </h2>
           <!-- eslint-disable vue/no-v-html -->
           <p
             class="apos-import__description"
-            v-html="$t(description)"
+            v-html="$t('aposImportExport:importModalDescription')"
           />
           <!-- eslint-enable vue/no-v-html -->
           <AposFile
@@ -41,8 +35,9 @@
             />
             <AposButton
               class="apos-import__btn"
-              :label="$t(confirmationButton)"
-              :type="'primary'"
+              icon="apos-import-export-upload-icon"
+              label="aposImportExport:import"
+              type="primary"
               :disabled="!selectedFile"
               @click="runImport"
             />
@@ -55,41 +50,10 @@
 
 <script>
 export default {
-  props: {
-    action: {
-      type: String,
-      required: true
-    },
-    moduleAction: {
-      type: String,
-      required: true
-    },
-    title: {
-      type: String,
-      required: true
-    },
-    description: {
-      type: String,
-      required: true
-    },
-    confirmationButton: {
-      type: String,
-      required: true
-    },
-    labels: {
-      type: Object,
-      required: true
-    },
-    messages: {
-      type: Object,
-      default: null
-    }
-  },
   emits: [ 'safe-close' ],
   data () {
     return {
       modal: {
-        title: '',
         active: false,
         type: 'overlay',
         showModal: false,
@@ -116,27 +80,7 @@ export default {
       this.modal.showModal = false;
     },
     async runImport () {
-      // try {
-      //   const formData = new FormData();
-      //   formData.append('file', this.selectedFile);
-
-      //   if (this.messages) {
-      //     Object.entries(this.messages).forEach(([ stage, message ]) => {
-      //       formData.append(stage, message);
-      //     });
-      //   }
-
-      //   this.selectedFile = null;
-
-      //   await apos.http.post(`${this.moduleAction}/${this.action}`, {
-      //     body: formData
-      //   });
-      // } catch (error) {
-      //   apos.notify('Import failed.', {
-      //     type: 'danger',
-      //     dismiss: true
-      //   });
-      // }
+      // TODO: implement
 
       this.modal.showModal = false;
     }
@@ -156,21 +100,14 @@ export default {
   align-items: center;
   justify-content: center;
 
-  &__logo {
-    height: 35px;
-    margin-bottom: $spacing-double;
-  }
-
   &__heading {
     @include type-title;
-
     line-height: var(--a-line-tall);
     margin: 0;
   }
 
   &__description {
     @include type-base;
-
     max-width: 370px;
     line-height: var(--a-line-tallest);
   }
@@ -181,8 +118,9 @@ export default {
 
   &__btns {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     margin-top: 10px;
+    width: 100%;
   }
 
   &__btn {
@@ -206,7 +144,8 @@ export default {
   .apos-modal__body-main {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: baseline;
   }
 }
+
 </style>
