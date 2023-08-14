@@ -17,9 +17,7 @@ module.exports = {
             descriptionLink: 'aposImportExport:importModalDescriptionLink',
             descriptionEnd: 'aposImportExport:importModalDescriptionEnd',
             confirmationButton: 'aposImportExport:importType',
-
-            // TODO: rename AposImportPiecesModal to AposImportModal since pages can be imported, not only pieces
-            modal: 'AposImportPiecesModal'
+            modal: 'AposImportModal'
           },
           messages: {
             progress: 'Importing {{ type }}...'
