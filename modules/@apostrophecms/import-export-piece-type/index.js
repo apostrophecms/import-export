@@ -13,9 +13,9 @@ module.exports = {
         import: {
           label: 'aposImportExport:import',
           modalOptions: {
-            title: 'aposImportExport:importType',
+            title: 'aposImportExport:importDocuments',
             description: 'aposImportExport:importModalDescription',
-            confirmationButton: 'aposImportExport:importType',
+            confirmationButton: 'aposImportExport:import',
             modal: 'AposImportModal'
           },
           messages: {

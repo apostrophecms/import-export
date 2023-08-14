@@ -18,7 +18,7 @@
             v-if="title"
             class="apos-import__heading"
           >
-            {{ $t(title, { type: $t(labels.plural) }) }}
+            {{ $t(title) }}
           </h2>
           <!-- eslint-disable vue/no-v-html -->
           <p
@@ -41,7 +41,7 @@
             />
             <AposButton
               class="apos-import__btn"
-              :label="$t(confirmationButton, { type: $t(labels.plural) })"
+              :label="$t(confirmationButton)"
               :type="'primary'"
               :disabled="!selectedFile"
               @click="runImport"
