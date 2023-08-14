@@ -2,7 +2,6 @@ module.exports = {
   improve: '@apostrophecms/page',
 
   utilityOperations (self) {
-    // TODO: change to `self.options.shareDocsDisableImport === true` as set in the ticket?
     if (self.options.import === false) {
       return {};
     }
@@ -13,9 +12,7 @@ module.exports = {
           label: 'aposImportExport:import',
           modalOptions: {
             title: 'aposImportExport:importType',
-            descriptionStart: 'aposImportExport:importModalDescriptionStart',
-            descriptionLink: 'aposImportExport:importModalDescriptionLink',
-            descriptionEnd: 'aposImportExport:importModalDescriptionEnd',
+            description: 'aposImportExport:importModalDescription',
             confirmationButton: 'aposImportExport:importType',
             modal: 'AposImportModal'
           },

@@ -1,9 +1,4 @@
 {
-  "import": "Import",
-  "importType": "Import {{ type }}",
-  "importModalDescriptionStart": "Importing content requires a zip file. See our",
-  "importModalDescriptionLink": "guide to importing content",
-  "importModalDescriptionEnd": "in Apostrophe.",
   "export": "Export",
   "exporting": "Exporting",
   "exportModalDescription": "You've selected {{ count }} {{ type }} for export",
@@ -13,5 +8,8 @@
   "exportModalIncludeRelated": "Include related documents",
   "exportModalIncludeChildren": "Include children of this page",
   "exportModalIncludeRelatedSettings": "Related Documents Settings",
-  "exportModalNoRelatedTypes": "No Related Types"
+  "exportModalNoRelatedTypes": "No Related Types",
+  "import": "Import",
+  "importType": "Import {{ type }}",
+  "importModalDescription": "Importing content requires a zip file. See our <a href=\"https://v3.docs.apostrophecms.org/\" target=\"_blank\">guide to importing content</a> in Apostrophe."
 }

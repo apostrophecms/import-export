@@ -20,14 +20,12 @@
           >
             {{ $t(title, { type: $t(labels.plural) }) }}
           </h2>
-          <p class="apos-import__description">
-            {{ $t(descriptionStart) }}
-            <a
-              href="https://v3.docs.apostrophecms.org/"
-              target="_blank"
-            >{{ $t(descriptionLink) }}</a>
-            {{ $t(descriptionEnd) }}
-          </p>
+          <!-- eslint-disable vue/no-v-html -->
+          <p
+            class="apos-import__description"
+            v-html="$t(description)"
+          />
+          <!-- eslint-enable vue/no-v-html -->
           <AposFile
             class="apos-import__file"
             allowed-extensions=".zip"
@@ -70,15 +68,7 @@ export default {
       type: String,
       required: true
     },
-    descriptionStart: {
-      type: String,
-      required: true
-    },
-    descriptionLink: {
-      type: String,
-      required: true
-    },
-    descriptionEnd: {
+    description: {
       type: String,
       required: true
     },
