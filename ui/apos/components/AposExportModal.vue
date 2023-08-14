@@ -275,22 +275,22 @@ export default {
 }
 
 .apos-export__section {
+  @include type-base;
   display: flex;
   flex-direction: column;
   align-items: baseline;
   min-width: 100%;
-  font-size: var(--a-type-large);
 }
 
 .apos-export__settings {
-  font-size: var(--a-type-large);
+  @include type-base;
   font-weight: 600;
   color: var(--a-base-3);
   margin-top: 20px;
 }
 
 .apos-export__settings-row {
-  font-size: var(--a-type-large);
+  font-size: var(--a-type-base);
   display: flex;
   align-items: center;
   justify-content: space-between;
