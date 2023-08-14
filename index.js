@@ -17,6 +17,7 @@ module.exports = {
 
   init(self) {
     self.apos.asset.iconMap['apos-import-export-download-icon'] = 'Download';
+    self.apos.asset.iconMap['apos-import-export-upload-icon'] = 'Upload';
   },
 
   apiRoutes(self) {

@@ -3,6 +3,29 @@ module.exports = {
 
   cascades: [ 'batchOperations' ],
 
+  utilityOperations (self) {
+    if (self.options.import === false) {
+      return {};
+    }
+
+    return {
+      add: {
+        import: {
+          label: 'aposImportExport:import',
+          modalOptions: {
+            modal: 'AposImportModal'
+          },
+          messages: {
+            progress: 'Importing {{ type }}...'
+          },
+          requestOptions: {
+            extension: 'zip'
+          }
+        }
+      }
+    };
+  },
+
   batchOperations(self) {
     if (self.options.export === false) {
       return;
