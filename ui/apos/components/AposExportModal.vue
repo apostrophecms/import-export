@@ -179,9 +179,13 @@ export default {
       this.$refs.exportDocs.$el.querySelector('button').focus();
     },
     async exportDocs() {
-      this.modal.showModal = false;
+      const docsId = this.checked.length
+        ? this.checked
+        : [ this.$attrs.doc?._id ];
 
-      const docsId = this.checked.length ? this.checked : [ this.$attrs.doc?._id ];
+      const relatedTypes = this.relatedDocumentsDisabled
+        ? []
+        : this.checkedRelatedTypes;
 
       // TODO: keep one route declared in import-export module,
       // rather that declaring it in page and piece-type + having a method declated in docs?
@@ -191,11 +195,13 @@ export default {
         busy: true,
         qs: {
           _ids: docsId,
-          relatedTypes: this.checkedRelatedTypes
+          relatedTypes
         }
       });
 
       console.log('result', result);
+
+      this.modal.showModal = false;
       this.$emit('modal-result', result);
     },
     async cancel() {
