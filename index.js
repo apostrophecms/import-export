@@ -16,11 +16,19 @@ module.exports = {
   },
 
   init(self) {
-    self.apos.asset.iconMap['apos-import-export-download-icon'] = 'Download';
-    self.apos.asset.iconMap['apos-import-export-upload-icon'] = 'Upload';
+    if (self.options.export !== false) {
+      self.apos.asset.iconMap['apos-import-export-download-icon'] = 'Download';
+    }
+    if (self.options.import !== false) {
+      self.apos.asset.iconMap['apos-import-export-upload-icon'] = 'Upload';
+    }
   },
 
   apiRoutes(self) {
+    if (self.options.export === false) {
+      return {};
+    }
+
     return {
       get: {
         async related(req) {
@@ -62,6 +70,19 @@ module.exports = {
               });
             }
           }
+        },
+        async export(req) {
+          if (!req.user) {
+            throw self.apos.error('forbidden');
+          }
+
+          const docIds = self.apos.launder.ids(req.query._ids);
+          const relatedTypes = self.apos.launder.strings(req.query.relatedTypes);
+
+          console.log('docIds', docIds);
+          console.log('relatedTypes', relatedTypes);
+
+          return 'temporary result';
         }
       }
     };

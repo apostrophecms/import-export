@@ -17,7 +17,7 @@
           <p
             class="apos-export__description"
           >
-            {{ $t('aposImportExport:exportModalDescription', { count, type: moduleLabel }) }}
+            {{ $t('aposImportExport:exportModalDescription', { count: checked.length, type: moduleLabel }) }}
           </p>
 
           <div class="apos-export__section">
@@ -125,9 +125,9 @@ export default {
       type: String,
       default: ''
     },
-    count: {
-      type: Number,
-      default: 1
+    checked: {
+      type: Array,
+      default: () => []
     }
   },
 
@@ -152,7 +152,7 @@ export default {
   computed: {
     moduleLabel() {
       const moduleOptions = window.apos.modules[this.moduleName];
-      const label = this.count > 1 ? moduleOptions.pluralLabel : moduleOptions.label;
+      const label = this.checked.length > 1 ? moduleOptions.pluralLabel : moduleOptions.label;
       return this.$t(label).toLowerCase();
     },
 
@@ -178,9 +178,24 @@ export default {
     ready() {
       this.$refs.exportDocs.$el.querySelector('button').focus();
     },
-    exportDocs() {
+    async exportDocs() {
       this.modal.showModal = false;
-      const result = true;
+
+      const docsId = this.checked.length ? this.checked : [ this.$attrs.doc?._id ];
+
+      // TODO: keep one route declared in import-export module,
+      // rather that declaring it in page and piece-type + having a method declated in docs?
+      // const { action } = window.apos.modules[this.moduleName];
+      // const result = await window.apos.http.get(`${action}/export`, {
+      const result = await window.apos.http.get('/api/v1/@apostrophecms/import-export/export', {
+        busy: true,
+        qs: {
+          _ids: docsId,
+          relatedTypes: this.checkedRelatedTypes
+        }
+      });
+
+      console.log('result', result);
       this.$emit('modal-result', result);
     },
     async cancel() {
