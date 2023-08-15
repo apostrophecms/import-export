@@ -76,7 +76,6 @@ export default {
       this.selectedFile = null;
     },
     cancel () {
-      this.modal.active = false;
       this.modal.showModal = false;
     },
     async runImport () {
