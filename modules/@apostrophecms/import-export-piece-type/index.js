@@ -1,3 +1,5 @@
+const apiRoutes = require('./lib/apiRoutes');
+
 module.exports = {
   improve: '@apostrophecms/piece-type',
 
@@ -48,5 +50,7 @@ module.exports = {
         }
       }
     };
-  }
+  },
+
+  apiRoutes
 };

@@ -8,6 +8,7 @@ module.exports = {
     directory: 'modules',
     modules: getBundleModuleNames()
   },
+
   options: {
     name: '@apostrophecms/import-export',
     i18n: {
@@ -15,6 +16,7 @@ module.exports = {
       browser: true
     }
   },
+
   init(self) {
     if (self.options.export !== false) {
       self.apos.asset.iconMap['apos-import-export-download-icon'] = 'Download';
@@ -24,6 +26,7 @@ module.exports = {
     }
   },
   methods,
+
   apiRoutes
 };
 

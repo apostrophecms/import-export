@@ -191,11 +191,8 @@ export default {
         ? []
         : this.checkedRelatedTypes;
 
-      // TODO: keep one route declared in import-export module,
-      // rather that declaring it in page and piece-type + having a method declared in docs?
-      const result = await window.apos.http.get('/api/v1/@apostrophecms/import-export/export', {
-      // const { action } = window.apos.modules[this.moduleName];
-      // const result = await window.apos.http.get(`${action}/export`, {
+      const { action } = window.apos.modules[this.moduleName];
+      const result = await window.apos.http.get(`${action}/export`, {
         busy: true,
         qs: {
           _ids: docsId,

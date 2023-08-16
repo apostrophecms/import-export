@@ -1,3 +1,5 @@
+const apiRoutes = require('./lib/apiRoutes');
+
 module.exports = {
   improve: '@apostrophecms/page',
 
@@ -22,5 +24,7 @@ module.exports = {
         }
       }
     };
-  }
+  },
+
+  apiRoutes
 };
