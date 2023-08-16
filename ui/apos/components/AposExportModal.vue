@@ -17,7 +17,7 @@
           <p
             class="apos-export__description"
           >
-            {{ $t('aposImportExport:exportModalDescription', { count: checked.length, type: moduleLabel }) }}
+            {{ $t('aposImportExport:exportModalDescription', { count, type: moduleLabel }) }}
           </p>
 
           <div class="apos-export__section">
@@ -163,6 +163,10 @@ export default {
       set(val) {
         this.$emit('change', val);
       }
+    },
+
+    count() {
+      return this.checked.length || 1;
     }
   },
 
