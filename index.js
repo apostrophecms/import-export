@@ -35,11 +35,9 @@ module.exports = {
 
           const { schema = [] } = self.apos.modules[type];
 
-          // Allow only 1 recursion in order to get the relationships
-          // from widgets, objects and arrays, not further,
-          // or we're soon related to the entire site.
-          // Not setting a limit can result into a "Maximum call stack size exceeded" error.
-          const maxRecursions = 1;
+          // Limit recursions in order to avoid the "Maximum call stack size exceeded" error
+          // if widgets or pieces are related to themselves.
+          const maxRecursions = 10;
           let recursions = 0;
 
           const relatedTypes = schema
