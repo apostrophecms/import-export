@@ -34,6 +34,14 @@ module.exports = {
           }
 
           const { schema = [] } = self.apos.modules[type];
+
+          // Allow only 1 recursion in order to get the relationships
+          // from widgets, objects and arrays, not further,
+          // or we're soon related to the entire site.
+          // Not setting a limit can result into a "Maximum call stack size exceeded" error.
+          const maxRecursions = 1;
+          let recursions = 0;
+
           const relatedTypes = schema
             .flatMap(searchRelationships)
             .filter(Boolean);
@@ -41,14 +49,18 @@ module.exports = {
           return [ ...new Set(relatedTypes) ];
 
           function searchRelationships(obj) {
+            const shouldRecurse = recursions <= maxRecursions;
+
             if (obj.type === 'relationship') {
               return obj.withType;
             } else if (obj.type === 'array' || obj.type === 'object') {
-              return obj.schema.flatMap(searchRelationships);
+              recursions++;
+              return shouldRecurse && obj.schema.flatMap(searchRelationships);
             } else if (obj.type === 'area') {
+              recursions++;
               return Object.keys(obj.options.widgets).flatMap(widget => {
                 const { schema = [] } = self.apos.modules[`${widget}-widget`];
-                return schema.flatMap(searchRelationships);
+                return shouldRecurse && schema.flatMap(searchRelationships);
               });
             }
           }
