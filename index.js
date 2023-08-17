@@ -25,6 +25,7 @@ module.exports = {
       self.apos.asset.iconMap['apos-import-export-upload-icon'] = 'Upload';
     }
   },
+
   methods,
 
   apiRoutes

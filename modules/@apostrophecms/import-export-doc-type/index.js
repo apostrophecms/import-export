@@ -2,6 +2,7 @@ const excludedTypes = [];
 
 module.exports = {
   improve: '@apostrophecms/doc-type',
+
   init(self) {
     const operation = {
       action: 'export',
