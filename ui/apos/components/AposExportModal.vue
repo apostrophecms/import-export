@@ -127,7 +127,11 @@ export default {
     },
     checked: {
       type: Array,
-      default: () => []
+      default: null
+    },
+    doc: {
+      type: Object,
+      default: null
     }
   },
 
@@ -152,7 +156,7 @@ export default {
   computed: {
     moduleLabel() {
       const moduleOptions = apos.modules[this.moduleName];
-      const label = this.checked.length > 1 ? moduleOptions.pluralLabel : moduleOptions.label;
+      const label = this.checked?.length > 1 ? moduleOptions.pluralLabel : moduleOptions.label;
       return this.$t(label).toLowerCase();
     },
 
@@ -166,7 +170,7 @@ export default {
     },
 
     count() {
-      return this.checked.length || 1;
+      return this.checked?.length || 1;
     }
   },
 
@@ -174,7 +178,7 @@ export default {
     this.modal.active = true;
 
     if (this.type === '@apostrophecms/page') {
-      this.type = this.$attrs.doc?.type;
+      this.type = this.doc?.type;
     }
   },
 
@@ -183,9 +187,9 @@ export default {
       this.$refs.exportDocs.$el.querySelector('button').focus();
     },
     async exportDocs() {
-      const docsId = this.checked.length
+      const docsId = this.checked
         ? this.checked
-        : [ this.$attrs.doc?._id ];
+        : [ this.doc?._id ];
 
       const relatedTypes = this.relatedDocumentsDisabled
         ? []
