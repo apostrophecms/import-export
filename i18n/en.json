@@ -1,4 +1,6 @@
 {
+  "document": "document",
+  "documents": "documents",
   "export": "Export",
   "exporting": "Exporting",
   "exportModalDescription": "You've selected {{ count }} {{ type }} for export",

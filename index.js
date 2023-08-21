@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const Zip = require('adm-zip');
 const methods = require('./lib/methods');
 const apiRoutes = require('./lib/apiRoutes');
 
@@ -24,6 +25,25 @@ module.exports = {
     if (self.options.import !== false) {
       self.apos.asset.iconMap['apos-import-export-upload-icon'] = 'Upload';
     }
+
+    self.exportFormats = {
+      // TODO: add gzip to use streams
+      zip: {
+        label: 'Zip',
+        output(filepath, data) {
+          const zip = new Zip();
+
+          for (const filename in data) {
+            zip.addFile(filename, data[filename]);
+          }
+
+          zip.writeZip(filepath);
+
+          return zip.toBuffer();
+        }
+      },
+      ...(self.options.exportFormats || {})
+    };
   },
 
   methods,
