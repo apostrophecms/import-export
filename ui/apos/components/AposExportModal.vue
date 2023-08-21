@@ -151,7 +151,7 @@ export default {
 
   computed: {
     moduleLabel() {
-      const moduleOptions = window.apos.modules[this.moduleName];
+      const moduleOptions = apos.modules[this.moduleName];
       const label = this.checked.length > 1 ? moduleOptions.pluralLabel : moduleOptions.label;
       return this.$t(label).toLowerCase();
     },
@@ -191,8 +191,8 @@ export default {
         ? []
         : this.checkedRelatedTypes;
 
-      const { action } = window.apos.modules[this.moduleName];
-      const result = await window.apos.http.get(`${action}/export`, {
+      const { action } = apos.modules[this.moduleName];
+      const result = await apos.http.get(`${action}/export`, {
         busy: true,
         qs: {
           _ids: docsId,
@@ -213,7 +213,7 @@ export default {
       this.relatedDocumentsDisabled = !this.relatedDocumentsDisabled;
 
       if (!this.relatedDocumentsDisabled && this.relatedTypes === null) {
-        this.relatedTypes = await window.apos.http.get('/api/v1/@apostrophecms/import-export/related', {
+        this.relatedTypes = await apos.http.get('/api/v1/@apostrophecms/import-export/related', {
           busy: true,
           qs: {
             type: this.type
@@ -232,7 +232,7 @@ export default {
       }
     },
     getRelatedTypeLabel(moduleName) {
-      const moduleOptions = window.apos.modules[moduleName];
+      const moduleOptions = apos.modules[moduleName];
       return this.$t(moduleOptions.label);
     }
   }

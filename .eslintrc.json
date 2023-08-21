@@ -1,3 +1,6 @@
 {
-  "extends": [ "apostrophe", "plugin:vue/vue3-recommended" ]
+  "extends": [ "apostrophe", "plugin:vue/vue3-recommended" ],
+  "globals": {
+    "apos": true
+  }
 }
