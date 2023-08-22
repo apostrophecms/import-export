@@ -29,5 +29,8 @@
     "stylelint": "^15.9.0",
     "stylelint-config-apostrophe": "^3.0.0",
     "vue-eslint-parser": "^9.3.1"
+  },
+  "dependencies": {
+    "node-archiver": "^0.3.0"
   }
 }
