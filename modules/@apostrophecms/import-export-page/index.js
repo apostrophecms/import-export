@@ -30,7 +30,7 @@ module.exports = {
     }
 
     return {
-      get: {
+      post: {
         export(req) {
           return self.apos.modules['@apostrophecms/import-export'].export(req, self);
         }

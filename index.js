@@ -30,11 +30,17 @@ module.exports = {
       // TODO: add gzip to use streams
       zip: {
         label: 'Zip',
-        output(filepath, data) {
+        output(filepath, data, reporting) {
           const zip = new Zip();
 
           for (const filename in data) {
-            zip.addFile(filename, data[filename]);
+            try {
+              zip.addFile(filename, data[filename]);
+              reporting.success();
+            } catch (error) {
+              self.apos.util.error('exportRecord error', error);
+              reporting.failure();
+            }
           }
 
           zip.writeZip(filepath);

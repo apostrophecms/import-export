@@ -56,7 +56,8 @@ module.exports = {
     }
 
     return {
-      get: {
+      // TODO: change route back to `get` (reporting in core should handle get routes)
+      post: {
         export(req) {
           return self.apos.modules['@apostrophecms/import-export'].export(req, self);
         }
