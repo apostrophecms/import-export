@@ -128,6 +128,14 @@ export default {
     checked: {
       type: Array,
       default: () => []
+    },
+    action: {
+      type: String,
+      required: true
+    },
+    messages: {
+      type: Object,
+      default: () => ({})
     }
   },
 
@@ -192,18 +200,18 @@ export default {
         : this.checkedRelatedTypes;
 
       const { action } = window.apos.modules[this.moduleName];
-      const result = await window.apos.http.get(`${action}/export`, {
+      const result = await window.apos.http.post(`${action}/${this.action}`, {
         busy: true,
-        qs: {
+        body: {
           _ids: docsId,
-          relatedTypes
+          relatedTypes,
+          messages: this.messages
         }
       });
 
       console.log('result', result);
 
       this.modal.showModal = false;
-      this.$emit('modal-result', result);
     },
     async cancel() {
       this.modal.showModal = false;

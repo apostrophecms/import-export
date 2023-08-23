@@ -56,9 +56,18 @@ module.exports = {
     }
 
     return {
-      // TODO: change route back to `get` (reporting in core should handle get routes)
       post: {
+        // NOTE: this route is used in batch operations, and its method should be POST
+        // in order to make the job work with the progress notification.
+        // The other `exportOne` routes that are used by context operations on each doc
+        // are also POST for consistency.
         export(req) {
+          return self.apos.modules['@apostrophecms/job'].run(
+            req,
+            (req, reporting) => self.apos.modules['@apostrophecms/import-export'].export(req, self, reporting)
+          );
+        },
+        exportOne(req) {
           return self.apos.modules['@apostrophecms/import-export'].export(req, self);
         }
       }

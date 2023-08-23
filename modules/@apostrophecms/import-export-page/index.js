@@ -31,7 +31,7 @@ module.exports = {
 
     return {
       post: {
-        export(req) {
+        exportOne(req) {
           return self.apos.modules['@apostrophecms/import-export'].export(req, self);
         }
       }
