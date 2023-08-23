@@ -209,8 +209,6 @@ export default {
         }
       });
 
-      console.log('result', result);
-
       this.modal.showModal = false;
       this.$emit('modal-result', result);
     },
