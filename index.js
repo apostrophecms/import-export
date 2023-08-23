@@ -36,11 +36,8 @@ module.exports = {
           for (const filename in data) {
             try {
               zip.addFile(filename, data[filename]);
-              // TODO: use another reporting specific to zipping files?
-              // reporting.success();
             } catch (error) {
               self.apos.util.error('exportRecord error', error);
-              // reporting.failure();
             }
           }
 

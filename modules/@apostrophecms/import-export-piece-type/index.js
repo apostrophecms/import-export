@@ -36,7 +36,8 @@ module.exports = {
         export: {
           label: 'aposImportExport:export',
           messages: {
-            progress: 'aposImportExport:exporting'
+            progress: 'aposImportExport:exporting',
+            completed: 'aposImportExport:exported'
           },
           modal: 'AposExportModal'
         }
@@ -68,9 +69,17 @@ module.exports = {
             ? req.t(self.options.label)
             : req.t(self.options.pluralLabel);
 
+          const options = {
+            notificationOptions: {
+              dismiss: true,
+              resultsEvent: 'export-download'
+            }
+          };
+
           return self.apos.modules['@apostrophecms/job'].run(
             req,
-            (req, reporting) => self.apos.modules['@apostrophecms/import-export'].export(req, self, reporting)
+            (req, reporting) => self.apos.modules['@apostrophecms/import-export'].export(req, self, reporting),
+            options
           );
         },
         exportOne(req) {
