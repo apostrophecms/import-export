@@ -31,7 +31,6 @@
     "vue-eslint-parser": "^9.3.1"
   },
   "dependencies": {
-    "adm-zip": "^0.5.10",
     "archiver": "^6.0.0"
   }
 }
