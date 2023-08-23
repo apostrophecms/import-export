@@ -137,6 +137,7 @@ export default {
     return {
       modal: {
         active: false,
+        type: 'overlay',
         showModal: false,
         disableHeader: true
       },
@@ -167,11 +168,13 @@ export default {
   },
 
   async mounted() {
+    console.log('=================> PASSING HERE !! <=================')
     this.modal.active = true;
 
     if (this.type === '@apostrophecms/page') {
       this.type = this.$attrs.doc?.type;
     }
+    console.log('this.modal in Export ====> ', this.modal);
   },
 
   methods: {
