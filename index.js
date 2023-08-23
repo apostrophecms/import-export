@@ -32,6 +32,8 @@ module.exports = {
       gzip,
       ...(self.options.exportFormats || {})
     };
+
+    self.enableBrowserData();
   },
 
   methods,

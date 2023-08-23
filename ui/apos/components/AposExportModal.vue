@@ -28,13 +28,10 @@
 
             <div class="apos-export__settings-row">
               <div>{{ $t('aposImportExport:exportModalDocumentFormat') }}</div>
-              <AposContextMenu
-                disabled
-                :button="{
-                  label: 'ZIP',
-                  icon: 'chevron-down-icon',
-                  modifiers: ['icon-right', 'disabled']
-                }"
+              <AposSelect
+                :choices="extensions"
+                :selected="extension"
+                @change="onExtensionChange"
               />
             </div>
 
@@ -153,7 +150,8 @@ export default {
       relatedChildrenDisabled: true,
       relatedTypes: null,
       checkedRelatedTypes: [],
-      type: this.moduleName
+      type: this.moduleName,
+      extension: 'zip'
     };
   },
 
@@ -175,6 +173,10 @@ export default {
 
     count() {
       return this.checked.length || 1;
+    },
+
+    extensions() {
+      return window.apos.modules['@apostrophecms/import-export'].extensions;
     }
   },
 
@@ -205,7 +207,8 @@ export default {
         body: {
           _ids: docsId,
           relatedTypes,
-          messages: this.messages
+          messages: this.messages,
+          extension: this.extension
         }
       });
 
@@ -241,6 +244,9 @@ export default {
     getRelatedTypeLabel(moduleName) {
       const moduleOptions = window.apos.modules[moduleName];
       return this.$t(moduleOptions.label);
+    },
+    onExtensionChange(value) {
+      this.extension = this.extensions.find(extension => extension.value === value).value;
     }
   }
 };
