@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const Zip = require('adm-zip');
 const methods = require('./lib/methods');
 const apiRoutes = require('./lib/apiRoutes');
+const zip = require('./lib/zip');
 
 module.exports = {
   bundle: {
@@ -28,24 +28,7 @@ module.exports = {
 
     self.exportFormats = {
       // TODO: add gzip to use streams
-      zip: {
-        label: 'Zip',
-        output(filepath, data) {
-          const zip = new Zip();
-
-          for (const filename in data) {
-            try {
-              zip.addFile(filename, data[filename]);
-            } catch (error) {
-              self.apos.util.error('exportRecord error', error);
-            }
-          }
-
-          zip.writeZip(filepath);
-
-          return zip.toBuffer();
-        }
-      },
+      zip,
       ...(self.options.exportFormats || {})
     };
   },
