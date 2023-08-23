@@ -62,6 +62,12 @@ module.exports = {
         // The other `exportOne` routes that are used by context operations on each doc
         // are also POST for consistency.
         export(req) {
+          // Add the piece type label to req.body for notifications.
+          // Should be done before calling the job's `run` method.
+          req.body.type = req.body._ids.length === 1
+            ? req.t(self.options.label)
+            : req.t(self.options.pluralLabel);
+
           return self.apos.modules['@apostrophecms/job'].run(
             req,
             (req, reporting) => self.apos.modules['@apostrophecms/import-export'].export(req, self, reporting)

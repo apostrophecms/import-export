@@ -1,8 +1,6 @@
 {
-  "document": "document",
-  "documents": "documents",
   "export": "Export",
-  "exporting": "Exporting",
+  "exporting": "Exporting {{ type }}...",
   "exportModalDescription": "You've selected {{ count }} {{ type }} for export",
   "exportModalRelatedDocumentDescription": "Include the following document types where applicable",
   "exportModalSettingsLabel": "Export Settings",
