@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const methods = require('./lib/methods');
 const apiRoutes = require('./lib/apiRoutes');
-const zip = require('./lib/zip');
+const zip = require('./lib/formats/zip');
+const gzip = require('./lib/formats/gzip');
 
 module.exports = {
   bundle: {
@@ -27,8 +28,8 @@ module.exports = {
     }
 
     self.exportFormats = {
-      // TODO: add gzip to use streams
       zip,
+      gzip,
       ...(self.options.exportFormats || {})
     };
   },
