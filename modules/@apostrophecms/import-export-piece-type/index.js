@@ -37,7 +37,9 @@ module.exports = {
           label: 'aposImportExport:export',
           messages: {
             progress: 'aposImportExport:exporting',
-            completed: 'aposImportExport:exported'
+            completed: 'aposImportExport:exported',
+            icon: 'database-export-icon',
+            resultsEventName: 'export-download'
           },
           modal: 'AposExportModal'
         }
@@ -69,20 +71,15 @@ module.exports = {
             ? req.t(self.options.label)
             : req.t(self.options.pluralLabel);
 
-          const options = {
-            notificationOptions: {
-              dismiss: true,
-              resultsEvent: 'export-download'
-            }
-          };
-
           return self.apos.modules['@apostrophecms/job'].run(
             req,
-            (req, reporting) => self.apos.modules['@apostrophecms/import-export'].export(req, self, reporting),
-            options
+            (req, reporting) => self.apos.modules['@apostrophecms/import-export'].export(req, self, reporting)
           );
         },
         exportOne(req) {
+          // Add the piece type label to req.body for notifications.
+          req.body.type = req.t(self.options.label);
+
           return self.apos.modules['@apostrophecms/import-export'].export(req, self);
         }
       }

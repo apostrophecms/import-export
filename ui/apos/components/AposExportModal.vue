@@ -211,10 +211,6 @@ export default {
 
       console.log('result', result);
 
-      if (result.downloadUrl) {
-        window.open(result.downloadUrl, '_blank');
-      }
-
       this.modal.showModal = false;
       this.$emit('modal-result', result);
     },
