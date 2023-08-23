@@ -71,6 +71,8 @@ module.exports = {
             ? req.t(self.options.label)
             : req.t(self.options.pluralLabel);
 
+          // FIXME: the progress notification is not always dismissed.
+          // Probably a fix that needs to be done in job core module.
           return self.apos.modules['@apostrophecms/job'].run(
             req,
             (req, reporting) => self.apos.modules['@apostrophecms/import-export'].export(req, self, reporting)
