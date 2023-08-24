@@ -56,40 +56,42 @@
             </div>
           </div>
 
-          <div
-            v-show="!relatedDocumentsDisabled"
-            class="apos-export__section"
-          >
-            <div class="apos-export__settings">
-              {{ $t('aposImportExport:exportModalIncludeRelatedSettings') }}
+          <transition name="fade">
+            <div
+              v-show="!relatedDocumentsDisabled"
+              class="apos-export__section"
+            >
+              <div class="apos-export__settings">
+                {{ $t('aposImportExport:exportModalIncludeRelatedSettings') }}
+              </div>
+              <div class="apos-export__separator" />
+              <div class="apos-export__settings-row apos-export__settings-row--column">
+                <div class="apos-export__related-description">
+                  {{ $t('aposImportExport:exportModalRelatedDocumentDescription') }}
+                </div>
+                <div v-if="relatedTypes && relatedTypes.length">
+                  <AposCheckbox
+                    v-for="relatedType in relatedTypes"
+                    :key="relatedType"
+                    v-model="checkedProxy"
+                    tabindex="-1"
+                    :choice="{
+                      value: relatedType,
+                      label: getRelatedTypeLabel(relatedType)
+                    }"
+                    :field="{
+                      label: getRelatedTypeLabel(relatedType),
+                      name: relatedType
+                    }"
+                    @updated="checkRelatedTypes"
+                  />
+                </div>
+                <div v-else>
+                  {{ $t('aposImportExport:exportModalNoRelatedTypes') }}
+                </div>
+              </div>
             </div>
-            <div class="apos-export__separator" />
-            <div class="apos-export__settings-row apos-export__settings-row--column">
-              <div class="apos-export__related-description">
-                {{ $t('aposImportExport:exportModalRelatedDocumentDescription') }}
-              </div>
-              <div v-if="relatedTypes && relatedTypes.length">
-                <AposCheckbox
-                  v-for="relatedType in relatedTypes"
-                  :key="relatedType"
-                  v-model="checkedProxy"
-                  tabindex="-1"
-                  :choice="{
-                    value: relatedType,
-                    label: getRelatedTypeLabel(relatedType)
-                  }"
-                  :field="{
-                    label: getRelatedTypeLabel(relatedType),
-                    name: relatedType
-                  }"
-                  @updated="checkRelatedTypes"
-                />
-              </div>
-              <div v-else>
-                {{ $t('aposImportExport:exportModalNoRelatedTypes') }}
-              </div>
-            </div>
-          </div>
+          </transition>
 
           <div class="apos-export__separator apos-export__separator--full-width" />
 
@@ -244,8 +246,8 @@ export default {
 }
 
 ::v-deep .apos-modal__body {
-  padding: 20px 30px;
-  width: 355px;
+  padding: 30px 20px;
+  width: 375px;
 }
 
 ::v-deep .apos-modal__body-main {
@@ -270,6 +272,7 @@ export default {
   font-size: var(--a-type-large);
   text-align: left;
   line-height: var(--a-line-tallest);
+  margin-top: 5px;
 }
 
 .apos-export__section {
@@ -309,7 +312,7 @@ export default {
   background-color: var(--a-base-9);
   position: relative;
   height: 1px;
-  width: 100%;
+  width: calc(100% - 10px);
   margin: 10px 0;
 }
 
@@ -337,5 +340,13 @@ export default {
 
 .apos-export__btn ::v-deep .apos-button__label {
   text-transform: capitalize;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .5s;
+}
+
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
 }
 </style>
