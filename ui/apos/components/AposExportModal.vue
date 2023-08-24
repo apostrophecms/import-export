@@ -57,38 +57,43 @@
             </div>
           </div>
 
-          <transition name="fade">
+          <transition
+            name="fade"
+            :duration="500"
+          >
             <div
               v-show="!relatedDocumentsDisabled"
               class="apos-export__section"
             >
-              <div class="apos-export__settings">
-                {{ $t('aposImportExport:exportModalIncludeRelatedSettings') }}
-              </div>
-              <div class="apos-export__separator" />
-              <div class="apos-export__settings-row apos-export__settings-row--column">
-                <div class="apos-export__related-description">
-                  {{ $t('aposImportExport:exportModalRelatedDocumentDescription') }}
+              <div class="apos-export__section-container">
+                <div class="apos-export__settings">
+                  {{ $t('aposImportExport:exportModalIncludeRelatedSettings') }}
                 </div>
-                <div v-if="relatedTypes && relatedTypes.length">
-                  <AposCheckbox
-                    v-for="relatedType in relatedTypes"
-                    :key="relatedType"
-                    v-model="checkedProxy"
-                    tabindex="-1"
-                    :choice="{
-                      value: relatedType,
-                      label: getRelatedTypeLabel(relatedType)
-                    }"
-                    :field="{
-                      label: getRelatedTypeLabel(relatedType),
-                      name: relatedType
-                    }"
-                    @updated="checkRelatedTypes"
-                  />
-                </div>
-                <div v-else>
-                  {{ $t('aposImportExport:exportModalNoRelatedTypes') }}
+                <div class="apos-export__separator" />
+                <div class="apos-export__settings-row apos-export__settings-row--column">
+                  <div class="apos-export__related-description">
+                    {{ $t('aposImportExport:exportModalRelatedDocumentDescription') }}
+                  </div>
+                  <div v-if="relatedTypes && relatedTypes.length">
+                    <AposCheckbox
+                      v-for="relatedType in relatedTypes"
+                      :key="relatedType"
+                      v-model="checkedProxy"
+                      tabindex="-1"
+                      :choice="{
+                        value: relatedType,
+                        label: getRelatedTypeLabel(relatedType)
+                      }"
+                      :field="{
+                        label: getRelatedTypeLabel(relatedType),
+                        name: relatedType
+                      }"
+                      @updated="checkRelatedTypes"
+                    />
+                  </div>
+                  <div v-else>
+                    {{ $t('aposImportExport:exportModalNoRelatedTypes') }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -233,6 +238,8 @@ export default {
           }
         });
         this.checkedRelatedTypes = this.relatedTypes;
+        const height = this.checkedRelatedTypes.length * 24 + 95;
+        document.documentElement.style.setProperty('--container-height', `${height}px`);
       }
     },
     toggleRelatedChildren() {
@@ -257,6 +264,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+:root {
+  --container-height: 120px;
+}
+
 .apos-export {
   z-index: $z-index-modal;
   position: fixed;
@@ -299,6 +310,10 @@ export default {
   display: flex;
 }
 
+::v-deep .apos-input--select {
+  text-transform: capitalize;
+}
+
 .apos-export__heading {
   @include type-title;
   line-height: var(--a-line-tall);
@@ -320,6 +335,10 @@ export default {
   flex-direction: column;
   align-items: baseline;
   min-width: 100%;
+}
+
+.apos-export__section-container {
+  overflow: hidden;
 }
 
 .apos-export__settings {
@@ -381,11 +400,24 @@ export default {
   text-transform: capitalize;
 }
 
-.fade-enter-active, .fade-leave-active {
-  transition: opacity .5s;
+.fade-enter-active {
+  .apos-export__section-container {
+    animation: expand .5s;
+  }
+}
+.fade-leave-active {
+  .apos-export__section-container {
+    animation: expand .5s reverse;
+  }
 }
 
-.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
-  opacity: 0;
+@keyframes expand {
+  0% {
+    height: 0;
+  }
+
+  100% {
+    height: var(--container-height);
+  }
 }
 </style>
