@@ -29,8 +29,9 @@
             <div class="apos-export__settings-row">
               <div>{{ $t('aposImportExport:exportModalDocumentFormat') }}</div>
               <AposSelect
-                :choices="[{ value: 'zip', label: 'ZIP' }]"
-                disabled
+                :choices="extensions"
+                :selected="extension"
+                @change="onExtensionChange"
               />
             </div>
 
@@ -123,9 +124,17 @@ export default {
       type: String,
       default: ''
     },
-    count: {
-      type: Number,
-      default: 1
+    checked: {
+      type: Array,
+      default: () => []
+    },
+    action: {
+      type: String,
+      required: true
+    },
+    messages: {
+      type: Object,
+      default: () => ({})
     }
   },
 
@@ -144,14 +153,15 @@ export default {
       relatedChildrenDisabled: true,
       relatedTypes: null,
       checkedRelatedTypes: [],
-      type: this.moduleName
+      type: this.moduleName,
+      extension: 'zip'
     };
   },
 
   computed: {
     moduleLabel() {
       const moduleOptions = window.apos.modules[this.moduleName];
-      const label = this.count > 1 ? moduleOptions.pluralLabel : moduleOptions.label;
+      const label = this.checked.length > 1 ? moduleOptions.pluralLabel : moduleOptions.label;
       return this.$t(label).toLowerCase();
     },
 
@@ -162,6 +172,14 @@ export default {
       set(val) {
         this.$emit('change', val);
       }
+    },
+
+    count() {
+      return this.checked.length || 1;
+    },
+
+    extensions() {
+      return window.apos.modules['@apostrophecms/import-export'].extensions;
     }
   },
 
@@ -177,9 +195,27 @@ export default {
     ready() {
       this.$refs.exportDocs.$el.querySelector('button').focus();
     },
-    exportDocs() {
+    async exportDocs() {
+      const docsId = this.checked.length
+        ? this.checked
+        : [ this.$attrs.doc?._id ];
+
+      const relatedTypes = this.relatedDocumentsDisabled
+        ? []
+        : this.checkedRelatedTypes;
+
+      const { action } = window.apos.modules[this.moduleName];
+      const result = await window.apos.http.post(`${action}/${this.action}`, {
+        busy: true,
+        body: {
+          _ids: docsId,
+          relatedTypes,
+          messages: this.messages,
+          extension: this.extension
+        }
+      });
+
       this.modal.showModal = false;
-      const result = true;
       this.$emit('modal-result', result);
     },
     async cancel() {
@@ -196,7 +232,7 @@ export default {
             type: this.type
           }
         });
-        this.checkedRelatedTypes = this.relatedTypes
+        this.checkedRelatedTypes = this.relatedTypes;
       }
     },
     toggleRelatedChildren() {
@@ -212,6 +248,9 @@ export default {
     getRelatedTypeLabel(moduleName) {
       const moduleOptions = window.apos.modules[moduleName];
       return this.$t(moduleOptions.label);
+    },
+    onExtensionChange(value) {
+      this.extension = this.extensions.find(extension => extension.value === value).value;
     }
   }
 };

@@ -1,5 +1,9 @@
 const fs = require('fs');
 const path = require('path');
+const methods = require('./lib/methods');
+const apiRoutes = require('./lib/apiRoutes');
+const zip = require('./lib/formats/zip');
+const gzip = require('./lib/formats/gzip');
 
 module.exports = {
   bundle: {
@@ -16,56 +20,25 @@ module.exports = {
   },
 
   init(self) {
-    self.apos.asset.iconMap['apos-import-export-download-icon'] = 'Download';
-    self.apos.asset.iconMap['apos-import-export-upload-icon'] = 'Upload';
+    if (self.options.export !== false) {
+      self.apos.asset.iconMap['apos-import-export-download-icon'] = 'Download';
+    }
+    if (self.options.import !== false) {
+      self.apos.asset.iconMap['apos-import-export-upload-icon'] = 'Upload';
+    }
+
+    self.exportFormats = {
+      zip,
+      gzip,
+      ...(self.options.exportFormats || {})
+    };
+
+    self.enableBrowserData();
   },
 
-  apiRoutes(self) {
-    return {
-      get: {
-        async related(req) {
-          if (!req.user) {
-            throw self.apos.error('forbidden');
-          }
+  methods,
 
-          const type = self.apos.launder.string(req.query.type);
-          if (!type) {
-            throw self.apos.error('invalid');
-          }
-
-          const { schema = [] } = self.apos.modules[type];
-
-          // Limit recursions in order to avoid the "Maximum call stack size exceeded" error
-          // if widgets or pieces are related to themselves.
-          const maxRecursions = 10;
-          let recursions = 0;
-
-          const relatedTypes = schema
-            .flatMap(searchRelationships)
-            .filter(Boolean);
-
-          return [ ...new Set(relatedTypes) ];
-
-          function searchRelationships(obj) {
-            const shouldRecurse = recursions <= maxRecursions;
-
-            if (obj.type === 'relationship') {
-              return obj.withType;
-            } else if (obj.type === 'array' || obj.type === 'object') {
-              recursions++;
-              return shouldRecurse && obj.schema.flatMap(searchRelationships);
-            } else if (obj.type === 'area') {
-              recursions++;
-              return Object.keys(obj.options.widgets).flatMap(widget => {
-                const { schema = [] } = self.apos.modules[`${widget}-widget`];
-                return shouldRecurse && schema.flatMap(searchRelationships);
-              });
-            }
-          }
-        }
-      }
-    };
-  }
+  apiRoutes
 };
 
 function getBundleModuleNames() {

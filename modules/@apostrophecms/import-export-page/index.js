@@ -22,5 +22,22 @@ module.exports = {
         }
       }
     };
+  },
+
+  apiRoutes(self) {
+    if (self.options.export === false) {
+      return {};
+    }
+
+    return {
+      post: {
+        exportOne(req) {
+          // Add the page label to req.body for notifications.
+          req.body.type = req.t('apostrophe:page');
+
+          return self.apos.modules['@apostrophecms/import-export'].export(req, self);
+        }
+      }
+    };
   }
 };

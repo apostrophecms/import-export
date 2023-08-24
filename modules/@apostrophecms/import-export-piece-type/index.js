@@ -36,7 +36,10 @@ module.exports = {
         export: {
           label: 'aposImportExport:export',
           messages: {
-            progress: 'aposImportExport:exporting'
+            progress: 'aposImportExport:exporting',
+            completed: 'aposImportExport:exported',
+            icon: 'database-export-icon',
+            resultsEventName: 'export-download'
           },
           modal: 'AposExportModal'
         }
@@ -45,6 +48,41 @@ module.exports = {
         more: {
           icon: 'dots-vertical-icon',
           operations: [ 'export' ]
+        }
+      }
+    };
+  },
+
+  apiRoutes(self) {
+    if (self.options.export === false) {
+      return {};
+    }
+
+    return {
+      post: {
+        // NOTE: this route is used in batch operations, and its method should be POST
+        // in order to make the job work with the progress notification.
+        // The other `exportOne` routes that are used by context operations on each doc
+        // are also POST for consistency.
+        export(req) {
+          // Add the piece type label to req.body for notifications.
+          // Should be done before calling the job's `run` method.
+          req.body.type = req.body._ids.length === 1
+            ? req.t(self.options.label)
+            : req.t(self.options.pluralLabel);
+
+          // FIXME: the progress notification is not always dismissed.
+          // Probably a fix that needs to be done in job core module.
+          return self.apos.modules['@apostrophecms/job'].run(
+            req,
+            (req, reporting) => self.apos.modules['@apostrophecms/import-export'].export(req, self, reporting)
+          );
+        },
+        exportOne(req) {
+          // Add the piece type label to req.body for notifications.
+          req.body.type = req.t(self.options.label);
+
+          return self.apos.modules['@apostrophecms/import-export'].export(req, self);
         }
       }
     };
