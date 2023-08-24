@@ -12,7 +12,7 @@
       <AposModalBody>
         <template #bodyMain>
           <h2 class="apos-export__heading">
-            {{ $t('aposImportExport:export') }} {{ moduleLabel }}
+            {{ $t('aposImportExport:export', { type: moduleLabel }) }}
           </h2>
           <p
             class="apos-export__description"
@@ -28,13 +28,9 @@
 
             <div class="apos-export__settings-row">
               <div>{{ $t('aposImportExport:exportModalDocumentFormat') }}</div>
-              <AposContextMenu
+              <AposSelect
+                :choices="[{ value: 'zip', label: 'ZIP' }]"
                 disabled
-                :button="{
-                  label: 'ZIP',
-                  icon: 'chevron-down-icon',
-                  modifiers: ['icon-right', 'disabled']
-                }"
               />
             </div>
 
@@ -107,7 +103,7 @@
               ref="exportDocs"
               icon="apos-import-export-download-icon"
               class="apos-export__btn"
-              label="aposImportExport:export"
+              :label="$t('aposImportExport:export', { type: moduleLabel })"
               type="primary"
               @click="exportDocs"
             />
@@ -168,13 +164,11 @@ export default {
   },
 
   async mounted() {
-    console.log('=================> PASSING HERE !! <=================')
     this.modal.active = true;
 
     if (this.type === '@apostrophecms/page') {
       this.type = this.$attrs.doc?.type;
     }
-    console.log('this.modal in Export ====> ', this.modal);
   },
 
   methods: {
@@ -200,6 +194,7 @@ export default {
             type: this.type
           }
         });
+        this.checkedRelatedTypes = this.relatedTypes
       }
     },
     toggleRelatedChildren() {
@@ -250,7 +245,7 @@ export default {
 
 ::v-deep .apos-modal__body {
   padding: 20px 30px;
-  width: 335px;
+  width: 355px;
 }
 
 ::v-deep .apos-modal__body-main {
@@ -311,7 +306,7 @@ export default {
 }
 
 .apos-export__separator {
-  background-color: var(--a-base-8);
+  background-color: var(--a-base-9);
   position: relative;
   height: 1px;
   width: 100%;
@@ -320,7 +315,7 @@ export default {
 
 .apos-export__separator--full-width::before {
   content: "";
-  background-color: var(--a-base-8);
+  background-color: var(--a-base-9);
   position: absolute;
   height: 100%;
   width: calc(100% + 60px);
@@ -338,5 +333,9 @@ export default {
   margin-top: 10px;
   width: 100%;
   gap: 20px;
+}
+
+.apos-export__btn ::v-deep .apos-button__label {
+  text-transform: capitalize;
 }
 </style>

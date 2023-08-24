@@ -1,7 +1,7 @@
 {
-  "export": "Export",
+  "export": "Download {{ type }}",
   "exporting": "Exporting",
-  "exportModalDescription": "You've selected {{ count }} {{ type }} for export",
+  "exportModalDescription": "You've selected {{ count }} {{ type }} for download",
   "exportModalRelatedDocumentDescription": "Include the following document types where applicable",
   "exportModalSettingsLabel": "Export Settings",
   "exportModalDocumentFormat": "Document Format",
