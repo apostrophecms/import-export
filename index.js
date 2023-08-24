@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const methods = require('./lib/methods');
 const apiRoutes = require('./lib/apiRoutes');
+const zip = require('./lib/formats/zip');
+const gzip = require('./lib/formats/gzip');
 
 module.exports = {
   bundle: {
@@ -24,6 +26,14 @@ module.exports = {
     if (self.options.import !== false) {
       self.apos.asset.iconMap['apos-import-export-upload-icon'] = 'Upload';
     }
+
+    self.exportFormats = {
+      zip,
+      gzip,
+      ...(self.options.exportFormats || {})
+    };
+
+    self.enableBrowserData();
   },
 
   methods,

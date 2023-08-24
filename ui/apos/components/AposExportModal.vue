@@ -28,13 +28,10 @@
 
             <div class="apos-export__settings-row">
               <div>{{ $t('aposImportExport:exportModalDocumentFormat') }}</div>
-              <AposContextMenu
-                disabled
-                :button="{
-                  label: 'ZIP',
-                  icon: 'chevron-down-icon',
-                  modifiers: ['icon-right', 'disabled']
-                }"
+              <AposSelect
+                :choices="extensions"
+                :selected="extension"
+                @change="onExtensionChange"
               />
             </div>
 
@@ -132,6 +129,14 @@ export default {
     doc: {
       type: Object,
       default: null
+    },
+    action: {
+      type: String,
+      required: true
+    },
+    messages: {
+      type: Object,
+      default: () => ({})
     }
   },
 
@@ -149,7 +154,8 @@ export default {
       relatedChildrenDisabled: true,
       relatedTypes: null,
       checkedRelatedTypes: [],
-      type: this.moduleName
+      type: this.moduleName,
+      extension: 'zip'
     };
   },
 
@@ -157,6 +163,7 @@ export default {
     moduleLabel() {
       const moduleOptions = apos.modules[this.moduleName];
       const label = this.checked?.length > 1 ? moduleOptions.pluralLabel : moduleOptions.label;
+
       return this.$t(label).toLowerCase();
     },
 
@@ -171,6 +178,10 @@ export default {
 
     count() {
       return this.checked?.length || 1;
+    },
+
+    extensions() {
+      return window.apos.modules['@apostrophecms/import-export'].extensions;
     }
   },
 
@@ -195,16 +206,16 @@ export default {
         ? []
         : this.checkedRelatedTypes;
 
-      const { action } = apos.modules[this.moduleName];
-      const result = await apos.http.get(`${action}/export`, {
+      const { action } = window.apos.modules[this.moduleName];
+      const result = await window.apos.http.post(`${action}/${this.action}`, {
         busy: true,
-        qs: {
+        body: {
           _ids: docsId,
-          relatedTypes
+          relatedTypes,
+          messages: this.messages,
+          extension: this.extension
         }
       });
-
-      console.log('result', result);
 
       this.modal.showModal = false;
       this.$emit('modal-result', result);
@@ -238,6 +249,9 @@ export default {
     getRelatedTypeLabel(moduleName) {
       const moduleOptions = apos.modules[moduleName];
       return this.$t(moduleOptions.label);
+    },
+    onExtensionChange(value) {
+      this.extension = this.extensions.find(extension => extension.value === value).value;
     }
   }
 };
