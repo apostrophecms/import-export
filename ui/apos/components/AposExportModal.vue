@@ -59,7 +59,7 @@
 
           <transition
             name="fade"
-            :duration="500"
+            :duration="400"
           >
             <div
               v-show="!relatedDocumentsDisabled"
