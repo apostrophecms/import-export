@@ -12,7 +12,7 @@
       <AposModalBody>
         <template #bodyMain>
           <h2 class="apos-import__heading">
-            {{ $t('aposImportExport:importDocuments') }}
+            {{ $t('aposImportExport:import', { type: $t(labels.plural) }) }}
           </h2>
           <!-- eslint-disable vue/no-v-html -->
           <p
@@ -26,6 +26,9 @@
             @upload-file="uploadImportFile"
             @update="updateImportFile"
           />
+
+          <div class="apos-import__separator" />
+
           <div class="apos-import__btns">
             <AposButton
               ref="cancelButton"
@@ -36,7 +39,7 @@
             <AposButton
               class="apos-import__btn"
               icon="apos-import-export-upload-icon"
-              label="aposImportExport:import"
+              :label="$t('aposImportExport:import', { type: $t(labels.plural) })"
               type="primary"
               :disabled="!selectedFile"
               @click="runImport"
@@ -50,7 +53,18 @@
 
 <script>
 export default {
-  emits: [ 'safe-close' ],
+  emits: ['safe-close'],
+
+  props: {
+    labels: {
+      type: Object,
+      default: () => ({
+        singular: '',
+        plural: ''
+      })
+    }
+  },
+
   data () {
     return {
       modal: {
@@ -59,12 +73,14 @@ export default {
         showModal: false,
         disableHeader: true
       },
-      selectedFile: null
+      selectedFile: null,
     };
   },
+
   mounted() {
     this.modal.active = true;
   },
+
   methods: {
     ready() {
       this.$refs.cancelButton.$el.querySelector('button').focus();
@@ -115,6 +131,24 @@ export default {
     min-width: 370px;
   }
 
+  &__separator {
+    background-color: var(--a-base-9);
+    position: relative;
+    height: 1px;
+    width: calc(100% - 10px);
+    margin: 10px 0;
+
+    &::before {
+      content: "";
+      background-color: var(--a-base-9);
+      position: absolute;
+      height: 100%;
+      width: calc(100% + 60px);
+      left: -30px;
+      right: 0;
+    }
+  }
+
   &__btns {
     display: flex;
     justify-content: space-between;
@@ -144,6 +178,10 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: baseline;
+  }
+
+  .apos-modal__body {
+    padding: 30px 20px;
   }
 }
 

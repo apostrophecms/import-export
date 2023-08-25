@@ -10,7 +10,6 @@
   "exportModalIncludeChildren": "Include children of this page",
   "exportModalIncludeRelatedSettings": "Related Documents Settings",
   "exportModalNoRelatedTypes": "No Related Types",
-  "import": "Import",
-  "importDocuments": "Import Documents",
-  "importModalDescription": "Importing content requires a zip file. See our <a href=\"https://v3.docs.apostrophecms.org/\" target=\"_blank\">guide to importing content</a> in Apostrophe."
+  "import": "Upload {{ type }}",
+  "importModalDescription": "Uploading content requires a zip file. See our <a href=\"https://v3.docs.apostrophecms.org/\" target=\"_blank\">guide to importing content</a> in Apostrophe."
 }
