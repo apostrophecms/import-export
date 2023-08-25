@@ -53,7 +53,6 @@
 
 <script>
 export default {
-  emits: ['safe-close'],
 
   props: {
     labels: {
@@ -64,6 +63,7 @@ export default {
       })
     }
   },
+  emits: [ 'safe-close' ],
 
   data () {
     return {
@@ -73,7 +73,7 @@ export default {
         showModal: false,
         disableHeader: true
       },
-      selectedFile: null,
+      selectedFile: null
     };
   },
 
