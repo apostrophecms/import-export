@@ -238,7 +238,7 @@ export default {
           }
         });
         this.checkedRelatedTypes = this.relatedTypes;
-        const height = this.checkedRelatedTypes.length * 24 + 95;
+        const height = this.checkedRelatedTypes.length ? this.checkedRelatedTypes.length * 24 + 95 : 120;
         document.documentElement.style.setProperty('--container-height', `${height}px`);
       }
     },
