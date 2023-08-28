@@ -123,6 +123,10 @@
 </template>
 
 <script>
+const CONTAINER_ITEM_HEIGTH = 24;
+const CONTAINER_DESCRIPTION_HEIGHT = 95;
+const CONTAINER_MINIMUM_HEIGHT = 120;
+
 export default {
   props: {
     moduleName: {
@@ -238,8 +242,9 @@ export default {
           }
         });
         this.checkedRelatedTypes = this.relatedTypes;
-        const height = this.checkedRelatedTypes.length ? this.checkedRelatedTypes.length * 24 + 95 : 120;
-        document.documentElement.style.setProperty('--container-height', `${height}px`);
+        const height = this.checkedRelatedTypes.length ? this.checkedRelatedTypes.length * CONTAINER_ITEM_HEIGTH + CONTAINER_DESCRIPTION_HEIGTH : CONTAINER_MINIMUM_HEIGHT;
+        const container = document.querySelector('.apos-export__section-container')
+        container.style.setProperty('--container-height', `${height}px`);
       }
     },
     toggleRelatedChildren() {
@@ -264,10 +269,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-:root {
-  --container-height: 120px;
-}
-
 .apos-export {
   z-index: $z-index-modal;
   position: fixed;
