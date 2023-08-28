@@ -123,7 +123,7 @@
 </template>
 
 <script>
-const CONTAINER_ITEM_HEIGTH = 24;
+const CONTAINER_ITEM_HEIGHT = 24;
 const CONTAINER_DESCRIPTION_HEIGHT = 95;
 const CONTAINER_MINIMUM_HEIGHT = 120;
 
@@ -242,8 +242,8 @@ export default {
           }
         });
         this.checkedRelatedTypes = this.relatedTypes;
-        const height = this.checkedRelatedTypes.length ? this.checkedRelatedTypes.length * CONTAINER_ITEM_HEIGTH + CONTAINER_DESCRIPTION_HEIGTH : CONTAINER_MINIMUM_HEIGHT;
-        const container = document.querySelector('.apos-export__section-container')
+        const height = this.checkedRelatedTypes.length ? this.checkedRelatedTypes.length * CONTAINER_ITEM_HEIGHT + CONTAINER_DESCRIPTION_HEIGHT : CONTAINER_MINIMUM_HEIGHT;
+        const container = document.querySelector('.apos-export__section-container');
         container.style.setProperty('--container-height', `${height}px`);
       }
     },
