@@ -59,13 +59,16 @@
 
           <transition
             name="fade"
-            :duration="400"
+            :duration="200"
           >
             <div
               v-show="!relatedDocumentsDisabled"
               class="apos-export__section"
             >
-              <div class="apos-export__section-container">
+              <div
+                ref="container"
+                class="apos-export__section-container"
+              >
                 <div class="apos-export__settings">
                   {{ $t('aposImportExport:exportModalIncludeRelatedSettings') }}
                 </div>
@@ -74,7 +77,10 @@
                   <div class="apos-export__related-description">
                     {{ $t('aposImportExport:exportModalRelatedDocumentDescription') }}
                   </div>
-                  <div v-if="relatedTypes && relatedTypes.length">
+                  <div
+                    v-if="relatedTypes && relatedTypes.length"
+                    class="apos-export__related-list"
+                  >
                     <AposCheckbox
                       v-for="relatedType in relatedTypes"
                       :key="relatedType"
@@ -243,8 +249,7 @@ export default {
         });
         this.checkedRelatedTypes = this.relatedTypes;
         const height = this.checkedRelatedTypes.length ? this.checkedRelatedTypes.length * CONTAINER_ITEM_HEIGHT + CONTAINER_DESCRIPTION_HEIGHT : CONTAINER_MINIMUM_HEIGHT;
-        const container = document.querySelector('.apos-export__section-container');
-        container.style.setProperty('--container-height', `${height}px`);
+        this.$refs.container.style.setProperty('--container-height', `${height}px`);
       }
     },
     toggleRelatedChildren() {
@@ -401,14 +406,20 @@ export default {
   text-transform: capitalize;
 }
 
+.apos-export__related-list {
+  max-height: 210px;
+  overflow-y: overlay;
+  width: 100%;
+}
+
 .fade-enter-active {
   .apos-export__section-container {
-    animation: expand .5s;
+    animation: expand .3s;
   }
 }
 .fade-leave-active {
   .apos-export__section-container {
-    animation: expand .5s reverse;
+    animation: expand .3s reverse;
   }
 }
 
