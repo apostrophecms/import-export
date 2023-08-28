@@ -1,16 +1,16 @@
 export default () => {
-  window.apos.util.onReady(onReady);
+  let ready = false;
 
-  function onReady() {
-    window.apos.bus.$on('export-download', openUrl);
-  }
+  window.apos.util.onReady(() => {
+    if (!ready) {
+      ready = true;
+      window.apos.bus.$on('export-download', openUrl);
+    }
+  });
 
   function openUrl(event) {
-    if (!event.url) {
-      return;
+    if (event.url) {
+      window.open(event.url, '_blank');
     }
-
-    window.open(event.url, '_blank');
-    window.apos.bus.$off('export-download', openUrl);
   }
 };
