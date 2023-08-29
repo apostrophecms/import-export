@@ -12,7 +12,7 @@
       <AposModalBody>
         <template #bodyMain>
           <h2 class="apos-export__heading">
-            {{ $t('aposImportExport:export') }} {{ moduleLabel }}
+            {{ $t('aposImportExport:export', { type: moduleLabel }) }}
           </h2>
           <p
             class="apos-export__description"
@@ -57,40 +57,53 @@
             </div>
           </div>
 
-          <div
-            v-show="!relatedDocumentsDisabled"
-            class="apos-export__section"
+          <transition
+            name="fade"
+            :duration="200"
           >
-            <div class="apos-export__settings">
-              {{ $t('aposImportExport:exportModalIncludeRelatedSettings') }}
+            <div
+              v-show="!relatedDocumentsDisabled"
+              class="apos-export__section"
+            >
+              <div
+                ref="container"
+                class="apos-export__section-container"
+              >
+                <div class="apos-export__settings">
+                  {{ $t('aposImportExport:exportModalIncludeRelatedSettings') }}
+                </div>
+                <div class="apos-export__separator" />
+                <div class="apos-export__settings-row apos-export__settings-row--column">
+                  <div class="apos-export__related-description">
+                    {{ $t('aposImportExport:exportModalRelatedDocumentDescription') }}
+                  </div>
+                  <div
+                    v-if="relatedTypes && relatedTypes.length"
+                    class="apos-export__related-list"
+                  >
+                    <AposCheckbox
+                      v-for="relatedType in relatedTypes"
+                      :key="relatedType"
+                      v-model="checkedProxy"
+                      tabindex="-1"
+                      :choice="{
+                        value: relatedType,
+                        label: getRelatedTypeLabel(relatedType)
+                      }"
+                      :field="{
+                        label: getRelatedTypeLabel(relatedType),
+                        name: relatedType
+                      }"
+                      @updated="checkRelatedTypes"
+                    />
+                  </div>
+                  <div v-else>
+                    {{ $t('aposImportExport:exportModalNoRelatedTypes') }}
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="apos-export__separator" />
-            <div class="apos-export__settings-row apos-export__settings-row--column">
-              <div class="apos-export__related-description">
-                {{ $t('aposImportExport:exportModalRelatedDocumentDescription') }}
-              </div>
-              <div v-if="relatedTypes && relatedTypes.length">
-                <AposCheckbox
-                  v-for="relatedType in relatedTypes"
-                  :key="relatedType"
-                  v-model="checkedProxy"
-                  tabindex="-1"
-                  :choice="{
-                    value: relatedType,
-                    label: getRelatedTypeLabel(relatedType)
-                  }"
-                  :field="{
-                    label: getRelatedTypeLabel(relatedType),
-                    name: relatedType
-                  }"
-                  @updated="checkRelatedTypes"
-                />
-              </div>
-              <div v-else>
-                {{ $t('aposImportExport:exportModalNoRelatedTypes') }}
-              </div>
-            </div>
-          </div>
+          </transition>
 
           <div class="apos-export__separator apos-export__separator--full-width" />
 
@@ -104,7 +117,7 @@
               ref="exportDocs"
               icon="apos-import-export-download-icon"
               class="apos-export__btn"
-              label="aposImportExport:export"
+              :label="$t('aposImportExport:export', { type: moduleLabel })"
               type="primary"
               @click="exportDocs"
             />
@@ -116,6 +129,10 @@
 </template>
 
 <script>
+const CONTAINER_ITEM_HEIGHT = 24;
+const CONTAINER_DESCRIPTION_HEIGHT = 95;
+const CONTAINER_MINIMUM_HEIGHT = 120;
+
 export default {
   props: {
     moduleName: {
@@ -142,6 +159,7 @@ export default {
     return {
       modal: {
         active: false,
+        type: 'overlay',
         showModal: false,
         disableHeader: true
       },
@@ -229,6 +247,9 @@ export default {
             type: this.type
           }
         });
+        this.checkedRelatedTypes = this.relatedTypes;
+        const height = this.checkedRelatedTypes.length ? this.checkedRelatedTypes.length * CONTAINER_ITEM_HEIGHT + CONTAINER_DESCRIPTION_HEIGHT : CONTAINER_MINIMUM_HEIGHT;
+        this.$refs.container.style.setProperty('--container-height', `${height}px`);
       }
     },
     toggleRelatedChildren() {
@@ -281,8 +302,8 @@ export default {
 }
 
 ::v-deep .apos-modal__body {
-  padding: 20px 30px;
-  width: 335px;
+  padding: 30px 20px;
+  width: 375px;
 }
 
 ::v-deep .apos-modal__body-main {
@@ -293,6 +314,10 @@ export default {
 
 ::v-deep .apos-toggle__slider {
   display: flex;
+}
+
+::v-deep .apos-input--select {
+  text-transform: capitalize;
 }
 
 .apos-export__heading {
@@ -307,6 +332,7 @@ export default {
   font-size: var(--a-type-large);
   text-align: left;
   line-height: var(--a-line-tallest);
+  margin-top: 5px;
 }
 
 .apos-export__section {
@@ -315,6 +341,10 @@ export default {
   flex-direction: column;
   align-items: baseline;
   min-width: 100%;
+}
+
+.apos-export__section-container {
+  overflow: hidden;
 }
 
 .apos-export__settings {
@@ -343,16 +373,16 @@ export default {
 }
 
 .apos-export__separator {
-  background-color: var(--a-base-8);
+  background-color: var(--a-base-9);
   position: relative;
   height: 1px;
-  width: 100%;
+  width: calc(100% - 10px);
   margin: 10px 0;
 }
 
 .apos-export__separator--full-width::before {
   content: "";
-  background-color: var(--a-base-8);
+  background-color: var(--a-base-9);
   position: absolute;
   height: 100%;
   width: calc(100% + 60px);
@@ -370,5 +400,36 @@ export default {
   margin-top: 10px;
   width: 100%;
   gap: 20px;
+}
+
+.apos-export__btn ::v-deep .apos-button__label {
+  text-transform: capitalize;
+}
+
+.apos-export__related-list {
+  max-height: 210px;
+  overflow-y: overlay;
+  width: 100%;
+}
+
+.fade-enter-active {
+  .apos-export__section-container {
+    animation: expand .3s;
+  }
+}
+.fade-leave-active {
+  .apos-export__section-container {
+    animation: expand .3s reverse;
+  }
+}
+
+@keyframes expand {
+  0% {
+    height: 0;
+  }
+
+  100% {
+    height: var(--container-height);
+  }
 }
 </style>
