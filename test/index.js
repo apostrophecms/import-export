@@ -1,42 +1,126 @@
 const assert = require('assert').strict;
 const t = require('apostrophe/test-lib/util.js');
-const fs = require('fs');
+const fs = require('fs/promises');
+const { createReadStream, existsSync } = require('fs');
 const path = require('path');
 const FormData = require('form-data');
+const { execSync } = require('child_process');
 
 describe('@apostrophecms/import-export', function () {
   let apos;
+  let attachmentPath;
+  let exportPath;
+  let tempPath;
 
   this.timeout(t.timeout);
 
-  this.afterEach(function () {
-    return t.destroy(apos);
+  after(async function() {
+    await cleanData([ attachmentPath, exportPath, tempPath ]);
+    await t.destroy(apos);
   });
 
-  after(function() {
-    const attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
-    fs.readdirSync(attachmentPath).forEach((name) => {
-      fs.unlinkSync(path.join(attachmentPath, name));
-    });
-  });
-
-  beforeEach(async function() {
+  before(async function() {
     apos = await t.create({
       root: module,
       baseUrl: 'http://localhost:3000',
       testModule: true,
       modules: getAppConfig()
     });
+    attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
+    exportPath = path.join(apos.rootDir, 'public/uploads/exports');
+    tempPath = path.join(apos.rootDir, 'data/temp/exports');
+    if (!existsSync(tempPath)) {
+      await fs.mkdir(tempPath);
+    }
+    await insertAdminUser(apos);
     await insertPieces(apos);
   });
 
-  it('should have module enabled', function () {
-    const actual = Object.keys(apos.modules).includes('@apostrophecms/module');
-    const expected = true;
+  it('should generate a zip file without related documents', async function () {
+    const req = apos.task.getReq();
+    const articles = await apos.article.find(req).toArray();
 
-    assert.equal(actual, expected);
+    req.body = {
+      _ids: articles.map(({ _id }) => _id),
+      extension: 'zip'
+    };
+    const { url } = await apos.modules['@apostrophecms/import-export'].export(req, apos.article);
+    const fileName = path.basename(url);
+
+    const { zipPath, extractPath } = await unzip(tempPath, exportPath, fileName);
+
+    const docsData = await fs.readFile(
+      path.join(extractPath, 'aposDocs.json'),
+      { encoding: 'utf8' }
+    );
+
+    const attachmentsData = await fs.readFile(
+      path.join(extractPath, 'aposAttachments.json'),
+      { encoding: 'utf8' }
+    );
+
+    const docs = JSON.parse(docsData);
+    const attachments = JSON.parse(attachmentsData);
+
+    const actual = {
+      docsLength: docs.length,
+      attachmentsLength: attachments.length
+    };
+    const expected = {
+      docsLength: 4,
+      attachmentsLength: 0
+    };
+
+    assert.deepEqual(actual, expected);
+  });
+
+  it('should generate a zip file with related documents', async function () {
+    const req = apos.task.getReq();
+    const articles = await apos.article.find(req).toArray();
+
+    req.body = {
+      _ids: articles.map(({ _id }) => _id),
+      extension: 'zip',
+      relatedTypes: [ '@apostrophecms/image', 'topic' ]
+    };
+
+    const { url } = await apos.modules['@apostrophecms/import-export'].export(req, apos.article);
+    const fileName = path.basename(url);
+    const pathToZip = path.join(exportPath, fileName);
+    const pathToExtracted = path.join(tempPath, fileName.replace('.zip', ''));
   });
 });
+
+// TODO replace with same system used to extract compressed filse on server
+// this method requires the server running the tests to have the unzip command availabe
+function unzip(tempPath, exportPath, fileName) {
+  const zipPath = path.join(exportPath, fileName);
+  const extractPath = path.join(tempPath, fileName.replace('.zip', ''));
+
+  try {
+    execSync(`unzip ${zipPath} -d ${extractPath}`);
+
+    return {
+      zipPath,
+      extractPath
+    };
+  } catch (err) {
+    assert(!err);
+  }
+}
+
+async function cleanData(paths) {
+  try {
+    for (const filePath of paths) {
+      const files = await fs.readdir(filePath);
+      for (const name of files) {
+        await fs.rm(path.join(filePath, name), { recursive: true });
+      }
+    }
+  } catch (err) {
+    assert(!err);
+  }
+}
 
 async function insertPieces(apos) {
   const req = apos.task.getReq();
@@ -65,16 +149,14 @@ async function insertPieces(apos) {
 
   await apos.article.insert(req, {
     ...apos.article.newInstance(),
-    title: 'article1',
+    title: 'article2',
     _topics: [ topic1 ]
   });
-
-  await insertAdminUser(apos);
 
   const formData = new FormData();
   formData.append(
     'file',
-    fs.createReadStream(path.join(apos.rootDir, '/public/test-image.jpg'))
+    createReadStream(path.join(apos.rootDir, '/public/test-image.jpg'))
   );
 
   const jar = await login(apos.http);
