@@ -20,11 +20,12 @@ module.exports = {
           $ne: self.__meta.name
         }
       });
-      operation.if = {
-        $and: excludedTypes
-      };
     }
 
-    self.apos.doc.addContextOperation(operation);
+    if (excludedTypes.length) {
+      operation.if = { $and: excludedTypes };
+    }
+
+    self.apos.doc.addContextOperation(self.__meta.name, operation);
   }
 };
