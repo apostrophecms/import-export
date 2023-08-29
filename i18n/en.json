@@ -1,5 +1,7 @@
 {
   "export": "Export",
+  "exportError": "The export failed",
+  "exportAttachmentError": "Some attachments could not be added to the compressed file",
   "exported": "Exported {{ count }} {{ type }}",
   "exporting": "Exporting {{ type }}...",
   "exportModalDescription": "You've selected {{ count }} {{ type }} for export",
