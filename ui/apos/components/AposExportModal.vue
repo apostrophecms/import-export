@@ -162,7 +162,9 @@ export default {
   computed: {
     moduleLabel() {
       const moduleOptions = apos.modules[this.moduleName];
-      const label = this.checked?.length > 1 ? moduleOptions.pluralLabel : moduleOptions.label;
+      const label = this.checked?.length > 1
+        ? moduleOptions.pluralLabel
+        : moduleOptions.label;
 
       return this.$t(label).toLowerCase();
     },
