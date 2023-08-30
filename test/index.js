@@ -36,7 +36,7 @@ describe('@apostrophecms/import-export', function () {
     await insertPieces(apos);
   });
 
-  it('should generate a zip file without related documents', async function () {
+  it('should generate a zip file for pieces without related documents', async function () {
     const req = apos.task.getReq();
     const articles = await apos.article.find(req).toArray();
 
@@ -47,7 +47,7 @@ describe('@apostrophecms/import-export', function () {
     const { url } = await apos.modules['@apostrophecms/import-export'].export(req, apos.article);
     const fileName = path.basename(url);
 
-    const { zipPath, extractPath } = await unzip(tempPath, exportPath, fileName);
+    const extractPath = await unzip(tempPath, exportPath, fileName);
 
     const docsData = await fs.readFile(
       path.join(extractPath, 'aposDocs.json'),
@@ -74,7 +74,7 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
-  it('should generate a zip file with related documents', async function () {
+  it('should generate a zip file for pieces with related documents', async function () {
     const req = apos.task.getReq();
     const articles = await apos.article.find(req).toArray();
 
@@ -86,24 +86,96 @@ describe('@apostrophecms/import-export', function () {
 
     const { url } = await apos.modules['@apostrophecms/import-export'].export(req, apos.article);
     const fileName = path.basename(url);
-    const pathToZip = path.join(exportPath, fileName);
-    const pathToExtracted = path.join(tempPath, fileName.replace('.zip', ''));
+
+    const extractPath = await unzip(tempPath, exportPath, fileName);
+
+    const docsData = await fs.readFile(
+      path.join(extractPath, 'aposDocs.json'),
+      { encoding: 'utf8' }
+    );
+
+    const attachmentsData = await fs.readFile(
+      path.join(extractPath, 'aposAttachments.json'),
+      { encoding: 'utf8' }
+    );
+
+    const attachmentFiles = await fs.readdir(path.join(extractPath, 'attachments'));
+
+    const docs = JSON.parse(docsData);
+    const attachments = JSON.parse(attachmentsData);
+
+    const actual = {
+      docsLength: docs.length,
+      attachmentsLength: attachments.length,
+      attachmentFiles
+    };
+    const expected = {
+      docsLength: 8,
+      attachmentsLength: 1,
+      attachmentFiles: [ 'cllxy7wzz000chomddduw429z-test-image.jpg' ]
+    };
+
+    assert.deepEqual(actual, expected);
   });
+
+  /* it.only('should generate a zip file for pages with related documents', async function () { */
+  /*   const req = apos.task.getReq(); */
+  /*   const pages = await apos.page.find(req).toArray(); */
+  /**/
+  /*   console.log('pages', pages); */
+  /**/
+  /*   return; */
+  /*   req.body = { */
+  /*     _ids: pages.map(({ _id }) => _id), */
+  /*     extension: 'zip', */
+  /*     relatedTypes: [ '@apostrophecms/image', 'topic' ] */
+  /*   }; */
+  /**/
+  /*   const { url } = await apos.modules['@apostrophecms/import-export'].export(req, apos.article); */
+  /*   const fileName = path.basename(url); */
+  /**/
+  /*   const extractPath = await unzip(tempPath, exportPath, fileName); */
+  /**/
+  /*   const docsData = await fs.readFile( */
+  /*     path.join(extractPath, 'aposDocs.json'), */
+  /*     { encoding: 'utf8' } */
+  /*   ); */
+  /**/
+  /*   const attachmentsData = await fs.readFile( */
+  /*     path.join(extractPath, 'aposAttachments.json'), */
+  /*     { encoding: 'utf8' } */
+  /*   ); */
+  /**/
+  /*   const attachmentFiles = await fs.readdir(path.join(extractPath, 'attachments')); */
+  /**/
+  /*   const docs = JSON.parse(docsData); */
+  /*   const attachments = JSON.parse(attachmentsData); */
+  /**/
+  /*   const actual = { */
+  /*     docsLength: docs.length, */
+  /*     attachmentsLength: attachments.length, */
+  /*     attachmentFiles */
+  /*   }; */
+  /*   const expected = { */
+  /*     docsLength: 8, */
+  /*     attachmentsLength: 1, */
+  /*     attachmentFiles: [ 'cllxy7wzz000chomddduw429z-test-image.jpg' ] */
+  /*   }; */
+  /**/
+  /*   assert.deepEqual(actual, expected); */
+  /* }); */
 });
 
 // TODO replace with same system used to extract compressed filse on server
 // this method requires the server running the tests to have the unzip command availabe
-function unzip(tempPath, exportPath, fileName) {
+async function unzip(tempPath, exportPath, fileName) {
   const zipPath = path.join(exportPath, fileName);
   const extractPath = path.join(tempPath, fileName.replace('.zip', ''));
 
   try {
     execSync(`unzip ${zipPath} -d ${extractPath}`);
 
-    return {
-      zipPath,
-      extractPath
-    };
+    return extractPath;
   } catch (err) {
     assert(!err);
   }
@@ -125,6 +197,25 @@ async function cleanData(paths) {
 async function insertPieces(apos) {
   const req = apos.task.getReq();
 
+  const formData = new FormData();
+  formData.append(
+    'file',
+    createReadStream(path.join(apos.rootDir, '/public/test-image.jpg'))
+  );
+
+  const jar = await login(apos.http);
+
+  const attachment = await apos.http.post('/api/v1/@apostrophecms/attachment/upload', {
+    body: formData,
+    jar
+  });
+
+  const image1 = await apos.image.insert(req, {
+    ...apos.image.newInstance(),
+    title: 'image1',
+    attachment
+  });
+
   const topic3 = await apos.topic.insert(req, {
     ...apos.topic.newInstance(),
     title: 'topic3'
@@ -144,32 +235,14 @@ async function insertPieces(apos) {
   await apos.article.insert(req, {
     ...apos.article.newInstance(),
     title: 'article1',
-    _topics: [ topic2 ]
+    _topics: [ topic2 ],
+    image: attachment
   });
 
   await apos.article.insert(req, {
     ...apos.article.newInstance(),
     title: 'article2',
     _topics: [ topic1 ]
-  });
-
-  const formData = new FormData();
-  formData.append(
-    'file',
-    createReadStream(path.join(apos.rootDir, '/public/test-image.jpg'))
-  );
-
-  const jar = await login(apos.http);
-
-  const attachment = await apos.http.post('/api/v1/@apostrophecms/attachment/upload', {
-    body: formData,
-    jar
-  });
-
-  const image1 = await apos.image.insert(req, {
-    ...apos.image.newInstance(),
-    title: 'image1',
-    attachment
   });
 
   const pageInstance = await apos.http.post('/api/v1/@apostrophecms/page', {
@@ -246,7 +319,8 @@ function getAppConfig() {
   return {
     '@apostrophecms/express': {
       options: {
-        session: { secret: 'supersecret' }
+        session: { secret: 'supersecret' },
+        port: 3000
       }
     },
     '@apostrophecms/import-export': {},
@@ -284,16 +358,9 @@ function getAppConfig() {
       },
       fields: {
         add: {
-          main: {
-            label: 'Main',
-            type: 'area',
-            options: {
-              widgets: {
-                '@apostrophecms/rich-text': {},
-                '@apostrophecms/image': {},
-                '@apostrophecms/video': {}
-              }
-            }
+          image: {
+            type: 'attachment',
+            group: 'images'
           },
           _topics: {
             label: 'Topics',
