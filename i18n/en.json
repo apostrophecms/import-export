@@ -1,7 +1,7 @@
 {
   "export": "Download {{ type }}",
-  "exportFileGenerationError": "The {{ extension }} file generation failed",
   "exportAttachmentError": "Some attachments could not be added to the {{ extension }} file",
+  "exportFileGenerationError": "The {{ extension }} file generation failed",
   "exported": "Downloaded {{ count }} {{ type }}",
   "exporting": "Downloading {{ type }}...",
   "exportModalDescription": "You've selected {{ count }} {{ type }} for download",

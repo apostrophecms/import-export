@@ -17,7 +17,12 @@
           <p
             class="apos-export__description"
           >
-            {{ $t('aposImportExport:exportModalDescription', { count, type: moduleLabel }) }}
+            {{
+              $t('aposImportExport:exportModalDescription', {
+                count: selectedDocIds.length,
+                type: moduleLabel
+              })
+            }}
           </p>
 
           <div class="apos-export__section">
@@ -141,7 +146,7 @@ export default {
     },
     checked: {
       type: Array,
-      default: null
+      default: () => []
     },
     doc: {
       type: Object,
@@ -173,14 +178,15 @@ export default {
       relatedTypes: null,
       checkedRelatedTypes: [],
       type: this.moduleName,
-      extension: 'zip'
+      extension: 'zip',
+      selectedDocIds: []
     };
   },
 
   computed: {
     moduleLabel() {
       const moduleOptions = apos.modules[this.moduleName];
-      const label = this.checked?.length > 1
+      const label = this.count > 1
         ? moduleOptions.pluralLabel
         : moduleOptions.label;
 
@@ -197,7 +203,7 @@ export default {
     },
 
     count() {
-      return this.checked?.length || 1;
+      return this.selectedDocIds.length;
     },
 
     extensions() {
@@ -207,6 +213,10 @@ export default {
 
   async mounted() {
     this.modal.active = true;
+    this.selectedDocIds = [
+      ...this.checked,
+      ...this.doc ? [ this.doc._id ] : []
+    ];
 
     if (this.type === '@apostrophecms/page') {
       this.type = this.doc?.type;
@@ -218,10 +228,6 @@ export default {
       this.$refs.exportDocs.$el.querySelector('button').focus();
     },
     async exportDocs() {
-      const docsId = this.checked
-        ? this.checked
-        : [ this.doc?._id ];
-
       const relatedTypes = this.relatedDocumentsDisabled
         ? []
         : this.checkedRelatedTypes;
@@ -230,7 +236,7 @@ export default {
       const result = await window.apos.http.post(`${action}/${this.action}`, {
         busy: true,
         body: {
-          _ids: docsId,
+          _ids: this.selectedDocIds,
           relatedTypes,
           messages: this.messages,
           extension: this.extension
@@ -255,7 +261,9 @@ export default {
           }
         });
         this.checkedRelatedTypes = this.relatedTypes;
-        const height = this.checkedRelatedTypes.length ? this.checkedRelatedTypes.length * CONTAINER_ITEM_HEIGHT + CONTAINER_DESCRIPTION_HEIGHT : CONTAINER_MINIMUM_HEIGHT;
+        const height = this.checkedRelatedTypes.length
+          ? this.checkedRelatedTypes.length * CONTAINER_ITEM_HEIGHT + CONTAINER_DESCRIPTION_HEIGHT
+          : CONTAINER_MINIMUM_HEIGHT;
         this.$refs.container.style.setProperty('--container-height', `${height}px`);
       }
     },
@@ -266,7 +274,8 @@ export default {
       if (evt.target.checked) {
         this.checkedRelatedTypes.push(evt.target.value);
       } else {
-        this.checkedRelatedTypes = this.checkedRelatedTypes.filter(relatedType => relatedType !== evt.target.value);
+        this.checkedRelatedTypes = this.checkedRelatedTypes
+          .filter(relatedType => relatedType !== evt.target.value);
       }
     },
     getRelatedTypeLabel(moduleName) {
