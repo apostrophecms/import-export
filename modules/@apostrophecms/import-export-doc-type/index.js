@@ -26,6 +26,6 @@ module.exports = {
       operation.if = { $and: excludedTypes };
     }
 
-    self.apos.doc.addContextOperation(self.__meta.name, operation);
+    self.apos.doc.addContextOperation(operation);
   }
 };
