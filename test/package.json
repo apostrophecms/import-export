@@ -4,6 +4,6 @@
   " */": "exist in package.json at project level, which for a test is here",
   "dependencies": {
     "apostrophe": "git+https://github.com/apostrophecms/apostrophe.git",
-    "@apostrophecms/module": "git+https://github.com/apostrophecms/module.git"
+    "@apostrophecms/import-export": "git+https://github.com/apostrophecms/import-export.git"
   }
 }
