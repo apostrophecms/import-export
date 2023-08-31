@@ -1,10 +1,14 @@
 const assert = require('assert').strict;
 const t = require('apostrophe/test-lib/util.js');
 const fs = require('fs/promises');
-const { createReadStream, existsSync } = require('fs');
+const {
+  createReadStream, existsSync, createWriteStream
+} = require('fs');
 const path = require('path');
 const FormData = require('form-data');
 const { execSync } = require('child_process');
+/* const zlib = require('zlib'); */
+const tar = require('tar');
 
 describe('@apostrophecms/import-export', function () {
   let apos;
@@ -42,7 +46,7 @@ describe('@apostrophecms/import-export', function () {
 
     req.body = {
       _ids: articles.map(({ _id }) => _id),
-      extension: 'zip'
+      extension: 'gzip'
     };
     const { url } = await apos.modules['@apostrophecms/import-export'].export(req, apos.article);
     const fileName = path.basename(url);
@@ -77,10 +81,12 @@ describe('@apostrophecms/import-export', function () {
   it('should generate a zip file for pieces with related documents', async function () {
     const req = apos.task.getReq();
     const articles = await apos.article.find(req).toArray();
+    const { _id: attachmentId } = await apos.attachment.db.findOne({ name: 'test-image' });
+    console.log('attachemntId', attachmentId);
 
     req.body = {
       _ids: articles.map(({ _id }) => _id),
-      extension: 'zip',
+      extension: 'gzip',
       relatedTypes: [ '@apostrophecms/image', 'topic' ]
     };
 
@@ -112,7 +118,7 @@ describe('@apostrophecms/import-export', function () {
     const expected = {
       docsLength: 8,
       attachmentsLength: 1,
-      attachmentFiles: [ 'cllxy7wzz000chomddduw429z-test-image.jpg' ]
+      attachmentFiles: [ `${attachmentId}-test-image.jpg` ]
     };
 
     assert.deepEqual(actual, expected);
@@ -166,19 +172,22 @@ describe('@apostrophecms/import-export', function () {
   /* }); */
 });
 
-// TODO replace with same system used to extract compressed filse on server
-// this method requires the server running the tests to have the unzip command availabe
 async function unzip(tempPath, exportPath, fileName) {
   const zipPath = path.join(exportPath, fileName);
-  const extractPath = path.join(tempPath, fileName.replace('.zip', ''));
+  const extractPath = path.join(tempPath, fileName.replace('.tar.gz', ''));
 
-  try {
-    execSync(`unzip ${zipPath} -d ${extractPath}`);
-
-    return extractPath;
-  } catch (err) {
-    assert(!err);
+  if (!existsSync(extractPath)) {
+    await fs.mkdir(extractPath);
   }
+
+  return new Promise((resolve, reject) => {
+    createReadStream(zipPath)
+      .pipe(tar.x({
+        cwd: extractPath
+      }))
+      .on('error', reject)
+      .on('close', () => resolve(extractPath));
+  });
 }
 
 async function cleanData(paths) {
