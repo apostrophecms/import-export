@@ -6,7 +6,7 @@
   "scripts": {
     "eslint": "eslint --ext .js,.vue .",
     "lint": "npm run eslint",
-    "test": "npm run lint && mocha"
+    "test": "npm run lint && mocha --exit"
   },
   "repository": {
     "type": "git",
