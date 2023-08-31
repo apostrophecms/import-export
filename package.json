@@ -6,7 +6,7 @@
   "scripts": {
     "eslint": "eslint --ext .js,.vue .",
     "lint": "npm run eslint",
-    "test": "npm run lint && mocha"
+    "test": "npm run lint && mocha --exit"
   },
   "repository": {
     "type": "git",
@@ -16,7 +16,7 @@
   "author": "Apostrophe Technologies",
   "license": "UNLICENSED",
   "devDependencies": {
-    "apostrophe": "github:apostrophecms/apostrophe",
+    "apostrophe": "github:apostrophecms/apostrophe#pro-4261-export-docs",
     "eslint": "^8.44.0",
     "eslint-config-apostrophe": "^4.0.0",
     "eslint-config-standard": "^17.1.0",
@@ -31,6 +31,7 @@
     "vue-eslint-parser": "^9.3.1"
   },
   "dependencies": {
-    "archiver": "^6.0.0"
+    "archiver": "^6.0.0",
+    "tar": "^6.1.15"
   }
 }
