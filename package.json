@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "archiver": "^6.0.0",
+    "lodash": "^4.17.21",
     "tar": "^6.1.15"
   }
 }
