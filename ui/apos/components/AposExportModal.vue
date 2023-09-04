@@ -178,7 +178,7 @@ export default {
       relatedTypes: null,
       checkedRelatedTypes: [],
       type: this.moduleName,
-      extension: 'zip',
+      extension: 'gzip',
       selectedDocIds: []
     };
   },

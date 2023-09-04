@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const methods = require('./lib/methods');
 const apiRoutes = require('./lib/apiRoutes');
-const zip = require('./lib/formats/zip');
+/* const zip = require('./lib/formats/zip'); */
 const gzip = require('./lib/formats/gzip');
 
 module.exports = {
@@ -28,7 +28,6 @@ module.exports = {
     }
 
     self.exportFormats = {
-      zip,
       gzip,
       ...(self.options.exportFormats || {})
     };
