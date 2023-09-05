@@ -20,12 +20,8 @@ module.exports = {
   },
 
   init(self) {
-    if (self.options.export !== false) {
-      self.apos.asset.iconMap['apos-import-export-download-icon'] = 'Download';
-    }
-    if (self.options.import !== false) {
-      self.apos.asset.iconMap['apos-import-export-upload-icon'] = 'Upload';
-    }
+    self.apos.asset.iconMap['apos-import-export-download-icon'] = 'Download';
+    self.apos.asset.iconMap['apos-import-export-upload-icon'] = 'Upload';
 
     self.exportFormats = {
       zip,

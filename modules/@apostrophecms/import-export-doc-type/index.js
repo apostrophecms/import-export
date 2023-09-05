@@ -14,7 +14,7 @@ module.exports = {
       }
     };
 
-    if (self.options.export === false) {
+    if (self.options.importExport?.export === false) {
       excludedTypes.push({
         type: {
           $ne: self.__meta.name

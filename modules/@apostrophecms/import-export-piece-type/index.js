@@ -4,7 +4,7 @@ module.exports = {
   cascades: [ 'batchOperations' ],
 
   utilityOperations (self) {
-    if (self.options.import === false) {
+    if (self.options.importExport?.import === false) {
       return {};
     }
 
@@ -27,7 +27,7 @@ module.exports = {
   },
 
   batchOperations(self) {
-    if (self.options.export === false) {
+    if (self.options.importExport?.export === false) {
       return;
     }
 
@@ -54,7 +54,7 @@ module.exports = {
   },
 
   apiRoutes(self) {
-    if (self.options.export === false) {
+    if (self.options.importExport?.export === false) {
       return {};
     }
 
