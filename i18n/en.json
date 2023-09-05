@@ -14,5 +14,7 @@
   "exportModalIncludeRelatedSettings": "Related Documents Settings",
   "exportModalNoRelatedTypes": "No Related Types",
   "import": "Import {{ type }}",
-  "importModalDescription": "Importing content requires a zip file. See our <a href=\"https://v3.docs.apostrophecms.org/\" target=\"_blank\">guide to importing content</a> in Apostrophe."
+  "importFailed": "Import failed",
+  "importModalDescription": "Importing content requires a {{ formats }} file. See our <a href=\"https://v3.docs.apostrophecms.org/\" target=\"_blank\">guide to importing content</a> in Apostrophe.",
+  "or": "or"
 }
