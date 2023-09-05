@@ -1,10 +1,8 @@
 module.exports = {
   improve: '@apostrophecms/piece-type',
-
   cascades: [ 'batchOperations' ],
-
   utilityOperations (self) {
-    if (self.options.import === false) {
+    if (self.options.importExport?.import === false) {
       return {};
     }
 
@@ -17,17 +15,13 @@ module.exports = {
           },
           messages: {
             progress: 'Importing {{ type }}...'
-          },
-          requestOptions: {
-            extension: 'zip'
           }
         }
       }
     };
   },
-
   batchOperations(self) {
-    if (self.options.export === false) {
+    if (self.options.importExport?.export === false) {
       return;
     }
 
@@ -52,14 +46,16 @@ module.exports = {
       }
     };
   },
-
   apiRoutes(self) {
-    if (self.options.export === false) {
+    if (self.options.importExport?.export === false) {
       return {};
     }
 
     return {
       post: {
+        import(req) {
+          console.log('IMPORT', self.__meta.name);
+        },
         // NOTE: this route is used in batch operations, and its method should be POST
         // in order to make the job work with the progress notification.
         // The other `exportOne` routes that are used by context operations on each doc
