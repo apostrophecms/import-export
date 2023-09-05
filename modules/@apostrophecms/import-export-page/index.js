@@ -15,9 +15,6 @@ module.exports = {
           },
           messages: {
             progress: 'Importing {{ type }}...'
-          },
-          requestOptions: {
-            extension: 'zip'
           }
         }
       }

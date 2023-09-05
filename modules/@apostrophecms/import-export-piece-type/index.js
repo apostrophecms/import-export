@@ -1,8 +1,6 @@
 module.exports = {
   improve: '@apostrophecms/piece-type',
-
   cascades: [ 'batchOperations' ],
-
   utilityOperations (self) {
     if (self.options.importExport?.import === false) {
       return {};
@@ -17,15 +15,11 @@ module.exports = {
           },
           messages: {
             progress: 'Importing {{ type }}...'
-          },
-          requestOptions: {
-            extension: 'zip'
           }
         }
       }
     };
   },
-
   batchOperations(self) {
     if (self.options.importExport?.export === false) {
       return;
@@ -52,7 +46,6 @@ module.exports = {
       }
     };
   },
-
   apiRoutes(self) {
     if (self.options.importExport?.export === false) {
       return {};
