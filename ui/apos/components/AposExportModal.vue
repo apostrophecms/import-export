@@ -34,9 +34,9 @@
             <div class="apos-export__settings-row">
               <div>{{ $t('aposImportExport:exportModalDocumentFormat') }}</div>
               <AposSelect
-                :choices="extensions"
-                :selected="extension"
-                @change="onExtensionChange"
+                :choices="formatChoices"
+                :selected="formatName"
+                @change="onFormatChange"
               />
             </div>
 
@@ -119,12 +119,12 @@
               @click="cancel"
             />
             <AposButton
-              ref="exportDocs"
+              ref="runExport"
               icon="apos-import-export-download-icon"
               class="apos-export__btn"
               :label="$t('aposImportExport:export', { type: moduleLabel })"
               type="primary"
-              @click="exportDocs"
+              @click="runExport"
             />
           </div>
         </template>
@@ -178,7 +178,7 @@ export default {
       relatedTypes: null,
       checkedRelatedTypes: [],
       type: this.moduleName,
-      extension: 'zip',
+      formatName: apos.modules['@apostrophecms/import-export'].formats[0].name,
       selectedDocIds: []
     };
   },
@@ -192,7 +192,6 @@ export default {
 
       return this.$t(label).toLowerCase();
     },
-
     checkedProxy: {
       get() {
         return this.checkedRelatedTypes;
@@ -201,13 +200,17 @@ export default {
         this.$emit('change', val);
       }
     },
-
     count() {
       return this.selectedDocIds.length;
     },
-
-    extensions() {
-      return window.apos.modules['@apostrophecms/import-export'].extensions;
+    formats() {
+      return apos.modules['@apostrophecms/import-export'].formats;
+    },
+    formatChoices() {
+      return this.formats.map(format => ({
+        label: format.label,
+        value: format.name
+      }));
     }
   },
 
@@ -225,9 +228,9 @@ export default {
 
   methods: {
     ready() {
-      this.$refs.exportDocs.$el.querySelector('button').focus();
+      this.$refs.runExport.$el.querySelector('button').focus();
     },
-    async exportDocs() {
+    async runExport() {
       const relatedTypes = this.relatedDocumentsDisabled
         ? []
         : this.checkedRelatedTypes;
@@ -239,7 +242,7 @@ export default {
           _ids: this.selectedDocIds,
           relatedTypes,
           messages: this.messages,
-          extension: this.extension
+          formatName: this.formatName
         }
       });
 
@@ -282,8 +285,8 @@ export default {
       const moduleOptions = apos.modules[moduleName];
       return this.$t(moduleOptions.label);
     },
-    onExtensionChange(value) {
-      this.extension = this.extensions.find(extension => extension.value === value).value;
+    onFormatChange(formatName) {
+      this.formatName = this.formats.find(format => format.name === formatName).name;
     }
   }
 };
