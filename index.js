@@ -10,7 +10,6 @@ module.exports = {
     directory: 'modules',
     modules: getBundleModuleNames()
   },
-
   options: {
     name: '@apostrophecms/import-export',
     i18n: {
@@ -18,7 +17,6 @@ module.exports = {
       browser: true
     }
   },
-
   init(self) {
     self.apos.asset.iconMap['apos-import-export-download-icon'] = 'Download';
     self.apos.asset.iconMap['apos-import-export-upload-icon'] = 'Upload';
@@ -31,9 +29,7 @@ module.exports = {
 
     self.enableBrowserData();
   },
-
   methods,
-
   apiRoutes
 };
 
