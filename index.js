@@ -22,7 +22,6 @@ module.exports = {
 
     self.formats = {
       gzip,
-      zip,
       ...(self.options.formats || {})
     };
 
