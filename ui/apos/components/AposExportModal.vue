@@ -162,7 +162,7 @@ export default {
     }
   },
 
-  emits: [ 'change', 'safe-close', 'modal-result' ],
+  emits: [ 'change', 'safe-close' ],
 
   data() {
     return {
@@ -236,22 +236,28 @@ export default {
         : this.checkedRelatedTypes;
 
       const { action } = window.apos.modules[this.moduleName];
-      const result = await window.apos.http.post(`${action}/${this.action}`, {
-        busy: true,
-        body: {
-          _ids: this.selectedDocIds,
-          relatedTypes,
-          messages: this.messages,
-          formatName: this.formatName
-        }
-      });
+
+      try {
+        await window.apos.http.post(`${action}/${this.action}`, {
+          busy: true,
+          body: {
+            _ids: this.selectedDocIds,
+            relatedTypes,
+            messages: this.messages,
+            formatName: this.formatName
+          }
+        });
+      } catch (error) {
+        apos.notify(this.$t('aposImportExport:exportFailed'), {
+          type: 'danger',
+          dismiss: true
+        });
+      }
 
       this.modal.showModal = false;
-      this.$emit('modal-result', result);
     },
     async cancel() {
       this.modal.showModal = false;
-      this.$emit('modal-result', false);
     },
     async toggleRelatedDocuments() {
       this.relatedDocumentsDisabled = !this.relatedDocumentsDisabled;

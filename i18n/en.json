@@ -3,6 +3,7 @@
   "exportAttachmentError": "Some attachments could not be added to the {{ format }} file",
   "exportFileGenerationError": "The {{ format }} file generation failed",
   "exported": "Exported {{ count }} {{ type }}",
+  "exportFailed": "Export failed",
   "exporting": "Exporting {{ type }}...",
   "exportModalDescription": "You've selected {{ count }} {{ type }} for export",
   "exportModalRelatedDocumentDescription": "Include the following document types where applicable",
