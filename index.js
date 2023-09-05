@@ -10,7 +10,6 @@ module.exports = {
     directory: 'modules',
     modules: getBundleModuleNames()
   },
-
   options: {
     name: '@apostrophecms/import-export',
     i18n: {
@@ -18,22 +17,19 @@ module.exports = {
       browser: true
     }
   },
-
   init(self) {
     self.apos.asset.iconMap['apos-import-export-download-icon'] = 'Download';
     self.apos.asset.iconMap['apos-import-export-upload-icon'] = 'Upload';
 
-    self.exportFormats = {
-      zip,
+    self.formats = {
       gzip,
-      ...(self.options.exportFormats || {})
+      zip,
+      ...(self.options.formats || {})
     };
 
     self.enableBrowserData();
   },
-
   methods,
-
   apiRoutes
 };
 

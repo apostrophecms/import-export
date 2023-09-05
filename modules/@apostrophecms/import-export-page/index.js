@@ -15,9 +15,6 @@ module.exports = {
           },
           messages: {
             progress: 'Importing {{ type }}...'
-          },
-          requestOptions: {
-            extension: 'zip'
           }
         }
       }
@@ -31,6 +28,9 @@ module.exports = {
 
     return {
       post: {
+        import(req) {
+          console.log('IMPORT', self.__meta.name);
+        },
         exportOne(req) {
           // Add the page label to req.body for notifications.
           req.body.type = req.t('apostrophe:page');

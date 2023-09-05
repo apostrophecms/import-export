@@ -1,8 +1,9 @@
 {
   "export": "Export {{ type }}",
-  "exportAttachmentError": "Some attachments could not be added to the {{ extension }} file",
-  "exportFileGenerationError": "The {{ extension }} file generation failed",
+  "exportAttachmentError": "Some attachments could not be added to the {{ format }} file",
+  "exportFileGenerationError": "The {{ format }} file generation failed",
   "exported": "Exported {{ count }} {{ type }}",
+  "exportFailed": "Export failed",
   "exporting": "Exporting {{ type }}...",
   "exportModalDescription": "You've selected {{ count }} {{ type }} for export",
   "exportModalRelatedDocumentDescription": "Include the following document types where applicable",
@@ -13,5 +14,7 @@
   "exportModalIncludeRelatedSettings": "Related Documents Settings",
   "exportModalNoRelatedTypes": "No Related Types",
   "import": "Import {{ type }}",
-  "importModalDescription": "Importing content requires a zip file. See our <a href=\"https://v3.docs.apostrophecms.org/\" target=\"_blank\">guide to importing content</a> in Apostrophe."
+  "importFailed": "Import failed",
+  "importModalDescription": "Importing content requires a {{ formats }} file. See our <a href=\"https://v3.docs.apostrophecms.org/\" target=\"_blank\">guide to importing content</a> in Apostrophe.",
+  "or": "or"
 }

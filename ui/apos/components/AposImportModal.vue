@@ -17,12 +17,12 @@
           <!-- eslint-disable vue/no-v-html -->
           <p
             class="apos-import__description"
-            v-html="$t('aposImportExport:importModalDescription')"
+            v-html="$t('aposImportExport:importModalDescription', { formats: formatsLabel })"
           />
           <!-- eslint-enable vue/no-v-html -->
           <AposFile
             class="apos-import__file"
-            allowed-extensions=".zip"
+            :allowed-extensions="formatsExtension"
             @upload-file="uploadImportFile"
             @update="updateImportFile"
           />
@@ -53,8 +53,15 @@
 
 <script>
 export default {
-
   props: {
+    moduleAction: {
+      type: String,
+      required: true
+    },
+    action: {
+      type: String,
+      required: true
+    },
     labels: {
       type: Object,
       default: () => ({
@@ -77,6 +84,22 @@ export default {
     };
   },
 
+  computed: {
+    formats() {
+      return apos.modules['@apostrophecms/import-export'].formats;
+    },
+    formatsLabel() {
+      return this.formats
+        .map(format => format.label)
+        .join(` ${this.$t('aposImportExport:or')} `);
+    },
+    formatsExtension() {
+      return this.formats
+        .map(format => `.${format.extension}`)
+        .join(',');
+    }
+  },
+
   mounted() {
     this.modal.active = true;
   },
@@ -86,7 +109,9 @@ export default {
       this.$refs.cancelButton.$el.querySelector('button').focus();
     },
     uploadImportFile (file) {
-      this.selectedFile = file || null;
+      if (file) {
+        this.selectedFile = file;
+      }
     },
     updateImportFile () {
       this.selectedFile = null;
@@ -95,7 +120,20 @@ export default {
       this.modal.showModal = false;
     },
     async runImport () {
-      // TODO: implement
+      const formData = new FormData();
+      formData.append('file', this.selectedFile);
+
+      try {
+        await apos.http.post(`${this.moduleAction}/${this.action}`, {
+          busy: true,
+          body: formData
+        });
+      } catch (error) {
+        apos.notify(this.$t('aposImportExport:importFailed'), {
+          type: 'danger',
+          dismiss: true
+        });
+      }
 
       this.modal.showModal = false;
     }
