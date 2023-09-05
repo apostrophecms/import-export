@@ -53,6 +53,9 @@ module.exports = {
 
     return {
       post: {
+        import(req) {
+          console.log('IMPORT', self.__meta.name);
+        },
         // NOTE: this route is used in batch operations, and its method should be POST
         // in order to make the job work with the progress notification.
         // The other `exportOne` routes that are used by context operations on each doc

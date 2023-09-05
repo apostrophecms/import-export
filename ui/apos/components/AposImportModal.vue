@@ -54,9 +54,9 @@
 <script>
 export default {
   props: {
-    moduleName: {
+    moduleAction: {
       type: String,
-      default: ''
+      required: true
     },
     action: {
       type: String,
@@ -124,8 +124,7 @@ export default {
       formData.append('file', this.selectedFile);
 
       try {
-        console.log(this.moduleName);
-        await apos.http.post(`${apos.modules[this.moduleName]}/${this.action}`, {
+        await apos.http.post(`${this.moduleAction}/${this.action}`, {
           busy: true,
           body: formData
         });
