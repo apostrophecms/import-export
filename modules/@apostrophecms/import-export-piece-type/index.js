@@ -54,7 +54,7 @@ module.exports = {
     return {
       post: {
         import(req) {
-          console.log('IMPORT', self.__meta.name);
+          return self.apos.modules['@apostrophecms/import-export'].import(req);
         },
         // NOTE: this route is used in batch operations, and its method should be POST
         // in order to make the job work with the progress notification.

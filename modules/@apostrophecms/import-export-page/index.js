@@ -29,7 +29,7 @@ module.exports = {
     return {
       post: {
         import(req) {
-          console.log('IMPORT', self.__meta.name);
+          return self.apos.modules['@apostrophecms/import-export'].import(req);
         },
         exportOne(req) {
           // Add the page label to req.body for notifications.
