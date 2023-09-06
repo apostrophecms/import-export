@@ -13,12 +13,11 @@ describe('@apostrophecms/import-export', function () {
   let apos;
   let attachmentPath;
   let exportPath;
-  let tempPath;
 
   this.timeout(t.timeout);
 
   after(async function() {
-    await cleanData([ attachmentPath, exportPath, tempPath ]);
+    await cleanData([ attachmentPath, exportPath ]);
     await t.destroy(apos);
   });
 
@@ -30,11 +29,6 @@ describe('@apostrophecms/import-export', function () {
     });
     attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
     exportPath = path.join(apos.rootDir, 'public/uploads/exports');
-    tempPath = path.join(apos.rootDir, 'data/temp/exports');
-
-    if (!existsSync(tempPath)) {
-      await fs.mkdir(tempPath);
-    }
 
     await insertAdminUser(apos);
     await insertPieces(apos);
@@ -51,7 +45,7 @@ describe('@apostrophecms/import-export', function () {
     const { url } = await apos.modules['@apostrophecms/import-export'].export(req, apos.article);
     const fileName = path.basename(url);
 
-    const extractPath = await gunzip(tempPath, exportPath, fileName);
+    const extractPath = await gunzip(exportPath, fileName);
 
     const {
       docs, attachments, attachmentFiles
@@ -85,7 +79,7 @@ describe('@apostrophecms/import-export', function () {
     const { url } = await apos.modules['@apostrophecms/import-export'].export(req, apos.article);
     const fileName = path.basename(url);
 
-    const extractPath = await gunzip(tempPath, exportPath, fileName);
+    const extractPath = await gunzip(exportPath, fileName);
 
     const {
       docs, attachments, attachmentFiles
@@ -108,8 +102,8 @@ describe('@apostrophecms/import-export', function () {
   it('should generate a zip file for pages with related documents', async function () {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
-    const { _id: attachmentId } = await apos.attachment.db.findOne({ name: 'test-image' });
 
+    const { _id: attachmentId } = await apos.attachment.db.findOne({ name: 'test-image' });
     req.body = {
       _ids: [ page1._id ],
       extension: 'gzip',
@@ -120,7 +114,7 @@ describe('@apostrophecms/import-export', function () {
     const { url } = await apos.modules['@apostrophecms/import-export'].export(req, apos.page);
     const fileName = path.basename(url);
 
-    const extractPath = await gunzip(tempPath, exportPath, fileName);
+    const extractPath = await gunzip(exportPath, fileName);
 
     const {
       docs, attachments, attachmentFiles
@@ -166,9 +160,9 @@ async function getExtractedFiles(extractPath) {
   }
 }
 
-async function gunzip(tempPath, exportPath, fileName) {
+async function gunzip(exportPath, fileName) {
   const zipPath = path.join(exportPath, fileName);
-  const extractPath = path.join(tempPath, fileName.replace('.tar.gz', ''));
+  const extractPath = path.join(exportPath, fileName.replace('.tgz', ''));
 
   if (!existsSync(extractPath)) {
     await fs.mkdir(extractPath);
@@ -379,7 +373,8 @@ function getAppConfig() {
     article: {
       extend: '@apostrophecms/piece-type',
       options: {
-        alias: 'article'
+        alias: 'article',
+        autopublish: true
       },
       fields: {
         add: {
