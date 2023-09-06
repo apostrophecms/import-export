@@ -7,7 +7,7 @@ const {
 const path = require('path');
 const FormData = require('form-data');
 const tar = require('tar-stream');
-const zlib = require('zlib');
+const zlib = require('node:zlib');
 
 describe('@apostrophecms/import-export', function () {
   let apos;
@@ -175,19 +175,18 @@ async function gunzip(exportPath, fileName) {
 
     unzip.on('error', reject);
 
-    extract.on('entry', (header, stream, next) => {
-      if (header.type === 'directory') {
-        fs.mkdir(`${extractPath}/${header.name}`).then(() => {
-          next();
-        }).catch(reject);
-      } else {
-        stream.pipe(WriteStream(`${extractPath}/${header.name}`));
+    extract
+      .on('entry', (header, stream, next) => {
+        if (header.type === 'directory') {
+          fs.mkdir(`${extractPath}/${header.name}`)
+            .then(next)
+            .catch(reject);
+        } else {
+          stream.pipe(WriteStream(`${extractPath}/${header.name}`));
 
-        stream.on('end', () => {
-          next();
-        });
-      }
-    })
+          stream.on('end', next);
+        }
+      })
       .on('finish', () => {
         resolve(extractPath);
       })
