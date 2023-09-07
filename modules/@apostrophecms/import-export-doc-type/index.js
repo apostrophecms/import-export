@@ -10,7 +10,7 @@ module.exports = {
       label: 'aposImportExport:export',
       modal: 'AposExportModal',
       props: {
-        action: 'export-one'
+        action: 'export'
       }
     };
 

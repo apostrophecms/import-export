@@ -27,7 +27,7 @@ module.exports = {
 
     return {
       add: {
-        export: {
+        'export-batch': {
           label: 'aposImportExport:export',
           messages: {
             progress: 'aposImportExport:exporting',
@@ -41,7 +41,7 @@ module.exports = {
       group: {
         more: {
           icon: 'dots-vertical-icon',
-          operations: [ 'export' ]
+          operations: [ 'export-batch' ]
         }
       }
     };
@@ -53,14 +53,24 @@ module.exports = {
 
     return {
       post: {
-        import(req) {
-          console.log('IMPORT', self.__meta.name);
+        import: [
+          require('connect-multiparty')(),
+          req => self.apos.modules['@apostrophecms/job'].run(
+            req,
+            (req, reporting) => self.apos.modules['@apostrophecms/import-export'].import(req, reporting)
+          )
+        ],
+        export(req) {
+          // Add the piece type label to req.body for notifications.
+          req.body.type = req.t(self.options.label);
+
+          return self.apos.modules['@apostrophecms/import-export'].export(req, self);
         },
         // NOTE: this route is used in batch operations, and its method should be POST
         // in order to make the job work with the progress notification.
-        // The other `exportOne` routes that are used by context operations on each doc
+        // The other 'export' routes that are used by context operations on each doc
         // are also POST for consistency.
-        export(req) {
+        exportBatch(req) {
           // Add the piece type label to req.body for notifications.
           // Should be done before calling the job's `run` method.
           req.body.type = req.body._ids.length === 1
@@ -73,12 +83,6 @@ module.exports = {
             req,
             (req, reporting) => self.apos.modules['@apostrophecms/import-export'].export(req, self, reporting)
           );
-        },
-        exportOne(req) {
-          // Add the piece type label to req.body for notifications.
-          req.body.type = req.t(self.options.label);
-
-          return self.apos.modules['@apostrophecms/import-export'].export(req, self);
         }
       }
     };
