@@ -14,7 +14,10 @@ module.exports = {
             modal: 'AposImportModal'
           },
           messages: {
-            progress: 'Importing {{ type }}...'
+            progress: 'aposImportExport:importing',
+            completed: 'aposImportExport:imported',
+            icon: 'database-import-icon',
+            resultsEventName: 'import-duplicates'
           }
         }
       }

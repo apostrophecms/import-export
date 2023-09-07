@@ -5,6 +5,7 @@ export default () => {
     if (!ready) {
       ready = true;
       window.apos.bus.$on('export-download', openUrl);
+      window.apos.bus.$on('import-duplicates', handleDuplicates);
     }
   });
 
@@ -12,5 +13,11 @@ export default () => {
     if (event.url) {
       window.open(event.url, '_blank');
     }
+  }
+
+  function handleDuplicates(event) {
+    console.log('event', event);
+    console.log('event.duplicatedDocs', event.duplicatedDocs);
+    console.log('event.duplicatedAttachments', event.duplicatedAttachments);
   }
 };
