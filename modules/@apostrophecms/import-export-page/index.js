@@ -30,7 +30,10 @@ module.exports = {
       post: {
         import: [
           require('connect-multiparty')(),
-          req => self.apos.modules['@apostrophecms/import-export'].import(req)
+          req => self.apos.modules['@apostrophecms/job'].run(
+            req,
+            (req, reporting) => self.apos.modules['@apostrophecms/import-export'].import(req, reporting)
+          )
         ],
         export(req) {
           // Add the page label to req.body for notifications.
