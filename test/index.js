@@ -17,7 +17,7 @@ describe('@apostrophecms/import-export', function () {
   this.timeout(t.timeout);
 
   after(async function() {
-
+    await cleanData([ attachmentPath, exportPath ]);
     await t.destroy(apos);
   });
 
@@ -30,7 +30,6 @@ describe('@apostrophecms/import-export', function () {
     attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
     exportPath = path.join(apos.rootDir, 'public/uploads/exports');
 
-    await cleanData([ attachmentPath, exportPath ]);
     await insertAdminUser(apos);
     await insertPieces(apos);
   });
@@ -100,17 +99,11 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
-  it.only('should generate a zip file for pages with related documents', async function () {
+  it('should generate a zip file for pages with related documents', async function () {
     const req = apos.task.getReq();
-    const page1 = await apos.page.findForEditing(req, { title: 'page1' }).toObject();
-    const pageDraft = await apos.page.findForEditing(apos.task.getReq({ mode: 'draft' }), { title: 'page1' }).toObject();
-
-    /* console.log('=====> "Published <====='); */
-    /* console.dir(page1.main, { depth: 4 }); */
-    /* console.log('=====> draft <====='); */
-    /* console.dir(pageDraft.main, { depth: 4 }); */
-
+    const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
     const { _id: attachmentId } = await apos.attachment.db.findOne({ name: 'test-image' });
+
     req.body = {
       _ids: [ page1._id ],
       extension: 'gzip',
@@ -132,8 +125,6 @@ describe('@apostrophecms/import-export', function () {
       attachmentsLength: attachments.length,
       attachmentFiles
     };
-
-    console.log('actual', actual);
 
     const expected = {
       docsLength: 6,
