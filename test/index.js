@@ -37,12 +37,14 @@ describe('@apostrophecms/import-export', function () {
   it('should generate a zip file for pieces without related documents', async function () {
     const req = apos.task.getReq();
     const articles = await apos.article.find(req).toArray();
+    const manager = apos.article;
 
     req.body = {
       _ids: articles.map(({ _id }) => _id),
-      extension: 'gzip'
+      extension: 'gzip',
+      type: req.t(manager.options.pluralLabel)
     };
-    const { url } = await apos.modules['@apostrophecms/import-export'].export(req, apos.article);
+    const { url } = await apos.modules['@apostrophecms/import-export'].export(req, manager);
     const fileName = path.basename(url);
 
     const extractPath = await gunzip(exportPath, fileName);
@@ -69,14 +71,16 @@ describe('@apostrophecms/import-export', function () {
     const req = apos.task.getReq();
     const articles = await apos.article.find(req).toArray();
     const { _id: attachmentId } = await apos.attachment.db.findOne({ name: 'test-image' });
+    const manager = apos.article;
 
     req.body = {
       _ids: articles.map(({ _id }) => _id),
       extension: 'gzip',
-      relatedTypes: [ '@apostrophecms/image', 'topic' ]
+      relatedTypes: [ '@apostrophecms/image', 'topic' ],
+      type: req.t(manager.options.pluralLabel)
     };
 
-    const { url } = await apos.modules['@apostrophecms/import-export'].export(req, apos.article);
+    const { url } = await apos.modules['@apostrophecms/import-export'].export(req, manager);
     const fileName = path.basename(url);
 
     const extractPath = await gunzip(exportPath, fileName);
@@ -102,8 +106,8 @@ describe('@apostrophecms/import-export', function () {
   it('should generate a zip file for pages with related documents', async function () {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
-
     const { _id: attachmentId } = await apos.attachment.db.findOne({ name: 'test-image' });
+
     req.body = {
       _ids: [ page1._id ],
       extension: 'gzip',
