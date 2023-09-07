@@ -90,12 +90,49 @@ describe('@apostrophecms/import-export', function () {
     } = await getExtractedFiles(extractPath);
 
     const actual = {
-      docsNames: docs.map(({ title }) => title),
+      docsNames: docs.map(({ title, aposMode }) => ({
+        title,
+        aposMode
+      })),
       attachmentsLength: attachments.length,
       attachmentFiles
     };
     const expected = {
-      docsNames: [ 'topic1', 'topic2', 'topic1', 'topic2', 'article2', 'article1', 'article2', 'article1' ],
+      docsNames: [
+        {
+          aposMode: 'draft',
+          title: 'topic1'
+        },
+        {
+          aposMode: 'draft',
+          title: 'topic2'
+        },
+        {
+          aposMode: 'published',
+          title: 'topic1'
+        },
+        {
+          aposMode: 'published',
+          title: 'topic2'
+        },
+        {
+          aposMode: 'draft',
+          title: 'article2'
+        },
+        {
+          aposMode: 'draft',
+          title: 'article1'
+        },
+        {
+          aposMode: 'published',
+          title: 'article2'
+        },
+
+        {
+          aposMode: 'published',
+          title: 'article1'
+        }
+      ],
       attachmentsLength: 1,
       attachmentFiles: [ `${attachmentId}-test-image.jpg` ]
     };
@@ -125,13 +162,41 @@ describe('@apostrophecms/import-export', function () {
     } = await getExtractedFiles(extractPath);
 
     const actual = {
-      docsNames: docs.map(({ title }) => title),
+      docsNames: docs.map(({ title, aposMode }) => ({
+        title,
+        aposMode
+      })),
       attachmentsLength: attachments.length,
       attachmentFiles
     };
 
     const expected = {
-      docsNames: [ 'image1', 'article2', 'image1', 'article2', 'page1', 'page1' ],
+      docsNames: [
+        {
+          aposMode: 'draft',
+          title: 'image1'
+        },
+        {
+          aposMode: 'draft',
+          title: 'article2'
+        },
+        {
+          aposMode: 'published',
+          title: 'image1'
+        },
+        {
+          aposMode: 'published',
+          title: 'article2'
+        },
+        {
+          aposMode: 'draft',
+          title: 'page1'
+        },
+        {
+          aposMode: 'published',
+          title: 'page1'
+        }
+      ],
       attachmentsLength: 1,
       attachmentFiles: [ `${attachmentId}-test-image.jpg` ]
     };
