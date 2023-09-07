@@ -65,7 +65,7 @@ module.exports = {
         },
         // NOTE: this route is used in batch operations, and its method should be POST
         // in order to make the job work with the progress notification.
-        // The other `export` routes that are used by context operations on each doc
+        // The other 'export' routes that are used by context operations on each doc
         // are also POST for consistency.
         exportBatch(req) {
           // Add the piece type label to req.body for notifications.
