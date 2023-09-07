@@ -28,10 +28,11 @@ module.exports = {
 
     return {
       post: {
-        import(req) {
-          return self.apos.modules['@apostrophecms/import-export'].import(req);
-        },
-        exportOne(req) {
+        import: [
+          require('connect-multiparty')(),
+          req => self.apos.modules['@apostrophecms/import-export'].import(req)
+        ],
+        export(req) {
           // Add the page label to req.body for notifications.
           req.body.type = req.t('apostrophe:page');
 
