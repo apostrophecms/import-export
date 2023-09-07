@@ -90,12 +90,12 @@ describe('@apostrophecms/import-export', function () {
     } = await getExtractedFiles(extractPath);
 
     const actual = {
-      docsLength: docs.length,
+      docsNames: docs.map(({ title }) => title),
       attachmentsLength: attachments.length,
       attachmentFiles
     };
     const expected = {
-      docsLength: 8,
+      docsNames: [ 'topic1', 'topic2', 'topic1', 'topic2', 'article2', 'article1', 'article2', 'article1' ],
       attachmentsLength: 1,
       attachmentFiles: [ `${attachmentId}-test-image.jpg` ]
     };
@@ -125,13 +125,13 @@ describe('@apostrophecms/import-export', function () {
     } = await getExtractedFiles(extractPath);
 
     const actual = {
-      docsLength: docs.length,
+      docsNames: docs.map(({ title }) => title),
       attachmentsLength: attachments.length,
       attachmentFiles
     };
 
     const expected = {
-      docsLength: 6,
+      docsNames: [ 'image1', 'article2', 'image1', 'article2', 'page1', 'page1' ],
       attachmentsLength: 1,
       attachmentFiles: [ `${attachmentId}-test-image.jpg` ]
     };
