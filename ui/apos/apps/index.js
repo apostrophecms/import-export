@@ -16,7 +16,7 @@ export default () => {
   }
 
   function handleDuplicates(event) {
-    console.log('event', event);
+    // TODO: display modal to handle duplicates?
     console.log('event.duplicatedDocs', event.duplicatedDocs);
     console.log('event.duplicatedAttachments', event.duplicatedAttachments);
   }
