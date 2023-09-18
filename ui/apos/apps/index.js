@@ -1,11 +1,11 @@
 export default () => {
   let ready = false;
 
-  window.apos.util.onReady(() => {
+  apos.util.onReady(() => {
     if (!ready) {
       ready = true;
-      window.apos.bus.$on('export-download', openUrl);
-      window.apos.bus.$on('import-duplicates', handleDuplicates);
+      apos.bus.$on('export-download', openUrl);
+      apos.bus.$on('import-duplicates', handleDuplicates);
     }
   });
 
@@ -16,8 +16,13 @@ export default () => {
   }
 
   function handleDuplicates(event) {
-    // TODO: display modal to handle duplicates?
-    console.log('event.duplicatedDocs', event.duplicatedDocs);
-    console.log('event.duplicatedAttachments', event.duplicatedAttachments);
+    if (!event.duplicatedDocs.length) {
+      return;
+    }
+
+    apos.modal.execute('AposDuplicateImportModal', {
+      docs: event.duplicatedDocs,
+      type: event.type
+    });
   }
 };
