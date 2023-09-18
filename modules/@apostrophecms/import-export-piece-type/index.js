@@ -1,3 +1,5 @@
+const multiparty = require('connect-multiparty');
+
 module.exports = {
   improve: '@apostrophecms/piece-type',
   cascades: [ 'batchOperations' ],
@@ -57,7 +59,7 @@ module.exports = {
     return {
       post: {
         import: [
-          require('connect-multiparty')(),
+          multiparty(),
           req => {
             // `req.body` is not set because we are using form-data.
             // Add `messages` to `body` so the notification
