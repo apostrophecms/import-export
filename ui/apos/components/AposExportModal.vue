@@ -422,6 +422,7 @@ export default {
 .apos-export__btns {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-top: 10px;
   width: 100%;
   gap: 20px;

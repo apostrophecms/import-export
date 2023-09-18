@@ -202,6 +202,7 @@ export default {
   &__btns {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-top: 10px;
     width: 100%;
   }
