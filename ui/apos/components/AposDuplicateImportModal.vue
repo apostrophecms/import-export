@@ -78,31 +78,11 @@ export default {
   props: {
     type: {
       type: String,
-      default() {
-        return 'article';
-      }
+      required: true
     },
     docs: {
       type: Array,
-      /* required: true */
-      default: () => [
-        {
-          title: 'docA',
-          aposMode: 'draft',
-          aposDocId: '111'
-        },
-        {
-          title: 'docA',
-          aposMode: 'published',
-          aposDocId: '2'
-        },
-
-        {
-          title: 'doc 2 yeah',
-          aposMode: 'draft',
-          aposDocId: '3'
-        }
-      ]
+      required: true
     }
   },
 
