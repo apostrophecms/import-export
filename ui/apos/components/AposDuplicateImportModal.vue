@@ -30,24 +30,22 @@
             />
 
             <div class="apos-import-duplicate__separator" />
-            <div class="apos-import-duplicate__settings-row apos-export__settings-row--column">
-              <div class="apos-import-duplicate__docs-list">
-                <AposCheckbox
-                  v-for="doc in draftDocs"
-                  :key="doc.aposDocId"
-                  v-model="checkedProxy"
-                  tabindex="-1"
-                  :choice="{
-                    value: doc.aposDocId,
-                    label: doc.title
-                  }"
-                  :field="{
-                    label: doc.title,
-                    name: doc.aposDocId
-                  }"
-                  @updated="checkDoc"
-                />
-              </div>
+            <div class="apos-import-duplicate__docs-list">
+              <AposCheckbox
+                v-for="doc in draftDocs"
+                :key="doc.aposDocId"
+                v-model="checkedProxy"
+                tabindex="-1"
+                :choice="{
+                  value: doc.aposDocId,
+                  label: doc.title
+                }"
+                :field="{
+                  label: doc.title,
+                  name: doc.aposDocId
+                }"
+                @updated="checkDoc"
+              />
             </div>
           </div>
 
@@ -96,7 +94,7 @@ export default {
         showModal: false,
         disableHeader: true
       },
-      draftDocs: this.docs.filter((doc) => doc.aposMode === 'draft'),
+      draftDocs: this.docs.filter(({ aposMode }) => aposMode === 'draft'),
       checked: []
     };
   },
@@ -254,7 +252,7 @@ export default {
   flex-direction: column;
   align-items: baseline;
   min-width: 100%;
-  margin-bottom: 15px;
+  width: 100%;
 }
 
 .apos-import-duplicate__settings {
@@ -264,22 +262,11 @@ export default {
   margin-top: 20px;
 }
 
-.apos-import-duplicate__settings-row {
-  font-size: var(--a-type-base);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 70px;
-  height: 43px;
+.apos-import-duplicate__docs-list {
   width: 100%;
-}
-
-.apos-import-duplicate__settings-row--column {
-  flex-direction: column;
-  gap: 20px;
-  align-items: baseline;
-  height: auto;
-  margin-bottom: 20px;
+  max-height: calc(60vh - 220px);
+  overflow-y: auto;
+  padding-bottom: 15px;
 }
 
 .apos-import-duplicate__separator {
