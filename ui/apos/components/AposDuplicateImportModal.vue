@@ -34,7 +34,7 @@
               <AposCheckbox
                 v-for="doc in draftDocs"
                 :key="doc.aposDocId"
-                v-model="checkedProxy"
+                v-model="checked"
                 tabindex="-1"
                 :choice="{
                   value: doc.aposDocId,
@@ -44,7 +44,6 @@
                   label: doc.title,
                   name: doc.aposDocId
                 }"
-                @updated="checkDoc"
               />
             </div>
           </div>
@@ -58,11 +57,11 @@
               @click="cancel"
             />
             <AposButton
-              ref="runImport"
+              ref="runOverride"
               class="apos-import-duplicate__btn"
               :label="$t('aposImportExport:importDuplicateContinue')"
               type="primary"
-              @click="runImport"
+              @click="runOverride"
             />
           </div>
         </template>
@@ -105,40 +104,24 @@ export default {
       const label = moduleOptions.pluralLabel;
 
       return this.$t(label).toLowerCase();
-    },
-    checkedProxy: {
-      get() {
-        return this.checked;
-      },
-      set(val) {
-        console.log('val', val);
-        console.log('this.checked', this.checked);
-        this.$emit('change', val);
-      }
     }
   },
 
   async mounted() {
     this.modal.active = true;
     this.checked = this.draftDocs.map(({ aposDocId }) => aposDocId);
-
-    console.log('this.checked', this.checked);
   },
 
   methods: {
     ready() {
-      this.$refs.runImport.$el.querySelector('button').focus();
+      this.$refs.runOverride.$el.querySelector('button').focus();
     },
-    async runImport() {
-      const { action } = window.apos.modules[this.moduleName];
-
+    async runOverride() {
       try {
-        await window.apos.http.post(`${action}/${this.action}`, {
+        await apos.http.post('/api/v1/@apostrophecms/import-export/override', {
           busy: true,
           body: {
-            _ids: this.selectedDocIds,
-            messages: this.messages,
-            formatName: this.formatName
+            docs: this.docs.filter((doc) => this.checked.includes(doc.aposDocId))
           }
         });
       } catch (error) {
@@ -152,24 +135,6 @@ export default {
     },
     async cancel() {
       this.modal.showModal = false;
-    },
-    toggleRelatedChildren() {
-      this.relatedChildrenDisabled = !this.relatedChildrenDisabled;
-    },
-    checkDoc(evt) {
-      const docId = evt.target.value;
-      if (this.checked.includes(docId)) {
-        this.checked = this.checked.filter((id) => id !== docId);
-      } else {
-        this.checked.push(docId);
-      }
-    },
-    getRelatedTypeLabel(moduleName) {
-      const moduleOptions = apos.modules[moduleName];
-      return this.$t(moduleOptions.label);
-    },
-    onFormatChange(formatName) {
-      this.formatName = this.formats.find(format => format.name === formatName).name;
     },
     deselect() {
       this.checked = this.checked.length
