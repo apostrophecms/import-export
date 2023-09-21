@@ -32,7 +32,7 @@
             <div class="apos-import-duplicate__separator" />
             <div class="apos-import-duplicate__docs-list">
               <AposCheckbox
-                v-for="doc in draftDocs"
+                v-for="doc in docs"
                 :key="doc.aposDocId"
                 v-model="checked"
                 tabindex="-1"
@@ -80,6 +80,10 @@ export default {
     docs: {
       type: Array,
       required: true
+    },
+    exportPath: {
+      type: String,
+      required: true
     }
   },
 
@@ -93,11 +97,9 @@ export default {
         showModal: false,
         disableHeader: true
       },
-      draftDocs: this.docs.filter(({ aposMode }) => aposMode === 'draft'),
       checked: []
     };
   },
-
   computed: {
     moduleLabel() {
       const moduleOptions = apos.modules[this.type];
@@ -107,9 +109,22 @@ export default {
     }
   },
 
+  async beforeUnmount() {
+    try {
+      await apos.http.post('/api/v1/@apostrophecms/import-export/clean-export', {
+        body: {
+          exportPath: this.exportPath
+        }
+      });
+    } catch (err) {
+      console.log('err', err);
+      console.error('The exported folder could not have been cleaned');
+    }
+  },
+
   async mounted() {
     this.modal.active = true;
-    this.checked = this.draftDocs.map(({ aposDocId }) => aposDocId);
+    this.checked = this.docs.map(({ aposDocId }) => aposDocId);
   },
 
   methods: {
@@ -121,7 +136,8 @@ export default {
         await apos.http.post('/api/v1/@apostrophecms/import-export/override', {
           busy: true,
           body: {
-            docs: this.docs.filter((doc) => this.checked.includes(doc.aposDocId))
+            docIds: this.checked,
+            exportPath: this.exportPath
           }
         });
       } catch (error) {
@@ -139,7 +155,7 @@ export default {
     deselect() {
       this.checked = this.checked.length
         ? []
-        : this.draftDocs.map(({ aposDocId }) => aposDocId);
+        : this.docs.map(({ aposDocId }) => aposDocId);
     }
   }
 };
