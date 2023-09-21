@@ -22,7 +22,12 @@ export default () => {
 
     apos.modal.execute('AposDuplicateImportModal', {
       docs: event.duplicatedDocs,
-      type: event.type
+      type: event.type,
+      exportPath: event.exportPath
     });
   }
+
+  // TODO: Test this to call override method and clean
+  // Check if beforeDestory in vue comp works also
+  /* onbeforeunload = (event) => {}; */
 };
