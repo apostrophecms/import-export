@@ -60,7 +60,7 @@ module.exports = {
       post: {
         import: [
           multiparty(),
-          req => {
+          (req) => {
             // `req.body` is not set because we are using form-data.
             // Add `messages` to `body` so the notification
             // displayed by the reporting works.
