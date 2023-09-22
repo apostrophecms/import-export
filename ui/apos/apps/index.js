@@ -24,6 +24,7 @@ export default () => {
     if (event.duplicatedDocs.length) {
       await apos.modal.execute('AposDuplicateImportModal', {
         docs: event.duplicatedDocs,
+        importedAttachments: event.importedAttachments,
         type: event.type,
         exportPath: event.exportPath
       });

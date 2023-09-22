@@ -84,6 +84,10 @@ export default {
     exportPath: {
       type: String,
       required: true
+    },
+    importedAttachments: {
+      type: Array,
+      required: true
     }
   },
 
@@ -130,7 +134,6 @@ export default {
           }
         });
       } catch (error) {
-        console.log('error', error);
         apos.notify(this.$t('aposImportExport:importCleanFailed'), {
           type: 'warning',
           dismiss: true,
@@ -149,6 +152,7 @@ export default {
           busy: true,
           body: {
             docIds: this.checked,
+            importedAttachments: this.importedAttachments,
             exportPath: this.exportPath
           }
         });
