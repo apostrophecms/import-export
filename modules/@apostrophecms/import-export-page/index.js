@@ -33,15 +33,21 @@ module.exports = {
       post: {
         import: [
           require('connect-multiparty')(),
-          req => {
+          async (req) => {
+            if (!req.user) {
+              throw self.apos.error('forbidden');
+            }
             // `req.body` is not set because we are using form-data.
             // Add `messages` to `body` so the notification
             // displayed by the reporting works.
             req.body = { messages: req.body };
+            const importExportManager = self.apos.modules['@apostrophecms/import-export'];
+
+            const data = await importExportManager.readExportFile(req);
 
             return self.apos.modules['@apostrophecms/job'].run(
               req,
-              (req, reporting) => self.apos.modules['@apostrophecms/import-export'].import(req, reporting)
+              (req, reporting) => importExportManager.import(req, reporting, data)
             );
           }
         ],
