@@ -74,11 +74,12 @@ module.exports = {
             const importExportManager = self.apos.modules['@apostrophecms/import-export'];
             const data = await importExportManager.readExportFile(req);
 
-            console.dir(data, { depth: 1 });
-            return self.apos.modules['@apostrophecms/job'].run(
-              req,
-              (req, reporting) => importExportManager.import(req, reporting, data)
-            );
+            return importExportManager.import(req, data);
+
+            /* return self.apos.modules['@apostrophecms/job'].run( */
+            /*   req, */
+            /*   (req, reporting) => importExportManager.import(req, reporting, data) */
+            /* ); */
           }
         ],
         export(req) {
