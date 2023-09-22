@@ -3,7 +3,7 @@
     :modal="modal"
     class="apos-import-duplicate"
     @esc="cancel"
-    @no-modal="$emit('safe-close')"
+    @no-modal="closeModal"
     @inactive="modal.active = false"
     @show-modal="modal.showModal = true"
     @ready="ready"
@@ -97,7 +97,8 @@ export default {
         showModal: false,
         disableHeader: true
       },
-      checked: []
+      checked: [],
+      exportFileCleaned: false
     };
   },
   computed: {
@@ -109,25 +110,36 @@ export default {
     }
   },
 
-  async beforeUnmount() {
-    try {
-      await apos.http.post('/api/v1/@apostrophecms/import-export/clean-export', {
-        body: {
-          exportPath: this.exportPath
-        }
-      });
-    } catch (err) {
-      console.log('err', err);
-      console.error('The exported folder could not have been cleaned');
-    }
-  },
-
   async mounted() {
     this.modal.active = true;
     this.checked = this.docs.map(({ aposDocId }) => aposDocId);
   },
 
   methods: {
+    async closeModal() {
+      if (!this.exportFileCleaned) {
+        await this.cleanExportFile();
+      }
+      this.$emit('safe-close');
+    },
+    async cleanExportFile() {
+      try {
+        await apos.http.post('/api/v1/@apostrophecms/import-export/clean-export', {
+          body: {
+            exportPath: this.exportPath
+          }
+        });
+      } catch (error) {
+        console.log('error', error);
+        apos.notify(this.$t('aposImportExport:importCleanFailed'), {
+          type: 'warning',
+          dismiss: true,
+          interpolate: {
+            exportPath: this.exportPath
+          }
+        });
+      }
+    },
     ready() {
       this.$refs.runOverride.$el.querySelector('button').focus();
     },
@@ -140,6 +152,7 @@ export default {
             exportPath: this.exportPath
           }
         });
+        this.exportFileCleaned = true;
       } catch (error) {
         apos.notify(this.$t('aposImportExport:exportFailed'), {
           type: 'danger',

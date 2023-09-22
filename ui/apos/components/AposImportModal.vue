@@ -140,6 +140,7 @@ export default {
           busy: true,
           body: formData
         });
+        apos.bus.$emit('import-started');
       } catch (error) {
         apos.notify(this.$t('aposImportExport:importFailed'), {
           type: 'danger',

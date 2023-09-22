@@ -5,6 +5,7 @@ export default () => {
     if (!ready) {
       ready = true;
       apos.bus.$on('export-download', openUrl);
+      apos.bus.$on('import-started', addBeforeUnloadListener);
       apos.bus.$on('import-duplicates', handleDuplicates);
     }
   });
@@ -15,19 +16,24 @@ export default () => {
     }
   }
 
-  function handleDuplicates(event) {
-    if (!event.duplicatedDocs.length) {
-      return;
-    }
-
-    apos.modal.execute('AposDuplicateImportModal', {
-      docs: event.duplicatedDocs,
-      type: event.type,
-      exportPath: event.exportPath
-    });
+  function addBeforeUnloadListener() {
+    window.addEventListener('beforeunload', warningImport);
   }
 
-  // TODO: Test this to call override method and clean
-  // Check if beforeDestory in vue comp works also
-  /* onbeforeunload = (event) => {}; */
+  async function handleDuplicates(event) {
+    if (event.duplicatedDocs.length) {
+      await apos.modal.execute('AposDuplicateImportModal', {
+        docs: event.duplicatedDocs,
+        type: event.type,
+        exportPath: event.exportPath
+      });
+    }
+
+    window.removeEventListener('beforeunload', warningImport);
+  }
+
+  function warningImport(event) {
+    event.preventDefault();
+    event.returnValue = 'You are currently importing document, you should stay during the process.';
+  }
 };
