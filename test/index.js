@@ -29,6 +29,7 @@ describe('@apostrophecms/import-export', function () {
     });
     attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
     exportPath = path.join(apos.rootDir, 'public/uploads/exports');
+    apos.modules['@apostrophecms/import-export'].removeExportFileFromUploadFs = () => {};
 
     await insertAdminUser(apos);
     await insertPieces(apos);
