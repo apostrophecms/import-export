@@ -61,25 +61,13 @@ module.exports = {
         import: [
           multiparty(),
           async (req) => {
-            if (!req.user) {
-              throw self.apos.error('forbidden');
-            }
-
             // TODO: You say body is not set but you use req.body?
             // `req.body` is not set because we are using form-data.
             // Add `messages` to `body` so the notification
             // displayed by the reporting works.
             req.body = { messages: req.body };
 
-            const importExportManager = self.apos.modules['@apostrophecms/import-export'];
-            const data = await importExportManager.readExportFile(req);
-
-            return importExportManager.import(req, data);
-
-            /* return self.apos.modules['@apostrophecms/job'].run( */
-            /*   req, */
-            /*   (req, reporting) => importExportManager.import(req, reporting, data) */
-            /* ); */
+            return self.apos.modules['@apostrophecms/import-export'].import(req);
           }
         ],
         export(req) {

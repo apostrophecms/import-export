@@ -41,14 +41,8 @@ module.exports = {
             // Add `messages` to `body` so the notification
             // displayed by the reporting works.
             req.body = { messages: req.body };
-            const importExportManager = self.apos.modules['@apostrophecms/import-export'];
 
-            const data = await importExportManager.readExportFile(req);
-
-            return self.apos.modules['@apostrophecms/job'].run(
-              req,
-              (req, reporting) => importExportManager.import(req, reporting, data)
-            );
+            return self.apos.modules['@apostrophecms/import-export'].import(req);
           }
         ],
         export(req) {
