@@ -16,7 +16,7 @@ module.exports = {
           messages: {
             progress: 'aposImportExport:importing',
             completed: 'aposImportExport:imported',
-            icon: 'database-export-icon',
+            icon: 'database-import-icon',
             resultsEventName: 'import-duplicates'
           }
         }
@@ -34,9 +34,6 @@ module.exports = {
         import: [
           require('connect-multiparty')(),
           async (req) => {
-            if (!req.user) {
-              throw self.apos.error('forbidden');
-            }
             // `req.body` is not set because we are using form-data.
             // Add `messages` to `body` so the notification
             // displayed by the reporting works.

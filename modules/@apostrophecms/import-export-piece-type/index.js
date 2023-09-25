@@ -18,7 +18,7 @@ module.exports = {
           messages: {
             progress: 'aposImportExport:importing',
             completed: 'aposImportExport:imported',
-            icon: 'database-export-icon',
+            icon: 'database-import-icon',
             resultsEventName: 'import-duplicates'
           }
         }
