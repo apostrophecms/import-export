@@ -32,7 +32,7 @@
             <div class="apos-import-duplicate__separator" />
             <div class="apos-import-duplicate__docs-list">
               <AposCheckbox
-                v-for="doc in docs"
+                v-for="doc in duplicatedDocs"
                 :key="doc.aposDocId"
                 v-model="checked"
                 tabindex="-1"
@@ -77,7 +77,7 @@ export default {
       type: String,
       required: true
     },
-    docs: {
+    duplicatedDocs: {
       type: Array,
       required: true
     },
@@ -87,6 +87,14 @@ export default {
     },
     importedAttachments: {
       type: Array,
+      required: true
+    },
+    jobId: {
+      type: String,
+      required: true
+    },
+    notificationId: {
+      type: String,
       required: true
     }
   },
@@ -116,7 +124,7 @@ export default {
 
   async mounted() {
     this.modal.active = true;
-    this.checked = this.docs.map(({ aposDocId }) => aposDocId);
+    this.checked = this.duplicatedDocs.map(({ aposDocId }) => aposDocId);
   },
 
   methods: {
@@ -130,7 +138,9 @@ export default {
       try {
         await apos.http.post('/api/v1/@apostrophecms/import-export/clean-export', {
           body: {
-            exportPath: this.exportPath
+            exportPath: this.exportPath,
+            jobId: this.jobId,
+            notificationId: this.notificationId
           }
         });
       } catch (error) {
@@ -146,14 +156,15 @@ export default {
     ready() {
       this.$refs.runOverride.$el.querySelector('button').focus();
     },
-    async runOverride() {
+    runOverride() {
       try {
-        await apos.http.post('/api/v1/@apostrophecms/import-export/override', {
-          busy: true,
+        apos.http.post('/api/v1/@apostrophecms/import-export/override-duplicates', {
           body: {
             docIds: this.checked,
             importedAttachments: this.importedAttachments,
-            exportPath: this.exportPath
+            exportPath: this.exportPath,
+            jobId: this.jobId,
+            notificationId: this.notificationId
           }
         });
         this.exportFileCleaned = true;
@@ -172,7 +183,7 @@ export default {
     deselect() {
       this.checked = this.checked.length
         ? []
-        : this.docs.map(({ aposDocId }) => aposDocId);
+        : this.duplicatedDocs.map(({ aposDocId }) => aposDocId);
     }
   }
 };
