@@ -22,12 +22,7 @@ export default () => {
 
   async function handleDuplicates(event) {
     if (event.duplicatedDocs.length) {
-      await apos.modal.execute('AposDuplicateImportModal', {
-        docs: event.duplicatedDocs,
-        importedAttachments: event.importedAttachments,
-        type: event.type,
-        exportPath: event.exportPath
-      });
+      await apos.modal.execute('AposDuplicateImportModal', event);
     }
 
     window.removeEventListener('beforeunload', warningImport);
