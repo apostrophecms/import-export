@@ -137,7 +137,6 @@ export default {
 
       try {
         await apos.http.post(`${this.moduleAction}/${this.action}`, {
-          busy: true,
           body: formData
         });
         apos.bus.$emit('import-started');
