@@ -11,8 +11,10 @@ const zlib = require('node:zlib');
 
 describe('@apostrophecms/import-export', function () {
   let apos;
+  let importExportManager;
   let attachmentPath;
   let exportPath;
+  let piecesExportPath;
 
   this.timeout(t.timeout);
 
@@ -29,7 +31,8 @@ describe('@apostrophecms/import-export', function () {
     });
     attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
     exportPath = path.join(apos.rootDir, 'public/uploads/exports');
-    apos.modules['@apostrophecms/import-export'].removeExportFileFromUploadFs = () => {};
+    importExportManager = apos.modules['@apostrophecms/import-export'];
+    importExportManager.removeExportFileFromUploadFs = () => {};
 
     await insertAdminUser(apos);
     await insertPieces(apos);
@@ -45,14 +48,14 @@ describe('@apostrophecms/import-export', function () {
       extension: 'gzip',
       type: req.t(manager.options.pluralLabel)
     };
-    const { url } = await apos.modules['@apostrophecms/import-export'].export(req, manager);
+    const { url } = await importExportManager.export(req, manager);
     const fileName = path.basename(url);
 
-    const extractPath = await gunzip(exportPath, fileName);
+    piecesExportPath = await gunzip(exportPath, fileName);
 
     const {
       docs, attachments, attachmentFiles
-    } = await getExtractedFiles(extractPath);
+    } = await getExtractedFiles(piecesExportPath);
 
     const actual = {
       docsLength: docs.length,
@@ -81,7 +84,7 @@ describe('@apostrophecms/import-export', function () {
       type: req.t(manager.options.pluralLabel)
     };
 
-    const { url } = await apos.modules['@apostrophecms/import-export'].export(req, manager);
+    const { url } = await importExportManager.export(req, manager);
     const fileName = path.basename(url);
 
     const extractPath = await gunzip(exportPath, fileName);
@@ -116,7 +119,7 @@ describe('@apostrophecms/import-export', function () {
       type: page1.type
     };
 
-    const { url } = await apos.modules['@apostrophecms/import-export'].export(req, apos.page);
+    const { url } = await importExportManager.export(req, apos.page);
     const fileName = path.basename(url);
 
     const extractPath = await gunzip(exportPath, fileName);
@@ -138,6 +141,19 @@ describe('@apostrophecms/import-export', function () {
     };
 
     assert.deepEqual(actual, expected);
+  });
+
+  it('should import pieces without related documents from a compressed file', async function() {
+    const req = apos.task.getReq();
+    const format = importExportManager.formats.gzip;
+
+    req.files = {
+      file: {
+        path: piecesExportPath,
+        type: format.type
+      }
+    };
+    await importExportManager.import(req);
   });
 });
 
