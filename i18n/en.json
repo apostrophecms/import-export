@@ -21,7 +21,9 @@
   "imported": "Imported",
   "importFailed": "Import failed",
   "importFileError": "The {{ format }} file import failed",
+  "importFailedForSome": "{{ count }} documents encountered error during import",
   "importing": "Importing {{ type }}...",
   "importModalDescription": "Importing content requires a {{ formats }} file. See our <a href=\"https://v3.docs.apostrophecms.org/\" target=\"_blank\">guide to importing content</a> in Apostrophe.",
+  "importSucceed": "Import Succeed!",
   "or": "or"
 }
