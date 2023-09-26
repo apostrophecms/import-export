@@ -68,10 +68,6 @@ export default {
         singular: '',
         plural: ''
       })
-    },
-    messages: {
-      type: Object,
-      default: null
     }
   },
   emits: [ 'safe-close' ],
@@ -126,14 +122,6 @@ export default {
     async runImport () {
       const formData = new FormData();
       formData.append('file', this.selectedFile);
-
-      // Send `messages so the notification
-      // displayed by the reporting works.
-      if (this.messages) {
-        Object.entries(this.messages).forEach(([ stage, message ]) => {
-          formData.append(stage, message);
-        });
-      }
 
       try {
         await apos.http.post(`${this.moduleAction}/${this.action}`, {

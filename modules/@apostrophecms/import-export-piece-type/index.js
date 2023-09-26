@@ -14,12 +14,6 @@ module.exports = {
           label: 'aposImportExport:import',
           modalOptions: {
             modal: 'AposImportModal'
-          },
-          messages: {
-            progress: 'aposImportExport:importing',
-            completed: 'aposImportExport:imported',
-            icon: 'database-import-icon',
-            resultsEventName: 'import-duplicates'
           }
         }
       }
@@ -61,12 +55,6 @@ module.exports = {
         import: [
           multiparty(),
           async (req) => {
-            // TODO: You say body is not set but you use req.body?
-            // `req.body` is not set because we are using form-data.
-            // Add `messages` to `body` so the notification
-            // displayed by the reporting works.
-            req.body = { messages: req.body };
-
             return self.apos.modules['@apostrophecms/import-export'].import(req);
           }
         ],
