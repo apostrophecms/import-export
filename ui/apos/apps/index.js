@@ -6,6 +6,7 @@ export default () => {
       ready = true;
       apos.bus.$on('export-download', openUrl);
       apos.bus.$on('import-started', addBeforeUnloadListener);
+      apos.bus.$on('import-ended', removeBeforeUnloadListener);
       apos.bus.$on('import-duplicates', handleDuplicates);
     }
   });
@@ -20,12 +21,16 @@ export default () => {
     window.addEventListener('beforeunload', warningImport);
   }
 
+  function removeBeforeUnloadListener() {
+    window.removeEventListener('beforeunload', warningImport);
+  }
+
   async function handleDuplicates(event) {
     if (event.duplicatedDocs.length) {
       await apos.modal.execute('AposDuplicateImportModal', event);
     }
 
-    window.removeEventListener('beforeunload', warningImport);
+    removeBeforeUnloadListener();
   }
 
   function warningImport(event) {
