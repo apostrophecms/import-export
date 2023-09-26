@@ -1,3 +1,5 @@
+const multiparty = require('connect-multiparty');
+
 module.exports = {
   improve: '@apostrophecms/page',
 
@@ -26,7 +28,7 @@ module.exports = {
     return {
       post: {
         import: [
-          require('connect-multiparty')(),
+          multiparty(),
           async (req) => {
             return self.apos.modules['@apostrophecms/import-export'].import(req);
           }
