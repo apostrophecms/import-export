@@ -40,17 +40,18 @@
               />
             </div>
 
-            <div
-              v-if="moduleName === '@apostrophecms/page'"
-              class="apos-export__settings-row"
-            >
-              <div>{{ $t('aposImportExport:exportModalIncludeChildren') }}</div>
-              <AposToggle
-                v-model="relatedChildrenDisabled"
-                class="apos-export__toggle"
-                @toggle="toggleRelatedChildren"
-              />
-            </div>
+            <!-- TODO: Next iteration should support inclusion of page children while exporting -->
+            <!-- <div -->
+            <!--   v-if="moduleName === '@apostrophecms/page'" -->
+            <!--   class="apos-export__settings-row" -->
+            <!-- > -->
+            <!--   <div>{{ $t('aposImportExport:exportModalIncludeChildren') }}</div> -->
+            <!--   <AposToggle -->
+            <!--     v-model="relatedChildrenDisabled" -->
+            <!--     class="apos-export__toggle" -->
+            <!--     @toggle="toggleRelatedChildren" -->
+            <!--   /> -->
+            <!-- </div> -->
 
             <div class="apos-export__settings-row">
               <div>{{ $t('aposImportExport:exportModalIncludeRelated') }}</div>
