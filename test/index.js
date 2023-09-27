@@ -2,24 +2,25 @@ const assert = require('assert').strict;
 const t = require('apostrophe/test-lib/util.js');
 const fs = require('fs/promises');
 const {
-  createReadStream, existsSync, WriteStream
+  createReadStream
 } = require('fs');
 const path = require('path');
 const FormData = require('form-data');
-const tar = require('tar-stream');
-const zlib = require('node:zlib');
 
 describe('@apostrophecms/import-export', function () {
   let apos;
   let importExportManager;
   let attachmentPath;
-  let exportPath;
-  let piecesExportPath;
+  let exportsPath;
+  let gzip;
+  let piecesTgzPath;
+  let pageTgzPath;
+  let cleanFile;
 
   this.timeout(t.timeout);
 
   after(async function() {
-    await cleanData([ attachmentPath, exportPath ]);
+    await cleanData([ attachmentPath, exportsPath ]);
     await t.destroy(apos);
   });
 
@@ -30,9 +31,12 @@ describe('@apostrophecms/import-export', function () {
       modules: getAppConfig()
     });
     attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
-    exportPath = path.join(apos.rootDir, 'public/uploads/exports');
+    exportsPath = path.join(apos.rootDir, 'public/uploads/exports');
     importExportManager = apos.modules['@apostrophecms/import-export'];
     importExportManager.removeExportFileFromUploadFs = () => {};
+    gzip = importExportManager.formats.gzip;
+    cleanFile = importExportManager.cleanFile;
+    importExportManager.cleanFile = () => {};
 
     await insertAdminUser(apos);
     await insertPieces(apos);
@@ -51,11 +55,11 @@ describe('@apostrophecms/import-export', function () {
     const { url } = await importExportManager.export(req, manager);
     const fileName = path.basename(url);
 
-    piecesExportPath = await gunzip(exportPath, fileName);
+    const exportPath = await gzip.input(path.join(exportsPath, fileName));
 
     const {
       docs, attachments, attachmentFiles
-    } = await getExtractedFiles(piecesExportPath);
+    } = await getExtractedFiles(exportPath);
 
     const actual = {
       docsLength: docs.length,
@@ -68,6 +72,7 @@ describe('@apostrophecms/import-export', function () {
       attachmentFiles: []
     };
 
+    await cleanFile(exportPath);
     assert.deepEqual(actual, expected);
   });
 
@@ -87,11 +92,12 @@ describe('@apostrophecms/import-export', function () {
     const { url } = await importExportManager.export(req, manager);
     const fileName = path.basename(url);
 
-    const extractPath = await gunzip(exportPath, fileName);
+    piecesTgzPath = path.join(exportsPath, fileName);
+    const exportPath = await gzip.input(piecesTgzPath);
 
     const {
       docs, attachments, attachmentFiles
-    } = await getExtractedFiles(extractPath);
+    } = await getExtractedFiles(exportPath);
 
     const actual = {
       docsLength: docs.length,
@@ -104,6 +110,7 @@ describe('@apostrophecms/import-export', function () {
       attachmentFiles: [ `${attachmentId}-test-image.jpg` ]
     };
 
+    await cleanFile(exportPath);
     assert.deepEqual(actual, expected);
   });
 
@@ -122,11 +129,12 @@ describe('@apostrophecms/import-export', function () {
     const { url } = await importExportManager.export(req, apos.page);
     const fileName = path.basename(url);
 
-    const extractPath = await gunzip(exportPath, fileName);
+    pageTgzPath = path.join(exportsPath, fileName);
+    const exportPath = await gzip.input(pageTgzPath);
 
     const {
       docs, attachments, attachmentFiles
-    } = await getExtractedFiles(extractPath);
+    } = await getExtractedFiles(exportPath);
 
     const actual = {
       docsLength: docs.length,
@@ -141,19 +149,133 @@ describe('@apostrophecms/import-export', function () {
     };
 
     assert.deepEqual(actual, expected);
+    await cleanFile(exportPath);
   });
 
-  it('should import pieces without related documents from a compressed file', async function() {
+  it('should import pieces with related documents from a compressed file', async function() {
     const req = apos.task.getReq();
-    const format = importExportManager.formats.gzip;
 
+    await deletePieces(apos);
+    await deletePage(apos);
+    await deleteAttachments(apos, attachmentPath);
+
+    req.body = {};
     req.files = {
       file: {
-        path: piecesExportPath,
-        type: format.type
+        path: piecesTgzPath,
+        type: gzip.type
       }
     };
     await importExportManager.import(req);
+
+    const importedDocs = await apos.doc.db
+      .find({ type: /article|topic|@apostrophecms\/image/ })
+      .toArray();
+
+    const importedAttachments = await apos.attachment.db
+      .find()
+      .toArray();
+
+    const attachmentFiles = await fs
+      .readdir(path.join(piecesTgzPath.replace('.tgz', ''), 'attachments'));
+
+    const actual = {
+      docsLength: importedDocs.length,
+      docsTitles: importedDocs.map(({ title }) => title),
+      attachmentsNames: importedAttachments.map(({ name }) => name),
+      attachmentFiles
+    };
+
+    const expected = {
+      docsLength: 8,
+      docsTitles: [
+        'article2', 'article1',
+        'article2', 'article1',
+        'topic1', 'topic2',
+        'topic1', 'topic2'
+      ],
+      attachmentsNames: [ 'test-image' ],
+      attachmentFiles: [ `${importedAttachments[0]._id}-test-image.jpg` ]
+    };
+
+    assert.deepEqual(expected, actual);
+    await cleanFile(piecesTgzPath.replace('.tgz', ''));
+  });
+
+  it('should return duplicates pieces when already existing and override them', async function() {
+    const req = apos.task.getReq();
+    const format = importExportManager.formats.gzip;
+
+    req.body = {};
+    req.files = {
+      file: {
+        path: piecesTgzPath,
+        type: format.type
+      }
+    };
+
+    const {
+      duplicatedDocs,
+      importedAttachments,
+      exportPath,
+      jobId,
+      notificationId
+    } = await importExportManager.import(req);
+
+    // We update the title of every targetted docs to be sure the update really occurs
+    await apos.doc.db.updateMany({ type: /article|topic/ }, { $set: { title: 'new title' } });
+    await apos.attachment.db.updateMany({}, { $set: { name: 'new-name' } });
+    const filesPath = path.join(apos.rootDir, 'public/uploads/attachments');
+    const filesNames = await fs.readdir(filesPath);
+
+    // We rename all versions of the image to be sure the file is also updated
+    for (const fileName of filesNames) {
+      await fs.rename(
+        path.join(filesPath, fileName),
+        path.join(filesPath, fileName.replace('test-image', 'new-name'))
+      );
+    }
+
+    delete req.files;
+    req.body = {
+      docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
+      importedAttachments,
+      exportPath,
+      jobId,
+      notificationId
+    };
+
+    await importExportManager.overrideDuplicates(req);
+
+    const updatedDocs = await apos.doc.db
+      .find({ type: /article|topic|@apostrophecms\/image/ })
+      .toArray();
+    const updatedAttachments = await apos.attachment.db.find().toArray();
+    const attachmentFiles = await fs.readdir(filesPath);
+
+    const actual = {
+      docTitles: updatedDocs.map(({ title }) => title),
+      attachmentNames: updatedAttachments.map(({ name }) => name),
+      attachmentFileNames: attachmentFiles.map((fullName) => {
+        const regex = /-([\w\d-]+)\./;
+        const [ _, name ] = regex.exec(fullName);
+        return name;
+      })
+    };
+
+    const expected = {
+      docTitles: [
+        'article2', 'article1',
+        'new title', 'new title',
+        'article2', 'article1',
+        'topic1', 'topic2',
+        'topic1', 'topic2'
+      ],
+      attachmentNames: [ 'test-image' ],
+      attachmentFileNames: new Array(apos.attachment.imageSizes.length + 1).fill('test-image')
+    };
+
+    assert.deepEqual(expected, actual);
   });
 });
 
@@ -181,44 +303,6 @@ async function getExtractedFiles(extractPath) {
   }
 }
 
-async function gunzip(exportPath, fileName) {
-  const zipPath = path.join(exportPath, fileName);
-  const extractPath = path.join(exportPath, fileName.replace('.tgz', ''));
-
-  if (!existsSync(extractPath)) {
-    await fs.mkdir(extractPath);
-  }
-
-  return new Promise((resolve, reject) => {
-    const extract = tar.extract();
-    const input = createReadStream(zipPath);
-    const unzip = zlib.createGunzip();
-
-    unzip.on('error', reject);
-
-    extract
-      .on('entry', (header, stream, next) => {
-        if (header.type === 'directory') {
-          fs.mkdir(`${extractPath}/${header.name}`)
-            .then(next)
-            .catch(reject);
-        } else {
-          stream.pipe(WriteStream(`${extractPath}/${header.name}`));
-
-          stream.on('end', next);
-        }
-      })
-      .on('finish', () => {
-        resolve(extractPath);
-      })
-      .on('error', reject);
-
-    input
-      .pipe(unzip)
-      .pipe(extract);
-  });
-}
-
 async function cleanData(paths) {
   try {
     for (const filePath of paths) {
@@ -230,6 +314,19 @@ async function cleanData(paths) {
   } catch (err) {
     assert(!err);
   }
+}
+
+async function deletePieces(apos) {
+  await apos.doc.db.deleteMany({ type: /article|topic|@apostrophecms\/image/ });
+}
+
+async function deletePage(apos) {
+  await apos.doc.db.deleteMany({ title: 'page1' });
+}
+
+async function deleteAttachments(apos, attachmentPath) {
+  await apos.attachment.db.deleteMany({});
+  await cleanData([ attachmentPath ]);
 }
 
 async function insertPieces(apos) {
