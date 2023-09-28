@@ -14,11 +14,6 @@
           <h2 class="apos-import__heading">
             {{ $t('aposImportExport:import', { type: $t(labels.plural) }) }}
           </h2>
-          <AposLabel
-            label="aposImportExport:importWarning"
-            class="apos-import__warning"
-            :modifiers="[ 'apos-is-warning', 'apos-is-filled' ]"
-          />
           <!-- eslint-disable vue/no-v-html -->
           <p
             class="apos-import__description"
@@ -30,6 +25,11 @@
             :allowed-extensions="formatsExtension"
             @upload-file="uploadImportFile"
             @update="updateImportFile"
+          />
+          <AposLabel
+            label="aposImportExport:importWarning"
+            class="apos-import__warning"
+            :modifiers="[ 'apos-is-warning', 'apos-is-filled' ]"
           />
           <div class="apos-import__separator" />
           <div class="apos-import__btns">
@@ -163,8 +163,7 @@ export default {
 
   &__warning {
     @include type-small;
-    max-width: 370px;
-    margin-top: 10px;
+    max-width: 358px;
   }
 
   &__description {
