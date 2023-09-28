@@ -14,6 +14,11 @@
           <h2 class="apos-import__heading">
             {{ $t('aposImportExport:import', { type: $t(labels.plural) }) }}
           </h2>
+          <AposLabel
+            label="aposImportExport:importWarning"
+            class="apos-import__warning"
+            :modifiers="[ 'apos-is-warning', 'apos-is-filled' ]"
+          />
           <!-- eslint-disable vue/no-v-html -->
           <p
             class="apos-import__description"
@@ -26,9 +31,7 @@
             @upload-file="uploadImportFile"
             @update="updateImportFile"
           />
-
           <div class="apos-import__separator" />
-
           <div class="apos-import__btns">
             <AposButton
               ref="cancelButton"
@@ -156,6 +159,12 @@ export default {
     @include type-title;
     line-height: var(--a-line-tall);
     margin: 0;
+  }
+
+  &__warning {
+    @include type-small;
+    max-width: 370px;
+    margin-top: 10px;
   }
 
   &__description {
