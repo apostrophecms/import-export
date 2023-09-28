@@ -124,7 +124,7 @@ export default {
       formData.append('file', this.selectedFile);
 
       try {
-        await apos.http.post(`${this.moduleAction}/${this.action}`, {
+        apos.http.post(`${this.moduleAction}/${this.action}`, {
           body: formData
         });
         apos.bus.$emit('import-started');
