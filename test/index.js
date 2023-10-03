@@ -185,7 +185,7 @@ describe('@apostrophecms/import-export', function () {
       attachmentsNames: importedAttachments.map(({ name }) => name),
       attachmentFileNames: attachmentFiles.map((fullName) => {
         const regex = /-([\w\d-]+)\./;
-        const [ _, name ] = regex.exec(fullName);
+        const [ , name ] = regex.exec(fullName);
         return name;
       })
     };
@@ -518,7 +518,7 @@ describe('@apostrophecms/import-export', function () {
 function extractFileNames (files) {
   return files.map((fullname) => {
     const regex = /-([\w\d-]+)\./;
-    const [ _, name ] = regex.exec(fullname);
+    const [ , name ] = regex.exec(fullname);
 
     return name;
   });

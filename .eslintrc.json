@@ -2,11 +2,5 @@
   "extends": [ "apostrophe", "plugin:vue/vue3-recommended" ],
   "globals": {
     "apos": true
-  },
-  "rules": {
-    "no-unused-vars": [
-      "error",
-      { "varsIgnorePattern": "^_.?" }
-    ]
   }
 }
