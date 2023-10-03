@@ -29,8 +29,6 @@ export default () => {
     if (event.duplicatedDocs.length) {
       await apos.modal.execute('AposDuplicateImportModal', event);
     }
-
-    removeBeforeUnloadListener();
   }
 
   function warningImport(event) {

@@ -110,7 +110,7 @@ export default {
         disableHeader: true
       },
       checked: [],
-      exportFileCleaned: false
+      importRunning: false
     };
   },
   computed: {
@@ -129,8 +129,9 @@ export default {
 
   methods: {
     async closeModal() {
-      if (!this.exportFileCleaned) {
+      if (!this.importRunning) {
         await this.cleanExportFile();
+        apos.bus.$emit('import-ended');
       }
       this.$emit('safe-close');
     },
@@ -156,24 +157,24 @@ export default {
     ready() {
       this.$refs.runOverride.$el.querySelector('button').focus();
     },
-    runOverride() {
-      try {
-        apos.http.post('/api/v1/@apostrophecms/import-export/override-duplicates', {
-          body: {
-            docIds: this.checked,
-            importedAttachments: this.importedAttachments,
-            exportPath: this.exportPath,
-            jobId: this.jobId,
-            notificationId: this.notificationId
-          }
-        });
-        this.exportFileCleaned = true;
-      } catch (error) {
+    async runOverride() {
+      this.importRunning = true;
+      apos.http.post('/api/v1/@apostrophecms/import-export/override-duplicates', {
+        body: {
+          docIds: this.checked,
+          importedAttachments: this.importedAttachments,
+          exportPath: this.exportPath,
+          jobId: this.jobId
+        }
+      }).catch(() => {
         apos.notify(this.$t('aposImportExport:exportFailed'), {
           type: 'danger',
           dismiss: true
         });
-      }
+      }).finally(() => {
+        this.cleanExportFile();
+        apos.bus.$emit('import-ended');
+      });
 
       this.modal.showModal = false;
     },
