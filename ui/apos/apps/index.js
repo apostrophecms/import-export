@@ -35,6 +35,6 @@ export default () => {
 
   function warningImport(event) {
     event.preventDefault();
-    event.returnValue = 'You are currently importing document, you should stay during the process.';
+    event.returnValue = '';
   }
 };
