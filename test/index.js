@@ -204,7 +204,7 @@ describe('@apostrophecms/import-export', function () {
     };
 
     assert.deepEqual(actual, expected);
-    await cleanFile(piecesTgzPath.replace('.tgz', ''));
+    await cleanFile(piecesTgzPath.replace(`.${gzip.extension}`, ''));
   });
 
   it('should return duplicates pieces when already existing and override them', async function() {
@@ -287,7 +287,7 @@ describe('@apostrophecms/import-export', function () {
     };
 
     assert.deepEqual(actual, expected);
-    await cleanFile(piecesTgzPath.replace('.tgz', ''));
+    await cleanFile(piecesTgzPath.replace(`.${gzip.extension}`, ''));
   });
 
   it('should import page and related documents', async function() {
@@ -329,7 +329,7 @@ describe('@apostrophecms/import-export', function () {
     };
 
     assert.deepEqual(actual, expected);
-    await cleanFile(pageTgzPath.replace('.tgz', ''));
+    await cleanFile(pageTgzPath.replace(`.${gzip.extension}`, ''));
   });
 
   it('should return existing duplicated docs during page import and override them', async function() {
@@ -418,7 +418,7 @@ describe('@apostrophecms/import-export', function () {
 
     assert.deepEqual(actual, expected);
 
-    await cleanFile(pageTgzPath.replace('.tgz', ''));
+    await cleanFile(pageTgzPath.replace(`.${gzip.extension}`, ''));
   });
 
   it('should not override attachment if associated document is not imported', async function() {
@@ -511,7 +511,7 @@ describe('@apostrophecms/import-export', function () {
 
     assert.deepEqual(actual, expected);
 
-    await cleanFile(pageTgzPath.replace('.tgz', ''));
+    await cleanFile(pageTgzPath.replace(`.${gzip.extension}`, ''));
   });
 });
 
