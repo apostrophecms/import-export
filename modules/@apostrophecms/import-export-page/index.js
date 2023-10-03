@@ -30,7 +30,7 @@ module.exports = {
         import: [
           multiparty(),
           async (req) => {
-            return self.apos.modules['@apostrophecms/import-export'].import(req);
+            return self.apos.modules['@apostrophecms/import-export'].import(req, self.__meta.name);
           }
         ],
         export(req) {
