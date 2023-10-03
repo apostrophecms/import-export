@@ -131,7 +131,6 @@ export default {
     async closeModal() {
       if (!this.importRunning) {
         await this.cleanExportFile();
-        apos.bus.$emit('import-ended');
       }
       this.$emit('safe-close');
     },
@@ -152,6 +151,8 @@ export default {
             exportPath: this.exportPath
           }
         });
+      } finally {
+        apos.bus.$emit('import-ended');
       }
     },
     ready() {
@@ -173,7 +174,6 @@ export default {
         });
       }).finally(() => {
         this.cleanExportFile();
-        apos.bus.$emit('import-ended');
       });
 
       this.modal.showModal = false;

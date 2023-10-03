@@ -123,17 +123,16 @@ export default {
       const formData = new FormData();
       formData.append('file', this.selectedFile);
 
-      try {
-        apos.http.post(`${this.moduleAction}/${this.action}`, {
-          body: formData
-        });
-        apos.bus.$emit('import-started');
-      } catch (error) {
+      apos.bus.$emit('import-started');
+      apos.http.post(`${this.moduleAction}/${this.action}`, {
+        body: formData
+      }).catch(() => {
         apos.notify(this.$t('aposImportExport:importFailed'), {
           type: 'danger',
           dismiss: true
         });
-      }
+        apos.bus.$emit('import-ended');
+      });
 
       this.modal.showModal = false;
     }
