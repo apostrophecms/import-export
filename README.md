@@ -18,7 +18,8 @@
   </p>
 </div>
 
-This module enables import and export pages and pieces with or without their relationships and associated files and images within A3 projects.
+This module enables import and export pages and pieces with or without 
+their relationships a well as their associated files and images within A3 projects.
 
 ## Installation
 
@@ -40,3 +41,34 @@ require('apostrophe')({
   }
 });
 ```
+
+### Options
+
+You can disable the export and/or the import for certain pieces this way:
+
+```javascript
+module.exports = {
+  extends: '@apostrophecms/piece-type'
+  options: {
+    importExport: {
+      import: false,
+      export: false
+    }
+  }
+}
+```
+
+### Export
+
+You can export documents from batch operations as well as from context operations. 
+Pages can only be exported from context operations since they don't support batch operations.
+Currenlty it only exports the `.tar.gz` format.
+
+
+### Import
+
+You can import **pieces** and **pages** from utility operations.
+
+:warning: You must import the compressed file (`.tar.gz`) 
+as it has been exported without modifying it, or the import might not go as planned.
+

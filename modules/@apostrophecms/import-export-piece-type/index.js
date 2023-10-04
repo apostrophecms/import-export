@@ -46,40 +46,41 @@ module.exports = {
     };
   },
   apiRoutes(self) {
-    if (self.options.importExport?.export === false) {
-      return {};
-    }
-
     return {
       post: {
-        import: [
-          multiparty(),
-          async (req) => {
-            return self.apos.modules['@apostrophecms/import-export'].import(req, self.__meta.name);
-          }
-        ],
-        export(req) {
-          // Add the piece type label to req.body for notifications.
-          req.body.type = req.t(self.options.label);
-
-          return self.apos.modules['@apostrophecms/import-export'].export(req, self);
+        ...self.options.importExport?.import === false && {
+          import: [
+            multiparty(),
+            async (req) => {
+              return self.apos.modules['@apostrophecms/import-export'].import(req, self.__meta.name);
+            }
+          ]
         },
-        // NOTE: this route is used in batch operations, and its method should be POST
-        // in order to make the job work with the progress notification.
-        // The other 'export' routes that are used by context operations on each doc
-        // are also POST for consistency.
-        exportBatch(req) {
+
+        ...self.options.importExport?.export === false && {
+          export(req) {
+          // Add the piece type label to req.body for notifications.
+            req.body.type = req.t(self.options.label);
+
+            return self.apos.modules['@apostrophecms/import-export'].export(req, self);
+          },
+          // NOTE: this route is used in batch operations, and its method should be POST
+          // in order to make the job work with the progress notification.
+          // The other 'export' routes that are used by context operations on each doc
+          // are also POST for consistency.
+          exportBatch(req) {
           // Add the piece type label to req.body for notifications.
           // Should be done before calling the job's `run` method.
-          req.body.type = req.body._ids.length === 1
-            ? req.t(self.options.label)
-            : req.t(self.options.pluralLabel);
+            req.body.type = req.body._ids.length === 1
+              ? req.t(self.options.label)
+              : req.t(self.options.pluralLabel);
 
-          return self.apos.modules['@apostrophecms/job'].run(
-            req,
-            (req, reporting) => self.apos.modules['@apostrophecms/import-export']
-              .export(req, self, reporting)
-          );
+            return self.apos.modules['@apostrophecms/job'].run(
+              req,
+              (req, reporting) => self.apos.modules['@apostrophecms/import-export']
+                .export(req, self, reporting)
+            );
+          }
         }
       }
     };
