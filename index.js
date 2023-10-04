@@ -9,6 +9,9 @@ module.exports = {
     directory: 'modules',
     modules: getBundleModuleNames()
   },
+  icons: {
+    'database-import-icon': 'DatabaseImport'
+  },
   options: {
     name: '@apostrophecms/import-export',
     i18n: {

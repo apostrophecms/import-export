@@ -40,17 +40,18 @@
               />
             </div>
 
-            <div
-              v-if="moduleName === '@apostrophecms/page'"
-              class="apos-export__settings-row"
-            >
-              <div>{{ $t('aposImportExport:exportModalIncludeChildren') }}</div>
-              <AposToggle
-                v-model="relatedChildrenDisabled"
-                class="apos-export__toggle"
-                @toggle="toggleRelatedChildren"
-              />
-            </div>
+            <!-- TODO: Next iteration should support inclusion of page children while exporting -->
+            <!-- <div -->
+            <!--   v-if="moduleName === '@apostrophecms/page'" -->
+            <!--   class="apos-export__settings-row" -->
+            <!-- > -->
+            <!--   <div>{{ $t('aposImportExport:exportModalIncludeChildren') }}</div> -->
+            <!--   <AposToggle -->
+            <!--     v-model="relatedChildrenDisabled" -->
+            <!--     class="apos-export__toggle" -->
+            <!--     @toggle="toggleRelatedChildren" -->
+            <!--   /> -->
+            <!-- </div> -->
 
             <div class="apos-export__settings-row">
               <div>{{ $t('aposImportExport:exportModalIncludeRelated') }}</div>
@@ -89,7 +90,7 @@
                     <AposCheckbox
                       v-for="relatedType in relatedTypes"
                       :key="relatedType"
-                      v-model="checkedProxy"
+                      v-model="checkedRelatedTypes"
                       tabindex="-1"
                       :choice="{
                         value: relatedType,
@@ -99,7 +100,6 @@
                         label: getRelatedTypeLabel(relatedType),
                         name: relatedType
                       }"
-                      @updated="checkRelatedTypes"
                     />
                   </div>
                   <div v-else>
@@ -192,14 +192,6 @@ export default {
 
       return this.$t(label).toLowerCase();
     },
-    checkedProxy: {
-      get() {
-        return this.checkedRelatedTypes;
-      },
-      set(val) {
-        this.$emit('change', val);
-      }
-    },
     count() {
       return this.selectedDocIds.length;
     },
@@ -224,21 +216,36 @@ export default {
     if (this.type === '@apostrophecms/page') {
       this.type = this.doc?.type;
     }
+
+    await this.getRelatedTypes();
   },
 
   methods: {
     ready() {
       this.$refs.runExport.$el.querySelector('button').focus();
     },
+    async getRelatedTypes() {
+      this.relatedTypes = await apos.http.get('/api/v1/@apostrophecms/import-export/related', {
+        busy: true,
+        qs: {
+          type: this.type
+        }
+      });
+      this.checkedRelatedTypes = this.relatedTypes;
+      const height = this.checkedRelatedTypes.length
+        ? this.checkedRelatedTypes.length * CONTAINER_ITEM_HEIGHT + CONTAINER_DESCRIPTION_HEIGHT
+        : CONTAINER_MINIMUM_HEIGHT;
+      this.$refs.container.style.setProperty('--container-height', `${height}px`);
+    },
     async runExport() {
       const relatedTypes = this.relatedDocumentsDisabled
         ? []
         : this.checkedRelatedTypes;
 
-      const { action } = window.apos.modules[this.moduleName];
+      const { action } = apos.modules[this.moduleName];
 
       try {
-        await window.apos.http.post(`${action}/${this.action}`, {
+        await apos.http.post(`${action}/${this.action}`, {
           busy: true,
           body: {
             _ids: this.selectedDocIds,
@@ -261,31 +268,12 @@ export default {
     },
     async toggleRelatedDocuments() {
       this.relatedDocumentsDisabled = !this.relatedDocumentsDisabled;
-
-      if (!this.relatedDocumentsDisabled && this.relatedTypes === null) {
-        this.relatedTypes = await apos.http.get('/api/v1/@apostrophecms/import-export/related', {
-          busy: true,
-          qs: {
-            type: this.type
-          }
-        });
+      if (!this.relatedDocumentsDisabled) {
         this.checkedRelatedTypes = this.relatedTypes;
-        const height = this.checkedRelatedTypes.length
-          ? this.checkedRelatedTypes.length * CONTAINER_ITEM_HEIGHT + CONTAINER_DESCRIPTION_HEIGHT
-          : CONTAINER_MINIMUM_HEIGHT;
-        this.$refs.container.style.setProperty('--container-height', `${height}px`);
       }
     },
     toggleRelatedChildren() {
       this.relatedChildrenDisabled = !this.relatedChildrenDisabled;
-    },
-    checkRelatedTypes(evt) {
-      if (evt.target.checked) {
-        this.checkedRelatedTypes.push(evt.target.value);
-      } else {
-        this.checkedRelatedTypes = this.checkedRelatedTypes
-          .filter(relatedType => relatedType !== evt.target.value);
-      }
     },
     getRelatedTypeLabel(moduleName) {
       const moduleOptions = apos.modules[moduleName];
@@ -422,6 +410,7 @@ export default {
 .apos-export__btns {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-top: 10px;
   width: 100%;
   gap: 20px;

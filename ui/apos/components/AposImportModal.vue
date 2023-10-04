@@ -95,7 +95,7 @@ export default {
     },
     formatsExtension() {
       return this.formats
-        .map(format => `.${format.extension}`)
+        .map(format => format.allowedExtension)
         .join(',');
     }
   },
@@ -123,19 +123,18 @@ export default {
       const formData = new FormData();
       formData.append('file', this.selectedFile);
 
-      try {
-        await apos.http.post(`${this.moduleAction}/${this.action}`, {
-          busy: true,
-          body: formData
-        });
-      } catch (error) {
+      apos.bus.$emit('import-started');
+      apos.http.post(`${this.moduleAction}/${this.action}`, {
+        body: formData
+      }).catch(() => {
         apos.notify(this.$t('aposImportExport:importFailed'), {
           type: 'danger',
           dismiss: true
         });
-      }
+        apos.bus.$emit('import-ended');
+      });
 
-      // this.modal.showModal = false;
+      this.modal.showModal = false;
     }
   }
 };
@@ -190,6 +189,7 @@ export default {
   &__btns {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-top: 10px;
     width: 100%;
   }

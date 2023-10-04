@@ -1,10 +1,13 @@
 export default () => {
   let ready = false;
 
-  window.apos.util.onReady(() => {
+  apos.util.onReady(() => {
     if (!ready) {
       ready = true;
-      window.apos.bus.$on('export-download', openUrl);
+      apos.bus.$on('export-download', openUrl);
+      apos.bus.$on('import-started', addBeforeUnloadListener);
+      apos.bus.$on('import-ended', removeBeforeUnloadListener);
+      apos.bus.$on('import-duplicates', handleDuplicates);
     }
   });
 
@@ -12,5 +15,24 @@ export default () => {
     if (event.url) {
       window.open(event.url, '_blank');
     }
+  }
+
+  function addBeforeUnloadListener() {
+    window.addEventListener('beforeunload', warningImport);
+  }
+
+  function removeBeforeUnloadListener() {
+    window.removeEventListener('beforeunload', warningImport);
+  }
+
+  async function handleDuplicates(event) {
+    if (event.duplicatedDocs.length) {
+      await apos.modal.execute('AposDuplicateImportModal', event);
+    }
+  }
+
+  function warningImport(event) {
+    event.preventDefault();
+    event.returnValue = '';
   }
 };
