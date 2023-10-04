@@ -61,7 +61,7 @@ module.exports = {
 ### Export
 
 You can export documents from batch operations as well as from context operations. 
-Only from context operations for pages since they don't support batch operations currently.
+Pages can only be exported from context operations since they don't support batch operations.
 Currenlty it only exports the `.tar.gz` format.
 
 
