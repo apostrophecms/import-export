@@ -94,9 +94,11 @@ export default {
         .join(` ${this.$t('aposImportExport:or')} `);
     },
     formatsExtension() {
-      return this.formats
-        .map(format => `.${format.extension}`)
+      const allowed = this.formats
+        .map(format => format.allowedExtension)
         .join(',');
+      console.log('allowed', allowed);
+      return allowed;
     }
   },
 
