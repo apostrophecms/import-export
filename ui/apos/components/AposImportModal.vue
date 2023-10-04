@@ -26,9 +26,12 @@
             @upload-file="uploadImportFile"
             @update="updateImportFile"
           />
-
+          <AposLabel
+            label="aposImportExport:importWarning"
+            class="apos-import__warning"
+            :modifiers="[ 'apos-is-warning', 'apos-is-filled' ]"
+          />
           <div class="apos-import__separator" />
-
           <div class="apos-import__btns">
             <AposButton
               ref="cancelButton"
@@ -156,6 +159,11 @@ export default {
     @include type-title;
     line-height: var(--a-line-tall);
     margin: 0;
+  }
+
+  &__warning {
+    @include type-small;
+    max-width: 358px;
   }
 
   &__description {
