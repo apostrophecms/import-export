@@ -48,7 +48,7 @@ module.exports = {
   apiRoutes(self) {
     return {
       post: {
-        ...self.options.importExport?.import === false && {
+        ...self.options.importExport?.import !== false && {
           import: [
             multiparty(),
             async (req) => {
@@ -57,7 +57,7 @@ module.exports = {
           ]
         },
 
-        ...self.options.importExport?.export === false && {
+        ...self.options.importExport?.export !== false && {
           export(req) {
           // Add the piece type label to req.body for notifications.
             req.body.type = req.t(self.options.label);
