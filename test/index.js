@@ -13,6 +13,7 @@ describe('@apostrophecms/import-export', function () {
   let attachmentPath;
   let exportsPath;
   let gzip;
+  let mimeType;
   let piecesTgzPath;
   let pageTgzPath;
   let cleanFile;
@@ -36,6 +37,7 @@ describe('@apostrophecms/import-export', function () {
     importExportManager = apos.modules['@apostrophecms/import-export'];
     importExportManager.removeExportFileFromUploadFs = () => {};
     gzip = importExportManager.formats.gzip;
+    mimeType = gzip.allowedTypes[0];
     cleanFile = importExportManager.cleanFile;
     importExportManager.cleanFile = () => {};
 
@@ -229,7 +231,7 @@ describe('@apostrophecms/import-export', function () {
     req.files = {
       file: {
         path: piecesTgzPath,
-        type: gzip.type
+        type: mimeType
       }
     };
     await importExportManager.import(req);
@@ -279,7 +281,7 @@ describe('@apostrophecms/import-export', function () {
     req.files = {
       file: {
         path: piecesTgzPath,
-        type: gzip.type
+        type: mimeType
       }
     };
 
@@ -366,7 +368,7 @@ describe('@apostrophecms/import-export', function () {
     req.files = {
       file: {
         path: pageTgzPath,
-        type: gzip.type
+        type: mimeType
       }
     };
 
@@ -404,7 +406,7 @@ describe('@apostrophecms/import-export', function () {
     req.files = {
       file: {
         path: pageTgzPath,
-        type: gzip.type
+        type: mimeType
       }
     };
 
@@ -493,7 +495,7 @@ describe('@apostrophecms/import-export', function () {
     req.files = {
       file: {
         path: pageTgzPath,
-        type: gzip.type
+        type: mimeType
       }
     };
 
