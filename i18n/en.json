@@ -21,7 +21,7 @@
   "importFailed": "Import failed",
   "importFailedForSome": "{{ count }} documents encountered error during import",
   "importFileError": "The {{ format }} file import failed",
-  "importModalDescription": "Importing content requires a {{ formats }} file. See our official documentation.",
+  "importModalDescription": "Importing content requires a {{ formats }} file. See our <a href=\"https://github.com/apostrophecms/import-export\" target=\"_blank\">official documentation</a>.",
   "importSucceed": "Import Succeed!",
   "imported": "Imported",
   "importing": "Importing {{ type }}...",

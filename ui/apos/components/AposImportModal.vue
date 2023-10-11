@@ -163,7 +163,8 @@ export default {
 
   &__warning {
     @include type-small;
-    max-width: 358px;
+    max-width: 348px;
+    padding: 10px;
   }
 
   &__description {
