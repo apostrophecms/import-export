@@ -36,6 +36,7 @@
               <AposSelect
                 :choices="formatChoices"
                 :selected="formatName"
+                :wrapper-classes="[ 'apos-field--small' ]"
                 @change="onFormatChange"
               />
             </div>
