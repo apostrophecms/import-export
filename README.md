@@ -41,7 +41,7 @@ require('apostrophe')({
 ## Exporting Files
 
 ### Pages
-![Screenshot highlighting the export menu item in the context menu of a page in the manager.](images/page-export.png)
+![Screenshot highlighting the export menu item in the context menu of a page in the manager.](https://static.apostrophecms.com/apostrophecms/import-export/images/page-export.png)
 
 Pages can currently only be exported singly. Support for exporting multiple pages at once is planned for a future release. When exporting a page it will retain its publication status upon import. A page that is published when exported will be published on import, while draft pages will remain in draft status. In order to export a page, you use the context menu to the right of each page in the manager.
 
@@ -51,7 +51,7 @@ If a page exists in multiple locales, only the page for the current locale will 
 
 <hr>
 
-![Screenshot of the page export modal](images/page-export-modal.png)
+![Screenshot of the page export modal](https://static.apostrophecms.com/apostrophecms/import-export/images/page-export-modal.png)
 
 Clicking export will bring up a dialog box with two input controls.
 
@@ -64,7 +64,7 @@ Clicking on the "Export Page" button will trigger a download of the export file 
 <hr>
 
 ### Pieces
-![Screenshot of exporting pieces using the batch method](images/piece-batch-export.png)
+![Screenshot of exporting pieces using the batch method](https://static.apostrophecms.com/apostrophecms/import-export/images/piece-batch-export.png)
 
 Unlike pages, pieces can be exported either individually from the context menu to the right of the piece, or as a batch using the context menu above the pieces list in the manager. For example, in the image above two articles have been selected for export. As with the page-type, all exporting is per-locale.
 
@@ -73,7 +73,7 @@ Clicking export will bring up the same dialog box that appears when exporting pa
 <hr>
 
 ### Templates
-![Screenshot of exporting templates](images/template-export.png)
+![Screenshot of exporting templates](https://static.apostrophecms.com/apostrophecms/import-export/images/template-export.png)
 
 If you have the [Template Library Pro](https://apostrophecms.com/extensions/template-library) module installed, templates are exported by selecting one or more within the template manager and then using the context menu located to the right of the batch operations. Like with the piece-type exporter you can elect to batch export just one or multiple documents depending on how many are checked. As with the page-type, all exporting is per-locale.
 
@@ -83,10 +83,10 @@ Clicking export will bring up the same dialog box that appears when exporting pa
 
 ## Importing files
 
-![Screenshot of the utilities context menu for importing in the page manager](images/page-import.png)
+![Screenshot of the utilities context menu for importing in the page manager](https://static.apostrophecms.com/apostrophecms/import-export/images/page-import.png)
 Any export file, no matter the content, can be imported using the utility context menu located at the top of the content managers, typically located to the left of the button to add new content of that type. This includes the page manager, any piece manager, or the document template manager if installed.
 
-![Screenshot of the file upload modal for importing files](images/import-file-modal.png)
+![Screenshot of the file upload modal for importing files](https://static.apostrophecms.com/apostrophecms/import-export/images/import-file-modal.png)
 
 Clicking on the "Import" menu item will bring up a dialog box to select the export file you wish to import. You can only select one file at a time and the selection of an additional file will replace the first. After you select the exported file and click on the import button, a progress bar will be shown and a success or failure notification when the file has been fully imported.
 
