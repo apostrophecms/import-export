@@ -15,8 +15,8 @@
   </p>
 </div>
 
-This module enables import and export pages and pieces with or without 
-their relationships a well as their associated files and images within A3 projects.
+This A3 module enables import and export of pages and pieces, with or without related
+documents such as files, images and other related types.
 
 ## Installation
 
