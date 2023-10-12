@@ -47,6 +47,8 @@ Pages can currently only be exported singly. When exporting a page it will retai
 
 Exporting the parent page in a set of nested documents will **not** export the child pages. Each child page must be exported separately. The parent page must already exist, or be separately exported and then subsequently imported, for any child page to appear in the page manager of the import project.
 
+If a page exists in multiple locales, only the page for the current locale will be exported, not for any other locale. The page must be exported separately for each locale.
+
 <hr>
 
 ![Screenshot of the page export modal](images/page-export-modal.png)
@@ -64,7 +66,7 @@ Clicking on the "Export Page" button will trigger a download of the export file 
 ### Pieces
 ![Screenshot of exporting pieces using the batch method](images/piece-batch-export.png)
 
-Unlike pages, piece-types can be exported either individually from the context menu to the right of the piece, or as a batch using the context menu above the pieces list in the manager. For example, in the image above two articles have been selected for export.
+Unlike pages, piece-types can be exported either individually from the context menu to the right of the piece, or as a batch using the context menu above the pieces list in the manager. For example, in the image above two articles have been selected for export. As with the page-type, all exporting is per-locale.
 
 Clicking export will bring up the same modal that appears when exporting pages, allowing for the selection of related documents that should also be exported.
 
@@ -73,7 +75,7 @@ Clicking export will bring up the same modal that appears when exporting pages, 
 ### Templates
 ![Screenshot of exporting templates](images/template-export.png)
 
-If you have the [Template Library Pro](https://apostrophecms.com/extensions/template-library) module installed, templates are exported by selecting one or more within the template manager and then using the context menu located to the right of the batch operations. Like with the piece-type exporter you can elect to batch export just one or multiple files depending on how many are checked.
+If you have the [Template Library Pro](https://apostrophecms.com/extensions/template-library) module installed, templates are exported by selecting one or more within the template manager and then using the context menu located to the right of the batch operations. Like with the piece-type exporter you can elect to batch export just one or multiple files depending on how many are checked.As with the page-type, all exporting is per-locale.
 
 Clicking export will bring up the same modal that appears when exporting pages, allowing for the selection of related documents that also should be exported.
 
@@ -89,6 +91,8 @@ Any export file, no matter the content, can be imported using the utility contex
 Clicking on the "Import" menu item will bring up a modal to select the export file you wish to import. You can only select one file at a time and the selection of an additional file will replace the first. After you select the exported file and click on the import button, a progress bar will be shown and a success or failure notification when the file has been fully imported.
 
 If the file you select has documents that already exist in your project, you'll get a notification and list of the documents that would be over-written. From that list you can choose documents you don't want imported. Note, if you have any documents that were previously published and then archived, they will trigger a duplicate overwrite warning.
+
+When importing a page, piece(s), or template(s) that was exported from one locale while currently in another locale will not change the locale of the document. For example, if a page with an English locale is exported and then that file is selected for import while in the French locale, the page will still be imported into the English locale.
 
 When importing a whole set of nested pages, the child pages will be added to the database, but will not appear in the page manager until the parent page has been imported. The parent page does not have to be imported first. Once it has been imported, any child pages that have already been imported will appear in the page manager.
 
