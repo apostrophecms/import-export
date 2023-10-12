@@ -45,7 +45,7 @@ require('apostrophe')({
 
 Pages can currently only be exported singly. Support for exporting multiple pages at once is planned for a future release. When exporting a page it will retain its publication status upon import. A page that is published when exported will be published on import, while draft pages will remain in draft status. In order to export a page, you use the context menu to the right of each page in the manager.
 
-Exporting the parent page in a set of nested documents will **not** export the child pages. Each child page must be exported separately. The parent page must already exist, or be separately exported and then subsequently imported, for any child page to appear in the page manager of the import project.
+Exporting the parent page in a set of nested documents will **not** export the child pages. Each child page must be exported separately. To maintain the page order, import the file for the parent document first, and then the files for the child documents.
 
 If a page exists in multiple locales, only the page for the current locale will be exported, not for any other locale. The page must be exported separately for each locale.
 
@@ -94,7 +94,7 @@ If the file you select has documents that already exist in your project, you'll 
 
 When importing a page, piece(s), or template(s) that was exported from one locale while currently in another locale will not change the locale of the document. For example, if a page with an English locale is exported and then that file is selected for import while in the French locale, the page will still be imported into the English locale.
 
-When importing several files that comprise a set of nested pages, the child pages will be added to the database, but will not appear in the page manager until the parent page has been imported. The parent page does not have to be imported first. Once it has been imported, any child pages that have already been imported will appear in the page manager.
+When importing several files that comprise a set of nested pages, importing the file with the parental file before importing the child files will preserve the page order in the tree. If a file for a child document is imported before or independently of the parent document, then it will be added as a child of the homepage.
 
 Warning - While you can rename the exported file, you must not change the file extension (`.tar.gz`) or content, or the import might not go as planned. You will also get an error when trying to import an incompatible file made with another file exporter, a file with an incorrect extension, or a file made with a version of the `Import/Export` module that has breaking changes from the currently installed version.
 
