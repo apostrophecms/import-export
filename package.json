@@ -31,8 +31,9 @@
     "vue-eslint-parser": "^9.3.1"
   },
   "dependencies": {
-    "tar-stream": "^3.1.6",
+    "bluebird": "^3.7.2",
     "bson": "^6.0.0",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "tar-stream": "^3.1.6"
   }
 }
