@@ -1,5 +1,14 @@
 # Changelog
 
+## UNRELEASED
+
+### Fixes
+
+* Use `uploadfs.copyOut` to ensure success in more attachment export situations, such as debugging a multisite Assembly project
+on a local machine where Chrome considers subdomains of `localhost` to be your machine but Node.js does not.
+* Minor refactoring for maintainability and performance.
+* Error and warning notifications stay in place until dismissed.
+
 ## 1.0.1 (2023-10-12)
 
 ### Fixes

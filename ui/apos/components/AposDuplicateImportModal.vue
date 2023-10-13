@@ -146,7 +146,6 @@ export default {
       } catch (error) {
         apos.notify(this.$t('aposImportExport:importCleanFailed'), {
           type: 'warning',
-          dismiss: true,
           interpolate: {
             exportPath: this.exportPath
           }
