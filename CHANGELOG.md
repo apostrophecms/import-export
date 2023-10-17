@@ -1,5 +1,11 @@
 # Changelog
 
+## UNRELEASED
+
+### Adds
+
+* Display more information when selecting duplicated docs to override.
+
 ## 1.0.2 (2023-10-13)
 
 ### Fixes
