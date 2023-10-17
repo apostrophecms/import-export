@@ -20,32 +20,64 @@
           </p>
 
           <div class="apos-import-duplicate__section">
-            <AposButton
-              class="apos-context-menu__btn"
-              data-apos-test="contextMenuTrigger"
-              :label="checked.length ? 'apostrophe:deselectAll' : 'apostrophe:selectAll'"
-              type="quiet"
-              role="button"
-              @click.stop="deselect"
-            />
-
-            <div class="apos-import-duplicate__separator" />
-            <div class="apos-import-duplicate__docs-list">
-              <AposCheckbox
-                v-for="doc in duplicatedDocs"
-                :key="doc.aposDocId"
-                v-model="checked"
-                tabindex="-1"
-                :choice="{
-                  value: doc.aposDocId,
-                  label: doc.title
-                }"
-                :field="{
-                  label: doc.title,
-                  name: doc.aposDocId
-                }"
-              />
-            </div>
+            <table class="apos-table">
+              <tbody>
+                <tr>
+                  <th class="apos-table__header">
+                    <AposButton
+                      class="apos-toggle"
+                      :class="{ 'apos-toggle--blank': !checked.length }"
+                      data-apos-test="contextMenuTrigger"
+                      type="quiet"
+                      :text-color="checkboxIconColor"
+                      :icon="checkboxIcon"
+                      :icon-only="true"
+                      :icon-size="10"
+                      @click.stop="toggle"
+                    />
+                  </th>
+                  <th class="apos-table__header">
+                    {{ $t('aposImportExport:title') }}
+                  </th>
+                  <th class="apos-table__header">
+                    {{ $t('aposImportExport:type') }}
+                  </th>
+                  <th class="apos-table__header">
+                    {{ $t('aposImportExport:lastEdited') }}
+                  </th>
+                </tr>
+                <tr
+                  v-for="doc in duplicatedDocs"
+                  :key="doc.aposDocId"
+                  class="apos-table__row"
+                >
+                  <td class="apos-table__cell">
+                    <AposCheckbox
+                      v-model="checked"
+                      tabindex="-1"
+                      :choice="{
+                        value: doc.aposDocId,
+                        label: doc.title
+                      }"
+                      :field="{
+                        label: doc.title,
+                        name: doc.aposDocId,
+                        hideLabel: true
+                      }"
+                    />
+                  </td>
+                  <td class="apos-table__cell">
+                    {{ doc.title }}
+                  </td>
+                  <td class="apos-table__cell">
+                    {{ docLabel(doc) }}
+                  </td>
+                  <td class="apos-table__cell">
+                    {{ lastEdited(doc) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
           <div class="apos-import-duplicate__separator apos-import-duplicate__separator--full-width" />
@@ -71,6 +103,8 @@
 </template>
 
 <script>
+import dayjs from 'dayjs';
+
 export default {
   props: {
     type: {
@@ -119,6 +153,22 @@ export default {
       const label = moduleOptions.pluralLabel;
 
       return this.$t(label).toLowerCase();
+    },
+    checkboxIcon() {
+      if (!this.checked.length) {
+        // we could return `null` but having no svg when no element are selected
+        // makes a shifting glitch
+        return 'checkbox-blank-icon';
+      }
+      if (this.checked.length === this.duplicatedDocs.length) {
+        return 'check-bold-icon';
+      }
+      return 'minus-icon';
+    },
+    checkboxIconColor() {
+      return this.checked.length
+        ? 'var(--a-white)'
+        : 'transparent';
     }
   },
 
@@ -180,10 +230,20 @@ export default {
     async cancel() {
       this.modal.showModal = false;
     },
-    deselect() {
+    toggle() {
       this.checked = this.checked.length
         ? []
         : this.duplicatedDocs.map(({ aposDocId }) => aposDocId);
+    },
+    docLabel(doc) {
+      const moduleOptions = apos.modules[this.type];
+
+      return moduleOptions?.label
+        ? this.$t(moduleOptions?.label)
+        : doc.type;
+    },
+    lastEdited(doc) {
+      return dayjs(doc.updatedAt).format(this.$t('aposImportExport:dayjsTitleDateFormat'));
     }
   }
 };
@@ -219,7 +279,6 @@ export default {
 
 ::v-deep .apos-modal__body {
   padding: 30px 20px;
-  width: 375px;
 }
 
 ::v-deep .apos-modal__body-main {
@@ -253,6 +312,7 @@ export default {
   padding: 10px;
   background-color: var(--a-warning-fade);
   color: var(--a-warning-dark);
+  width: calc(100% - 20px);
 }
 
 .apos-import-duplicate__section {
@@ -260,8 +320,57 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: baseline;
-  min-width: 100%;
-  width: 100%;
+}
+
+.apos-import-duplicate__section th {
+  font-weight: inherit;
+  padding: 5px 15px;
+}
+
+// Override button to style it exactly like other checkboxes
+::v-deep .apos-toggle {
+  .apos-button {
+    padding: 0;
+    transition: all 0.1s ease-in-out;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    align-self: flex-start;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    border: 1px solid var(--a-primary);
+    background-color: var(--a-primary);
+  }
+  .apos-button:hover:not([disabled]),
+  .apos-button:focus:not([disabled]) {
+    transform: none;
+  }
+  .apos-button:focus {
+    box-shadow: 0 0 10px var(--a-primary);
+  }
+}
+
+::v-deep .apos-toggle--blank {
+  .apos-button {
+    border-color: var(--a-base-4);
+    background-color: var(--a-base-10);
+  }
+  .apos-button:hover {
+    border-color: var(--a-base-2);
+  }
+  .apos-button:focus {
+    outline: none;
+    box-shadow: 0 0 5px var(--a-base-1);
+  }
+  .apos-button svg {
+    // We need to hide the checkbox-blank-icon svg (wish there were a "blank" svg in the material icons)
+    // because it is visible inside the input.
+    // Just changing the color to transparent is not enough as a glitch briefly appears.
+    // Hiding it solves it all.
+    visibility: hidden;
+  }
 }
 
 .apos-import-duplicate__settings {
