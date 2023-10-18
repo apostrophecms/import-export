@@ -1,4 +1,5 @@
 {
+  "dayjsTitleDateFormat": "MMM D, YYYY, hh:mm:ss A",
   "export": "Export {{ type }}",
   "exportAttachmentError": "Some attachments could not be added to the {{ format }} file",
   "exportFailed": "Export failed",
@@ -26,5 +27,8 @@
   "imported": "Imported",
   "importing": "Importing {{ type }}...",
   "importWarning": "Importing an Apostrophe export file on an incompatible website may not behave as expected.",
-  "or": "or"
+  "lastEdited": "Last edited",
+  "or": "or",
+  "title": "Title",
+  "type": "Type"
 }

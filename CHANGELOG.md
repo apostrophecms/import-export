@@ -1,5 +1,11 @@
 # Changelog
 
+## UNRELEASED
+
+### Adds
+
+* Display more information about duplicated documents.
+
 ## 1.0.2 (2023-10-13)
 
 ### Fixes
