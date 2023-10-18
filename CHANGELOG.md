@@ -4,7 +4,7 @@
 
 ### Adds
 
-* Display more information when selecting duplicated docs to override.
+* Display more information about duplicated documents.
 
 ## 1.0.2 (2023-10-13)
 
