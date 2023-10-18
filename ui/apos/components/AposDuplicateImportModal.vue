@@ -80,7 +80,7 @@
             </table>
           </div>
 
-          <div class="apos-import-duplicate__separator apos-import-duplicate__separator--full-width" />
+          <div class="apos-import-duplicate__separator" />
 
           <div class="apos-import-duplicate__btns">
             <AposButton
@@ -373,36 +373,22 @@ export default {
   }
 }
 
-.apos-import-duplicate__settings {
-  @include type-base;
-  font-weight: 600;
-  color: var(--a-base-3);
-  margin-top: 20px;
-}
-
-.apos-import-duplicate__docs-list {
-  width: 100%;
-  max-height: calc(60vh - 220px);
-  overflow-y: auto;
-  padding-bottom: 15px;
-}
-
 .apos-import-duplicate__separator {
   background-color: var(--a-base-9);
   position: relative;
   height: 1px;
   width: calc(100% - 10px);
   margin: 10px 0;
-}
 
-.apos-import-duplicate__separator--full-width::before {
-  content: "";
-  background-color: var(--a-base-9);
-  position: absolute;
-  height: 100%;
-  width: calc(100% + 60px);
-  left: -30px;
-  right: 0;
+  &:before {
+    content: "";
+    background-color: var(--a-base-9);
+    position: absolute;
+    height: 100%;
+    width: calc(100% + 60px);
+    left: -30px;
+    right: 0;
+  }
 }
 
 ::v-deep .apos-schema .apos-field {
@@ -420,12 +406,6 @@ export default {
 
 .apos-import-duplicate__btn ::v-deep .apos-button__label {
   text-transform: capitalize;
-}
-
-.apos-import-duplicate__related-list {
-  max-height: 210px;
-  overflow-y: overlay;
-  width: 100%;
 }
 
 @keyframes expand {
