@@ -322,9 +322,15 @@ export default {
   align-items: baseline;
 }
 
-.apos-import-duplicate__section th {
+.apos-import-duplicate__section .apos-table__header {
   font-weight: inherit;
   padding: 5px 15px;
+}
+
+.apos-import-duplicate__section .apos-table__cell {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 // Override button to style it exactly like other checkboxes
