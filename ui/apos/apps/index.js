@@ -13,7 +13,7 @@ export default () => {
 
   function openUrl(event) {
     if (event.url) {
-      window.location.assign(event.url);
+      window.open(event.url, '_blank');
     }
   }
 
