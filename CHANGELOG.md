@@ -1,9 +1,14 @@
 # Changelog
 
-## Unreleased
+## UNRELEASED
+
+### Adds
+
+* Display more information about duplicated documents.
 
 ### Fixes
 
+* Fix progress bar going over `100%` when importing docs that are archived after being exported.
 * Adds missing dependency.
 
 ## 1.0.2 (2023-10-13)
