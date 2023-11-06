@@ -5,6 +5,7 @@
 ### Adds
 
 * Display more information about duplicated documents.
+* Export file name more meaningful, containing project name, module name and current date and time.
 
 ### Fixes
 
