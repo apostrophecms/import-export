@@ -1,5 +1,11 @@
 # Changelog
 
+## UNRELEASED
+
+### Changes
+
+* Hide "Duplicates Detected." notification.
+
 ## 1.1.0 (2023-11-03)
 
 ### Adds
