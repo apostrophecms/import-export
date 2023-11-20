@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+### Adds
+
+* TODO:
+
 ### Changes
 
 * Hide "Duplicates Detected." notification.

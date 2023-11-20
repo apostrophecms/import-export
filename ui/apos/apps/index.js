@@ -7,6 +7,7 @@ export default () => {
       apos.bus.$on('export-download', openUrl);
       apos.bus.$on('import-started', addBeforeUnloadListener);
       apos.bus.$on('import-ended', removeBeforeUnloadListener);
+      apos.bus.$on('import-locale-differs', handleDifferentLocale);
       apos.bus.$on('import-duplicates', handleDuplicates);
     }
   });
@@ -23,6 +24,12 @@ export default () => {
 
   function removeBeforeUnloadListener() {
     window.removeEventListener('beforeunload', warningImport);
+  }
+
+  async function handleDifferentLocale(event) {
+    console.log('handleDifferentLocale');
+    const result = await apos.modal.execute('AposModalConfirm', event);
+    console.log('🚀 ~ file: index.js:31 ~ handleDifferentLocale ~ result:', result);
   }
 
   async function handleDuplicates(event) {
