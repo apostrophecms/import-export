@@ -30,6 +30,42 @@ export default () => {
     console.log('handleDifferentLocale');
     const result = await apos.modal.execute('AposModalConfirm', event);
     console.log('🚀 ~ file: index.js:31 ~ handleDifferentLocale ~ result:', result);
+
+    if (result) {
+      try {
+        await apos.http.post('/api/v1/@apostrophecms/import-export/import', {
+          body: {
+            exportPath: event.exportPath,
+            jobId: event.jobId,
+            notificationId: event.notificationId
+          }
+        });
+      } catch (error) {
+        apos.notify(this.$t('aposImportExport:importFailed'), {
+          type: 'danger',
+          dismiss: true
+        });
+      }
+
+      return;
+    }
+
+    try {
+      await apos.http.post('/api/v1/@apostrophecms/import-export/clean-export', {
+        body: {
+          exportPath: event.exportPath,
+          jobId: event.jobId,
+          notificationId: event.notificationId
+        }
+      });
+    } catch (error) {
+      apos.notify(this.$t('aposImportExport:importCleanFailed'), {
+        type: 'warning',
+        interpolate: {
+          exportPath: event.exportPath
+        }
+      });
+    }
   }
 
   async function handleDuplicates(event) {
