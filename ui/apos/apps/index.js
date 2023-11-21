@@ -54,9 +54,7 @@ export default () => {
     try {
       await apos.http.post('/api/v1/@apostrophecms/import-export/clean-export', {
         body: {
-          exportPath: event.exportPath,
-          jobId: event.jobId,
-          notificationId: event.notificationId
+          exportPath: event.exportPath
         }
       });
     } catch (error) {
