@@ -35,9 +35,8 @@ export default () => {
 
         await apos.http.post(`${moduleAction}/import`, {
           body: {
-            exportPath: event.exportPath,
-            filePath: event.filePath,
-            overrideLocale: true
+            overrideLocale: true,
+            exportPath: event.exportPath
           }
         });
       } catch (error) {

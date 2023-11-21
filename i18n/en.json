@@ -17,7 +17,7 @@
   "import": "Import {{ type }}",
   "importCleanFailed": "The cleaning of the imported file on server failed: {{ exportPath }}",
   "importWithCurrentLocaleHeading": "Different locale detected",
-  "importWithCurrentLocaleDescription": "This file was exported from the \"{{ foundLocale }}\" locale. Are you sure you want to import it into the \"{{ currentLocale }}\" locale?",
+  "importWithCurrentLocaleDescription": "This file was exported from the \"{{ docsLocale }}\" locale. Are you sure you want to import it into the \"{{ currentLocale }}\" locale?",
   "importDuplicateContinue": "Continue Import",
   "importDuplicateDetected": "Duplicates Detected.",
   "importDuplicateMessage": "Check the items you'd like to overwrite during import.",
