@@ -27,17 +27,17 @@ export default () => {
   }
 
   async function handleDifferentLocale(event) {
-    console.log('handleDifferentLocale');
-    const result = await apos.modal.execute('AposModalConfirm', event);
-    console.log('🚀 ~ file: index.js:31 ~ handleDifferentLocale ~ result:', result);
+    const continueImport = await apos.modal.execute('AposModalConfirm', event);
 
-    if (result) {
+    if (continueImport) {
       try {
-        await apos.http.post('/api/v1/@apostrophecms/import-export/import', {
+        const moduleAction = apos.modules[event.moduleName].action;
+
+        await apos.http.post(`${moduleAction}/import`, {
           body: {
             exportPath: event.exportPath,
-            jobId: event.jobId,
-            notificationId: event.notificationId
+            filePath: event.filePath,
+            overrideLocale: true
           }
         });
       } catch (error) {
@@ -50,6 +50,7 @@ export default () => {
       return;
     }
 
+    // If not, we still need to clean the uploaded archive
     try {
       await apos.http.post('/api/v1/@apostrophecms/import-export/clean-export', {
         body: {
