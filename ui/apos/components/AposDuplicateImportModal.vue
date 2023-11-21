@@ -194,7 +194,7 @@ export default {
           }
         });
       } catch (error) {
-        apos.notify(this.$t('aposImportExport:importCleanFailed'), {
+        apos.notify('aposImportExport:importCleanFailed', {
           type: 'warning',
           interpolate: {
             exportPath: this.exportPath
@@ -217,7 +217,7 @@ export default {
           jobId: this.jobId
         }
       }).catch(() => {
-        apos.notify(this.$t('aposImportExport:exportFailed'), {
+        apos.notify('aposImportExport:exportFailed', {
           type: 'danger',
           dismiss: true
         });

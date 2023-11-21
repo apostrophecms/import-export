@@ -40,7 +40,7 @@ export default () => {
           }
         });
       } catch (error) {
-        apos.notify(this.$t('aposImportExport:importFailed'), {
+        apos.notify('aposImportExport:importFailed', {
           type: 'danger',
           dismiss: true
         });
@@ -57,7 +57,7 @@ export default () => {
         }
       });
     } catch (error) {
-      apos.notify(this.$t('aposImportExport:importCleanFailed'), {
+      apos.notify('aposImportExport:importCleanFailed', {
         type: 'warning',
         interpolate: {
           exportPath: event.exportPath

@@ -256,7 +256,7 @@ export default {
           }
         });
       } catch (error) {
-        apos.notify(this.$t('aposImportExport:exportFailed'), {
+        apos.notify('aposImportExport:exportFailed', {
           type: 'danger',
           dismiss: true
         });
