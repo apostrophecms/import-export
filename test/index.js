@@ -580,6 +580,91 @@ describe('@apostrophecms/import-export', function () {
 
     await cleanFile(pageTgzPath.replace(gzip.allowedExtension, ''));
   });
+
+  it('should find the first locale among the docs that is different from the one in req', async function() {
+    const req = {
+      locale: 'fr-CA',
+      mode: 'draft'
+    };
+    const docs = [
+      {
+        _id: '1:daft',
+        aposMode: 'draft'
+      },
+      {
+        _id: '2:fr:published',
+        aposLocale: 'fr:published',
+        aposMode: 'published'
+      },
+      {
+        _id: '3:fr-CA:published',
+        aposLocale: 'fr-CA:published',
+        aposMode: 'published'
+      },
+      {
+        _id: '4:en:draft',
+        aposLocale: 'en:draft',
+        aposMode: 'draft'
+      }
+    ];
+
+    const actual = apos.modules['@apostrophecms/import-export'].getFirstDifferentLocale(req, docs);
+    const expected = 'fr';
+
+    assert.equal(actual, expected);
+  });
+
+  it('should rewrite the docs locale with the one in req the first locale among the docs that is different from the one in req', async function() {
+    const req = {
+      locale: 'fr-CA',
+      mode: 'draft'
+    };
+    const docs = [
+      {
+        _id: '1:daft',
+        aposMode: 'draft'
+      },
+      {
+        _id: '2:fr:published',
+        aposLocale: 'fr:published',
+        aposMode: 'published'
+      },
+      {
+        _id: '3:fr-CA:published',
+        aposLocale: 'fr-CA:published',
+        aposMode: 'published'
+      },
+      {
+        _id: '4:en:draft',
+        aposLocale: 'en:draft',
+        aposMode: 'draft'
+      }
+    ];
+
+    apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale(req, docs);
+
+    assert.deepEqual(docs, [
+      {
+        _id: '1:daft',
+        aposMode: 'draft'
+      },
+      {
+        _id: '2:fr-CA:published',
+        aposLocale: 'fr-CA:published',
+        aposMode: 'published'
+      },
+      {
+        _id: '3:fr-CA:published',
+        aposLocale: 'fr-CA:published',
+        aposMode: 'published'
+      },
+      {
+        _id: '4:fr-CA:draft',
+        aposLocale: 'fr-CA:draft',
+        aposMode: 'draft'
+      }
+    ]);
+  });
 });
 
 function extractFileNames (files) {
