@@ -1021,7 +1021,7 @@ describe('@apostrophecms/import-export', function () {
     });
   });
 
-  describe.only('#overrideDuplicates - overriding locales integration tests', function() {
+  describe('#overrideDuplicates - overriding locales integration tests', function() {
     let req;
     let jobManager;
     let getFilesData;
