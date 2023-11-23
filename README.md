@@ -139,3 +139,11 @@ module.exports = {
     label: 'Article',
     pluralLabel: 'Articles'
 ```
+
+## Importing documents from another locale
+
+Documents will automatically be re-written with the current site locale if only one locale is configured in the `@apostrophecms/i18n` module.
+
+If multiple locales are configured, the user is asked about aborting the import or continuing it:
+
+![Screenshot highlighting the confirm modal letting the user choose between aborting on continuing the import when the docs locale is different from the site one.](https://static.apostrophecms.com/apostrophecms/import-export/images/different-locale-modal.png)
