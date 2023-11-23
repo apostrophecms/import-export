@@ -4,7 +4,9 @@
 
 ### Adds
 
-* TODO:
+* Import nows detects if the locale found in the exported docs is different from the current site one.  
+If the site has only one locale configured, then the docs are automatically re-written with the site locale.  
+If the site has multiple locales configured, the user is given the possibility to abort the import or re-write the docs with the site locale.
 
 ### Changes
 
