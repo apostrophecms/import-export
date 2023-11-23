@@ -111,6 +111,10 @@ export default {
       type: String,
       required: true
     },
+    overrideLocale: {
+      type: Boolean,
+      required: true
+    },
     duplicatedDocs: {
       type: Array,
       required: true
@@ -214,7 +218,8 @@ export default {
           docIds: this.checked,
           importedAttachments: this.importedAttachments,
           exportPath: this.exportPath,
-          jobId: this.jobId
+          jobId: this.jobId,
+          overrideLocale: this.overrideLocale
         }
       }).catch(() => {
         apos.notify('aposImportExport:exportFailed', {
