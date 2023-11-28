@@ -580,6 +580,691 @@ describe('@apostrophecms/import-export', function () {
 
     await cleanFile(pageTgzPath.replace(gzip.allowedExtension, ''));
   });
+
+  describe('#getFirstDifferentLocale', function() {
+    it('should find among the docs the first locale that is different from the req one', async function() {
+      const req = {
+        locale: 'fr-CA',
+        mode: 'draft'
+      };
+      const docs = [
+        {
+          _id: '1:daft',
+          aposMode: 'draft'
+        },
+        {
+          _id: '2:fr:published',
+          aposLocale: 'fr:published',
+          aposMode: 'published'
+        },
+        {
+          _id: '3:fr-CA:published',
+          aposLocale: 'fr-CA:published',
+          aposMode: 'published'
+        },
+        {
+          _id: '4:en:draft',
+          aposLocale: 'en:draft',
+          aposMode: 'draft'
+        }
+      ];
+
+      const actual = apos.modules['@apostrophecms/import-export'].getFirstDifferentLocale(req, docs);
+      const expected = 'fr';
+
+      assert.equal(actual, expected);
+    });
+  });
+
+  describe('#rewriteDocsWithCurrentLocale', function() {
+    it('should rewrite the docs locale with the req one', async function() {
+      const req = {
+        locale: 'fr-CA',
+        mode: 'draft'
+      };
+      const docs = [
+        {
+          _id: '1:daft',
+          aposMode: 'draft'
+        },
+        {
+          _id: '2:fr:published',
+          aposLocale: 'fr:published',
+          aposMode: 'published'
+        },
+        {
+          _id: '3:fr-CA:published',
+          aposLocale: 'fr-CA:published',
+          aposMode: 'published'
+        },
+        {
+          _id: '4:en:draft',
+          aposLocale: 'en:draft',
+          aposMode: 'draft'
+        }
+      ];
+
+      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale(req, docs);
+
+      assert.deepEqual(docs, [
+        {
+          _id: '1:daft',
+          aposMode: 'draft'
+        },
+        {
+          _id: '2:fr-CA:published',
+          aposLocale: 'fr-CA:published',
+          aposMode: 'published'
+        },
+        {
+          _id: '3:fr-CA:published',
+          aposLocale: 'fr-CA:published',
+          aposMode: 'published'
+        },
+        {
+          _id: '4:fr-CA:draft',
+          aposLocale: 'fr-CA:draft',
+          aposMode: 'draft'
+        }
+      ]);
+    });
+  });
+
+  describe('#import - overriding locales integration tests', function() {
+    let req;
+    let notify;
+    let getFilesData;
+    let readExportFile;
+    let rewriteDocsWithCurrentLocale;
+    let insertDocs;
+
+    this.beforeEach(async function() {
+      req = apos.task.getReq({
+        locale: 'en',
+        body: {}
+      });
+      notify = apos.notify;
+      getFilesData = apos.modules['@apostrophecms/import-export'].getFilesData;
+      readExportFile = apos.modules['@apostrophecms/import-export'].readExportFile;
+      rewriteDocsWithCurrentLocale = apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale;
+      insertDocs = apos.modules['@apostrophecms/import-export'].insertDocs;
+
+      await deletePieces(apos);
+      await deletePage(apos);
+      await deleteAttachments(apos, attachmentPath);
+    });
+
+    this.afterEach(function() {
+      apos.notify = notify;
+      apos.modules['@apostrophecms/import-export'].getFilesData = getFilesData;
+      apos.modules['@apostrophecms/import-export'].readExportFile = readExportFile;
+      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = rewriteDocsWithCurrentLocale;
+      apos.modules['@apostrophecms/import-export'].insertDocs = insertDocs;
+    });
+
+    it('should import pieces with related documents from the extracted export path when provided', async function() {
+      const req = apos.task.getReq({
+        body: {
+          exportPath: '/custom/extracted-export-path'
+        }
+      });
+
+      apos.modules['@apostrophecms/import-export'].readExportFile = async () => {
+        throw new Error('should not have been called');
+      };
+      apos.modules['@apostrophecms/import-export'].getFilesData = async exportPath => {
+        assert.equal(exportPath, '/custom/extracted-export-path');
+
+        return {
+          docs: [
+            {
+              _id: '4:en:draft',
+              aposMode: 'draft',
+              aposLocale: 'en:draft',
+              title: 'topic1',
+              type: 'topic'
+            }
+          ],
+          attachmentsInfo: []
+        };
+      };
+
+      await importExportManager.import(req);
+    });
+
+    describe('when the site has only one locale', function() {
+      it('should not rewrite the docs locale nor ask about it when the locale is not different', async function() {
+        apos.modules['@apostrophecms/import-export'].readExportFile = async req => {
+          return {
+            docs: [
+              {
+                _id: '4:en:draft',
+                aposMode: 'draft',
+                aposLocale: 'en:draft',
+                title: 'topic1',
+                type: 'topic'
+              }
+            ],
+            attachmentsInfo: []
+          };
+        };
+        apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
+          throw new Error('should not have been called');
+        };
+        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, docs) => {
+          assert.deepEqual(docs, [
+            {
+              _id: '4:en:draft',
+              aposMode: 'draft',
+              aposLocale: 'en:draft',
+              title: 'topic1',
+              type: 'topic'
+            }
+          ]);
+
+          return {
+            duplicatedDocs: [],
+            duplicatedIds: [],
+            failedIds: []
+          };
+        };
+        apos.notify = async (req, message, options) => {
+          if (options?.event?.name === 'import-locale-differs') {
+            throw new Error('should not have been called with event "import-locale-differ"');
+          }
+          return {};
+        };
+
+        await importExportManager.import(req);
+      });
+
+      it('should rewrite the docs locale without asking about it when the locale is different', async function() {
+        apos.modules['@apostrophecms/import-export'].readExportFile = async req => {
+          return {
+            docs: [
+              {
+                _id: '4:fr:draft',
+                aposMode: 'draft',
+                aposLocale: 'fr:draft',
+                title: 'topic1',
+                type: 'topic'
+              }
+            ],
+            attachmentsInfo: []
+          };
+        };
+        apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
+          assert.deepEqual(docs, [
+            {
+              _id: '4:fr:draft',
+              aposMode: 'draft',
+              aposLocale: 'fr:draft',
+              title: 'topic1',
+              type: 'topic'
+            }
+          ]);
+
+          return rewriteDocsWithCurrentLocale(req, docs);
+        };
+        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, docs) => {
+          assert.deepEqual(docs, [
+            {
+              _id: '4:en:draft',
+              aposMode: 'draft',
+              aposLocale: 'en:draft',
+              title: 'topic1',
+              type: 'topic'
+            }
+          ]);
+
+          return {
+            duplicatedDocs: [],
+            duplicatedIds: [],
+            failedIds: []
+          };
+        };
+        apos.notify = async (req, message, options) => {
+          if (options?.event?.name === 'import-locale-differs') {
+            throw new Error('should not have been called with event "import-locale-differ"');
+          }
+          return {};
+        };
+
+        await importExportManager.import(req);
+      });
+    });
+
+    describe('when the site has multiple locales', function() {
+      let apos;
+      let importExportManager;
+
+      let req;
+      let notify;
+      let getFilesData;
+      let readExportFile;
+      let rewriteDocsWithCurrentLocale;
+      let insertDocs;
+
+      after(async function() {
+        await t.destroy(apos);
+      });
+
+      before(async function() {
+        apos = await t.create({
+          root: module,
+          testModule: true,
+          modules: getAppConfig({
+            '@apostrophecms/express': {
+              options: {
+                session: { secret: 'supersecret' },
+                port: 3001
+              }
+            },
+            '@apostrophecms/i18n': {
+              options: {
+                defaultLocale: 'en',
+                locales: {
+                  en: { label: 'English' },
+                  fr: {
+                    label: 'French',
+                    prefix: '/fr'
+                  }
+                }
+              }
+            }
+          })
+        });
+
+        importExportManager = apos.modules['@apostrophecms/import-export'];
+        importExportManager.removeExportFileFromUploadFs = () => {};
+        importExportManager.cleanFile = () => {};
+
+        await insertAdminUser(apos);
+        await insertPieces(apos);
+      });
+
+      this.beforeEach(async function() {
+        req = apos.task.getReq({
+          locale: 'en',
+          body: {}
+        });
+        notify = apos.notify;
+        getFilesData = apos.modules['@apostrophecms/import-export'].getFilesData;
+        readExportFile = apos.modules['@apostrophecms/import-export'].readExportFile;
+        rewriteDocsWithCurrentLocale = apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale;
+        insertDocs = apos.modules['@apostrophecms/import-export'].insertDocs;
+
+        await deletePieces(apos);
+        await deletePage(apos);
+        await deleteAttachments(apos, attachmentPath);
+      });
+
+      this.afterEach(function() {
+        apos.notify = notify;
+        apos.modules['@apostrophecms/import-export'].getFilesData = getFilesData;
+        apos.modules['@apostrophecms/import-export'].readExportFile = readExportFile;
+        apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = rewriteDocsWithCurrentLocale;
+        apos.modules['@apostrophecms/import-export'].insertDocs = insertDocs;
+      });
+
+      it('should not rewrite the docs locale nor ask about it when the locale is not different', async function() {
+        const req = apos.task.getReq({
+          locale: 'fr',
+          body: {}
+        });
+
+        apos.modules['@apostrophecms/import-export'].readExportFile = async req => {
+          return {
+            docs: [
+              {
+                _id: '4:fr:draft',
+                aposMode: 'draft',
+                aposLocale: 'fr:draft',
+                title: 'topic1',
+                type: 'topic'
+              }
+            ],
+            attachmentsInfo: []
+          };
+        };
+        apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = () => {
+          throw new Error('should not have been called');
+        };
+        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, docs) => {
+          assert.deepEqual(docs, [
+            {
+              _id: '4:fr:draft',
+              aposMode: 'draft',
+              aposLocale: 'fr:draft',
+              title: 'topic1',
+              type: 'topic'
+            }
+          ]);
+
+          return {
+            duplicatedDocs: [],
+            duplicatedIds: [],
+            failedIds: []
+          };
+        };
+        apos.notify = async (req, message, options) => {
+          if (options?.event?.name === 'import-locale-differs') {
+            throw new Error('should not have been called with event "import-locale-differ"');
+          }
+          return {};
+        };
+
+        await importExportManager.import(req);
+      });
+
+      it('should not rewrite the docs locales nor insert them but ask about it when the locale is different', async function() {
+        apos.modules['@apostrophecms/import-export'].readExportFile = async req => {
+          return {
+            docs: [
+              {
+                _id: '4:fr:draft',
+                aposMode: 'draft',
+                aposLocale: 'fr:draft',
+                title: 'topic1',
+                type: 'topic'
+              }
+            ],
+            attachmentsInfo: []
+          };
+        };
+
+        apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = () => {
+          throw new Error('should not have been called');
+        };
+        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, docs) => {
+          throw new Error('should not have been called');
+        };
+        apos.notify = async (req, message, options) => {
+          assert.equal(options.event.name, 'import-locale-differs');
+        };
+
+        await importExportManager.import(req);
+      });
+
+      it('should rewrite the docs locale when the locale is different and the `overrideLocale` param is provided', async function() {
+        const req = apos.task.getReq({
+          locale: 'en',
+          body: {
+            overrideLocale: true
+          }
+        });
+
+        apos.modules['@apostrophecms/import-export'].readExportFile = async req => {
+          return {
+            docs: [
+              {
+                _id: '4:fr:draft',
+                aposMode: 'draft',
+                aposLocale: 'fr:draft',
+                title: 'topic1',
+                type: 'topic'
+              }
+            ],
+            attachmentsInfo: []
+          };
+        };
+
+        apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
+          assert.deepEqual(docs, [
+            {
+              _id: '4:fr:draft',
+              aposMode: 'draft',
+              aposLocale: 'fr:draft',
+              title: 'topic1',
+              type: 'topic'
+            }
+          ]);
+
+          return rewriteDocsWithCurrentLocale(req, docs);
+        };
+        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, docs) => {
+          assert.deepEqual(docs, [
+            {
+              _id: '4:en:draft',
+              aposMode: 'draft',
+              aposLocale: 'en:draft',
+              title: 'topic1',
+              type: 'topic'
+            }
+          ]);
+
+          return {
+            duplicatedDocs: [],
+            duplicatedIds: [],
+            failedIds: []
+          };
+        };
+        apos.notify = async (req, message, options) => {
+          if (options?.event?.name === 'import-locale-differs') {
+            throw new Error('should not have been called with event "import-locale-differ"');
+          }
+          return {};
+        };
+
+        await importExportManager.import(req);
+      });
+    });
+  });
+
+  describe('#overrideDuplicates - overriding locales integration tests', function() {
+    let req;
+    let getFilesData;
+    let rewriteDocsWithCurrentLocale;
+    let jobManager;
+
+    this.beforeEach(async function() {
+      req = apos.task.getReq({
+        locale: 'en',
+        body: {}
+      });
+      jobManager = apos.modules['@apostrophecms/job'];
+      getFilesData = apos.modules['@apostrophecms/import-export'].getFilesData;
+      rewriteDocsWithCurrentLocale = apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale;
+
+      jobManager.success = () => {};
+      jobManager.failure = () => {};
+
+      await deletePieces(apos);
+      await deletePage(apos);
+      await deleteAttachments(apos, attachmentPath);
+    });
+
+    this.afterEach(function() {
+      apos.modules['@apostrophecms/job'].jobManager = jobManager;
+      apos.modules['@apostrophecms/import-export'].getFilesData = getFilesData;
+      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = rewriteDocsWithCurrentLocale;
+    });
+
+    describe('when the site has only one locale', function() {
+      it('should not rewrite the docs locale when the locale is not different', async function() {
+        apos.modules['@apostrophecms/import-export'].getFilesData = async exportPath => {
+          return {
+            docs: [
+              {
+                _id: '4:en:draft',
+                aposMode: 'draft',
+                aposLocale: 'en:draft',
+                title: 'topic1',
+                type: 'topic'
+              }
+            ],
+            attachmentsInfo: []
+          };
+        };
+        apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
+          throw new Error('should not have been called');
+        };
+
+        await importExportManager.overrideDuplicates(req);
+      });
+
+      it('should rewrite the docs locale when the locale is different', async function() {
+        apos.modules['@apostrophecms/import-export'].getFilesData = async exportPath => {
+          return {
+            docs: [
+              {
+                _id: '4:fr:draft',
+                aposMode: 'draft',
+                aposLocale: 'fr:draft',
+                title: 'topic1',
+                type: 'topic'
+              }
+            ],
+            attachmentsInfo: []
+          };
+        };
+        apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
+          assert.deepEqual(docs, [
+            {
+              _id: '4:fr:draft',
+              aposMode: 'draft',
+              aposLocale: 'fr:draft',
+              title: 'topic1',
+              type: 'topic'
+            }
+          ]);
+
+          return rewriteDocsWithCurrentLocale(req, docs);
+        };
+
+        await importExportManager.overrideDuplicates(req);
+      });
+    });
+
+    describe('when the site has multiple locales', function() {
+      let apos;
+      let importExportManager;
+
+      let getFilesData;
+      let rewriteDocsWithCurrentLocale;
+
+      after(async function() {
+        await t.destroy(apos);
+      });
+
+      before(async function() {
+        apos = await t.create({
+          root: module,
+          testModule: true,
+          modules: getAppConfig({
+            '@apostrophecms/express': {
+              options: {
+                session: { secret: 'supersecret' },
+                port: 3001
+              }
+            },
+            '@apostrophecms/i18n': {
+              options: {
+                defaultLocale: 'en',
+                locales: {
+                  en: { label: 'English' },
+                  fr: {
+                    label: 'French',
+                    prefix: '/fr'
+                  }
+                }
+              }
+            }
+          })
+        });
+
+        importExportManager = apos.modules['@apostrophecms/import-export'];
+        importExportManager.removeExportFileFromUploadFs = () => {};
+        importExportManager.cleanFile = () => {};
+
+        await insertAdminUser(apos);
+        await insertPieces(apos);
+      });
+
+      this.beforeEach(async function() {
+        req = apos.task.getReq({
+          locale: 'en',
+          body: {}
+        });
+        getFilesData = apos.modules['@apostrophecms/import-export'].getFilesData;
+        rewriteDocsWithCurrentLocale = apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale;
+
+        jobManager = apos.modules['@apostrophecms/job'];
+        jobManager.success = () => {};
+        jobManager.failure = () => {};
+
+        await deletePieces(apos);
+        await deletePage(apos);
+        await deleteAttachments(apos, attachmentPath);
+      });
+
+      this.afterEach(function() {
+        apos.modules['@apostrophecms/import-export'].getFilesData = getFilesData;
+        apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = rewriteDocsWithCurrentLocale;
+      });
+
+      it('should not rewrite the docs locale when the locale is not different', async function() {
+        apos.modules['@apostrophecms/import-export'].getFilesData = async exportPath => {
+          return {
+            docs: [
+              {
+                _id: '4:en:draft',
+                aposMode: 'draft',
+                aposLocale: 'en:draft',
+                title: 'topic1',
+                type: 'topic'
+              }
+            ],
+            attachmentsInfo: []
+          };
+        };
+        apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
+          throw new Error('should not have been called');
+        };
+
+        await importExportManager.overrideDuplicates(req);
+      });
+
+      it('should rewrite the docs locale when the locale is different and the `overrideLocale` param is provided', async function() {
+        const req = apos.task.getReq({
+          locale: 'en',
+          body: {
+            overrideLocale: true
+          }
+        });
+
+        apos.modules['@apostrophecms/import-export'].getFilesData = async exportPath => {
+          return {
+            docs: [
+              {
+                _id: '4:fr:draft',
+                aposMode: 'draft',
+                aposLocale: 'fr:draft',
+                title: 'topic1',
+                type: 'topic'
+              }
+            ],
+            attachmentsInfo: []
+          };
+        };
+        apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
+          assert.deepEqual(docs, [
+            {
+              _id: '4:fr:draft',
+              aposMode: 'draft',
+              aposLocale: 'fr:draft',
+              title: 'topic1',
+              type: 'topic'
+            }
+          ]);
+
+          return rewriteDocsWithCurrentLocale(req, docs);
+        };
+
+        await importExportManager.overrideDuplicates(req);
+      });
+    });
+  });
 });
 
 function extractFileNames (files) {
@@ -759,7 +1444,7 @@ async function insertAdminUser(apos) {
   await apos.user.insert(apos.task.getReq(), user);
 }
 
-function getAppConfig() {
+function getAppConfig(modules = {}) {
   return {
     '@apostrophecms/express': {
       options: {
@@ -835,6 +1520,8 @@ function getAppConfig() {
           }
         }
       }
-    }
+    },
+
+    ...modules
   };
 }

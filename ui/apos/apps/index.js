@@ -7,6 +7,7 @@ export default () => {
       apos.bus.$on('export-download', openUrl);
       apos.bus.$on('import-started', addBeforeUnloadListener);
       apos.bus.$on('import-ended', removeBeforeUnloadListener);
+      apos.bus.$on('import-locale-differs', handleDifferentLocale);
       apos.bus.$on('import-duplicates', handleDuplicates);
     }
   });
@@ -23,6 +24,46 @@ export default () => {
 
   function removeBeforeUnloadListener() {
     window.removeEventListener('beforeunload', warningImport);
+  }
+
+  async function handleDifferentLocale(event) {
+    const continueImport = await apos.modal.execute('AposModalConfirm', event);
+
+    if (continueImport) {
+      try {
+        const moduleAction = apos.modules[event.moduleName].action;
+
+        await apos.http.post(`${moduleAction}/import`, {
+          body: {
+            overrideLocale: true,
+            exportPath: event.exportPath
+          }
+        });
+      } catch (error) {
+        apos.notify('aposImportExport:importFailed', {
+          type: 'danger',
+          dismiss: true
+        });
+      }
+
+      return;
+    }
+
+    // If not, we still need to clean the uploaded archive
+    try {
+      await apos.http.post('/api/v1/@apostrophecms/import-export/clean-export', {
+        body: {
+          exportPath: event.exportPath
+        }
+      });
+    } catch (error) {
+      apos.notify('aposImportExport:importCleanFailed', {
+        type: 'warning',
+        interpolate: {
+          exportPath: event.exportPath
+        }
+      });
+    }
   }
 
   async function handleDuplicates(event) {

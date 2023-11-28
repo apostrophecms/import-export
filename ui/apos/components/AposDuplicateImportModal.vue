@@ -111,6 +111,10 @@ export default {
       type: String,
       required: true
     },
+    overrideLocale: {
+      type: Boolean,
+      required: true
+    },
     duplicatedDocs: {
       type: Array,
       required: true
@@ -194,7 +198,7 @@ export default {
           }
         });
       } catch (error) {
-        apos.notify(this.$t('aposImportExport:importCleanFailed'), {
+        apos.notify('aposImportExport:importCleanFailed', {
           type: 'warning',
           interpolate: {
             exportPath: this.exportPath
@@ -214,10 +218,11 @@ export default {
           docIds: this.checked,
           importedAttachments: this.importedAttachments,
           exportPath: this.exportPath,
-          jobId: this.jobId
+          jobId: this.jobId,
+          overrideLocale: this.overrideLocale
         }
       }).catch(() => {
-        apos.notify(this.$t('aposImportExport:exportFailed'), {
+        apos.notify('aposImportExport:exportFailed', {
           type: 'danger',
           dismiss: true
         });

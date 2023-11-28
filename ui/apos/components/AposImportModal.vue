@@ -130,7 +130,7 @@ export default {
       apos.http.post(`${this.moduleAction}/${this.action}`, {
         body: formData
       }).catch(() => {
-        apos.notify(this.$t('aposImportExport:importFailed'), {
+        apos.notify('aposImportExport:importFailed', {
           type: 'danger',
           dismiss: true
         });
