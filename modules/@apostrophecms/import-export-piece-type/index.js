@@ -32,7 +32,7 @@ module.exports = {
             progress: 'aposImportExport:exporting',
             completed: 'aposImportExport:exported',
             icon: 'database-export-icon',
-            resultsEventName: 'export-download'
+            resultsEventName: 'import-export-export-download'
           },
           modal: 'AposExportModal'
         }

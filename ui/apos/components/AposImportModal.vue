@@ -126,7 +126,7 @@ export default {
       const formData = new FormData();
       formData.append('file', this.selectedFile);
 
-      apos.bus.$emit('import-started');
+      apos.bus.$emit('import-export-import-started');
       apos.http.post(`${this.moduleAction}/${this.action}`, {
         body: formData
       }).catch(() => {
@@ -134,7 +134,7 @@ export default {
           type: 'danger',
           dismiss: true
         });
-        apos.bus.$emit('import-ended');
+        apos.bus.$emit('import-export-import-ended');
       });
 
       this.modal.showModal = false;
