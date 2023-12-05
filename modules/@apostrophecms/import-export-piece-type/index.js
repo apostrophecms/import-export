@@ -10,7 +10,7 @@ module.exports = {
 
     return {
       add: {
-        import: {
+        'import-export-import': {
           label: 'aposImportExport:import',
           modalOptions: {
             modal: 'AposImportModal'
@@ -26,7 +26,7 @@ module.exports = {
 
     return {
       add: {
-        'export-batch': {
+        'import-export-export-batch': {
           label: 'aposImportExport:export',
           messages: {
             progress: 'aposImportExport:exporting',
@@ -40,7 +40,7 @@ module.exports = {
       group: {
         more: {
           icon: 'dots-vertical-icon',
-          operations: [ 'export-batch' ]
+          operations: [ 'import-export-export-batch' ]
         }
       }
     };
@@ -49,7 +49,7 @@ module.exports = {
     return {
       post: {
         ...self.options.importExport?.import !== false && {
-          import: [
+          importExportImport: [
             multiparty(),
             async (req) => {
               return self.apos.modules['@apostrophecms/import-export'].import(req, self.__meta.name);
@@ -58,7 +58,7 @@ module.exports = {
         },
 
         ...self.options.importExport?.export !== false && {
-          export(req) {
+          importExportExport(req) {
           // Add the piece type label to req.body for notifications.
             req.body.type = req.t(self.options.label);
 
@@ -68,7 +68,7 @@ module.exports = {
           // in order to make the job work with the progress notification.
           // The other 'export' routes that are used by context operations on each doc
           // are also POST for consistency.
-          exportBatch(req) {
+          importExportExportBatch(req) {
           // Add the piece type label to req.body for notifications.
           // Should be done before calling the job's `run` method.
             req.body.type = req.body._ids.length === 1

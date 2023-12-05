@@ -33,7 +33,7 @@ export default () => {
       try {
         const moduleAction = apos.modules[event.moduleName].action;
 
-        await apos.http.post(`${moduleAction}/import`, {
+        await apos.http.post(`${moduleAction}/import-export-import`, {
           body: {
             overrideLocale: true,
             exportPath: event.exportPath

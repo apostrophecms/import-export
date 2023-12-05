@@ -5,12 +5,12 @@ module.exports = {
 
   init(self) {
     const operation = {
-      action: 'export',
+      action: 'import-export-export',
       context: 'update',
       label: 'aposImportExport:export',
       modal: 'AposExportModal',
       props: {
-        action: 'export'
+        action: 'import-export-export'
       }
     };
 
