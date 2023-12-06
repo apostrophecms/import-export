@@ -769,7 +769,7 @@ describe('@apostrophecms/import-export', function () {
           };
         };
         apos.notify = async (req, message, options) => {
-          if (options?.event?.name === 'import-locale-differs') {
+          if (options?.event?.name === 'import-export-import-locale-differs') {
             throw new Error('should not have been called with event "import-locale-differ"');
           }
           return {};
@@ -824,7 +824,7 @@ describe('@apostrophecms/import-export', function () {
           };
         };
         apos.notify = async (req, message, options) => {
-          if (options?.event?.name === 'import-locale-differs') {
+          if (options?.event?.name === 'import-export-import-locale-differs') {
             throw new Error('should not have been called with event "import-locale-differ"');
           }
           return {};
@@ -948,7 +948,7 @@ describe('@apostrophecms/import-export', function () {
           };
         };
         apos.notify = async (req, message, options) => {
-          if (options?.event?.name === 'import-locale-differs') {
+          if (options?.event?.name === 'import-export-import-locale-differs') {
             throw new Error('should not have been called with event "import-locale-differ"');
           }
           return {};
@@ -980,7 +980,7 @@ describe('@apostrophecms/import-export', function () {
           throw new Error('should not have been called');
         };
         apos.notify = async (req, message, options) => {
-          assert.equal(options.event.name, 'import-locale-differs');
+          assert.equal(options.event.name, 'import-export-import-locale-differs');
         };
 
         await importExportManager.import(req);
@@ -1040,7 +1040,7 @@ describe('@apostrophecms/import-export', function () {
           };
         };
         apos.notify = async (req, message, options) => {
-          if (options?.event?.name === 'import-locale-differs') {
+          if (options?.event?.name === 'import-export-import-locale-differs') {
             throw new Error('should not have been called with event "import-locale-differ"');
           }
           return {};

@@ -205,7 +205,7 @@ export default {
           }
         });
       } finally {
-        apos.bus.$emit('import-ended');
+        apos.bus.$emit('import-export-import-ended');
       }
     },
     ready() {

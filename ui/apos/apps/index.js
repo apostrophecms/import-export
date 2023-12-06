@@ -4,11 +4,11 @@ export default () => {
   apos.util.onReady(() => {
     if (!ready) {
       ready = true;
-      apos.bus.$on('export-download', openUrl);
-      apos.bus.$on('import-started', addBeforeUnloadListener);
-      apos.bus.$on('import-ended', removeBeforeUnloadListener);
-      apos.bus.$on('import-locale-differs', handleDifferentLocale);
-      apos.bus.$on('import-duplicates', handleDuplicates);
+      apos.bus.$on('import-export-export-download', openUrl);
+      apos.bus.$on('import-export-import-started', addBeforeUnloadListener);
+      apos.bus.$on('import-export-import-ended', removeBeforeUnloadListener);
+      apos.bus.$on('import-export-import-locale-differs', handleDifferentLocale);
+      apos.bus.$on('import-export-import-duplicates', handleDuplicates);
     }
   });
 
@@ -33,7 +33,7 @@ export default () => {
       try {
         const moduleAction = apos.modules[event.moduleName].action;
 
-        await apos.http.post(`${moduleAction}/import`, {
+        await apos.http.post(`${moduleAction}/import-export-import`, {
           body: {
             overrideLocale: true,
             exportPath: event.exportPath
