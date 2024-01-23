@@ -119,7 +119,7 @@ export default {
       type: Array,
       required: true
     },
-    exportPath: {
+    exportPathId: {
       type: String,
       required: true
     },
@@ -192,17 +192,14 @@ export default {
       try {
         await apos.http.post('/api/v1/@apostrophecms/import-export/clean-export', {
           body: {
-            exportPath: this.exportPath,
+            exportPathId: this.exportPathId,
             jobId: this.jobId,
             notificationId: this.notificationId
           }
         });
       } catch (error) {
         apos.notify('aposImportExport:importCleanFailed', {
-          type: 'warning',
-          interpolate: {
-            exportPath: this.exportPath
-          }
+          type: 'warning'
         });
       } finally {
         apos.bus.$emit('import-export-import-ended');
@@ -217,7 +214,7 @@ export default {
         body: {
           docIds: this.checked,
           importedAttachments: this.importedAttachments,
-          exportPath: this.exportPath,
+          exportPathId: this.exportPathId,
           jobId: this.jobId,
           overrideLocale: this.overrideLocale
         }

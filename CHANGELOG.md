@@ -2,6 +2,12 @@
 
 ## UNRELEASED
 
+### Security
+
+* Fixed a security issue that allowed a correctly crafted
+HTTP request to delete arbitrary files and folders, subject to the permissions with which the Node.js
+process was run. No user account was required to exploit this issue. All users of this module should immediately run `npm update @apostrophecms/import-export` and deploy the latest version of this module. The module has been carefully audited for similar issues and best practices have been put in place to prevent any similar issue in future.
+
 ### Changes
 
 * Prefix routes and events to avoid conflicts with the old [`@apostrophecms/piece-type-importer`](https://github.com/apostrophecms/piece-type-importer) and [`@apostrophecms/piece-type-exporter`](https://github.com/apostrophecms/piece-type-exporter) modules.

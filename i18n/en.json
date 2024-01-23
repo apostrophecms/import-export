@@ -15,7 +15,7 @@
   "exported": "Exported {{ count }} {{ type }}",
   "exporting": "Exporting {{ type }}...",
   "import": "Import {{ type }}",
-  "importCleanFailed": "The cleaning of the imported file on server failed: {{ exportPath }}",
+  "importCleanFailed": "The cleaning of the imported file on the server failed.",
   "importWithCurrentLocaleHeading": "Different locale detected",
   "importWithCurrentLocaleDescription": "This file was exported from the \"{{ docsLocale }}\" locale. Are you sure you want to import it into the \"{{ currentLocale }}\" locale?",
   "importDuplicateContinue": "Continue Import",

@@ -36,7 +36,7 @@ export default () => {
         await apos.http.post(`${moduleAction}/import-export-import`, {
           body: {
             overrideLocale: true,
-            exportPath: event.exportPath
+            exportPathId: event.exportPathId
           }
         });
       } catch (error) {
@@ -53,15 +53,12 @@ export default () => {
     try {
       await apos.http.post('/api/v1/@apostrophecms/import-export/clean-export', {
         body: {
-          exportPath: event.exportPath
+          exportPathId: event.exportPathId
         }
       });
     } catch (error) {
       apos.notify('aposImportExport:importCleanFailed', {
-        type: 'warning',
-        interpolate: {
-          exportPath: event.exportPath
-        }
+        type: 'warning'
       });
     }
   }
