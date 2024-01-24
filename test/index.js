@@ -18,7 +18,7 @@ describe('@apostrophecms/import-export', function () {
   let pageTgzPath;
   let cleanFile;
 
-  this.timeout(t.timeout);
+  this.timeout(60000);
 
   after(async function() {
     await cleanData([ attachmentPath, exportsPath ]);
@@ -288,7 +288,7 @@ describe('@apostrophecms/import-export', function () {
     const {
       duplicatedDocs,
       importedAttachments,
-      exportPath,
+      exportPathId,
       jobId,
       notificationId
     } = await importExportManager.import(req);
@@ -310,7 +310,7 @@ describe('@apostrophecms/import-export', function () {
     req.body = {
       docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
       importedAttachments,
-      exportPath,
+      exportPathId,
       jobId,
       notificationId
     };
@@ -413,7 +413,7 @@ describe('@apostrophecms/import-export', function () {
     const {
       duplicatedDocs,
       importedAttachments,
-      exportPath,
+      exportPathId,
       jobId,
       notificationId
     } = await importExportManager.import(req);
@@ -438,7 +438,7 @@ describe('@apostrophecms/import-export', function () {
     req.body = {
       docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
       importedAttachments,
-      exportPath,
+      exportPathId,
       jobId,
       notificationId
     };
@@ -502,7 +502,7 @@ describe('@apostrophecms/import-export', function () {
     const {
       duplicatedDocs,
       importedAttachments,
-      exportPath,
+      exportPathId,
       jobId,
       notificationId
     } = await importExportManager.import(req);
@@ -529,7 +529,7 @@ describe('@apostrophecms/import-export', function () {
         .filter(({ type }) => type !== '@apostrophecms/image')
         .map(({ aposDocId }) => aposDocId),
       importedAttachments,
-      exportPath,
+      exportPathId,
       jobId,
       notificationId
     };
@@ -703,9 +703,14 @@ describe('@apostrophecms/import-export', function () {
     });
 
     it('should import pieces with related documents from the extracted export path when provided', async function() {
+      const expectedPath = '/custom/extracted-export-path';
+      // Since we are mocking this and not really uploading a file, we have to
+      // manually call setExportPathId to establish a mapping to a safe
+      // unique identifier to share with the "browser"
+      await importExportManager.setExportPathId(expectedPath);
       const req = apos.task.getReq({
         body: {
-          exportPath: '/custom/extracted-export-path'
+          exportPathId: await importExportManager.getExportPathId(expectedPath)
         }
       });
 
@@ -713,7 +718,7 @@ describe('@apostrophecms/import-export', function () {
         throw new Error('should not have been called');
       };
       apos.modules['@apostrophecms/import-export'].getFilesData = async exportPath => {
-        assert.equal(exportPath, '/custom/extracted-export-path');
+        assert.equal(exportPath, expectedPath);
 
         return {
           docs: [
