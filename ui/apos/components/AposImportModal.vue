@@ -210,26 +210,24 @@ export default {
   }
 }
 
-::v-deep {
-  .apos-modal__inner {
-    top: auto;
-    right: auto;
-    bottom: auto;
-    left: auto;
-    max-width: 700px;
-    height: auto;
-    text-align: left;
-  }
+:deep(.apos-modal__inner) {
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  max-width: 700px;
+  height: auto;
+  text-align: left;
+}
 
-  .apos-modal__body-main {
-    display: flex;
-    flex-direction: column;
-    align-items: baseline;
-  }
+:deep(.apos-modal__body-main) {
+  display: flex;
+  flex-direction: column;
+  align-items: baseline;
+}
 
-  .apos-modal__body {
-    padding: 30px 20px;
-  }
+:deep(.apos-modal__body) {
+  padding: 30px 20px;
 }
 
 </style>

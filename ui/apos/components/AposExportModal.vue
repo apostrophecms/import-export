@@ -300,7 +300,7 @@ export default {
   justify-content: center;
 }
 
-::v-deep .apos-modal__inner {
+:deep(.apos-modal__inner) {
   top: auto;
   right: auto;
   bottom: auto;
@@ -309,28 +309,28 @@ export default {
   text-align: left;
 }
 
-::v-deep .apos-modal__overlay {
+:deep(.apos-modal__overlay) {
   .apos-modal+.apos-export & {
     display: block;
   }
 }
 
-::v-deep .apos-modal__body {
+:deep(.apos-modal__body) {
   padding: 30px 20px;
   width: 375px;
 }
 
-::v-deep .apos-modal__body-main {
+:deep(.apos-modal__body-main) {
   display: flex;
   flex-direction: column;
   align-items: baseline;
 }
 
-::v-deep .apos-toggle__slider {
+:deep(.apos-toggle__slider) {
   display: flex;
 }
 
-::v-deep .apos-input--select {
+:deep(.apos-input--select) {
   text-transform: capitalize;
 }
 
@@ -404,7 +404,7 @@ export default {
   right: 0;
 }
 
-::v-deep .apos-schema .apos-field {
+:deep(.apos-schema) .apos-field {
   margin-bottom: $spacing-base;
 }
 
@@ -417,7 +417,7 @@ export default {
   gap: 20px;
 }
 
-.apos-export__btn ::v-deep .apos-button__label {
+.apos-export__btn :deep(.apos-button__label) {
   text-transform: capitalize;
 }
 
