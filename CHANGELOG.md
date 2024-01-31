@@ -2,7 +2,7 @@
 
 ## UNRELEASED
 
-* Requires the edit permission to use the import utility operation
+* Requires the create and edit permissions to use the import utility operation
 
 ## 1.2.1 (2024-01-24)
 

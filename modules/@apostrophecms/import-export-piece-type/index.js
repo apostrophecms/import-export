@@ -15,6 +15,7 @@ module.exports = {
           modalOptions: {
             modal: 'AposImportModal'
           },
+          canCreate: true,
           canEdit: true
         }
       }
