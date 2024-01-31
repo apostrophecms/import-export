@@ -23,6 +23,16 @@ describe('@apostrophecms/import-export', function () {
   after(async function() {
     await cleanData([ attachmentPath, exportsPath ]);
     await t.destroy(apos);
+
+    apos = null;
+    importExportManager = null;
+    attachmentPath = null;
+    exportsPath = null;
+    gzip = null;
+    mimeType = null;
+    piecesTgzPath = null;
+    pageTgzPath = null;
+    cleanFile = null;
   });
 
   before(async function() {
@@ -861,8 +871,7 @@ describe('@apostrophecms/import-export', function () {
           modules: getAppConfig({
             '@apostrophecms/express': {
               options: {
-                session: { secret: 'supersecret' },
-                port: 3001
+                session: { secret: 'supersecret' }
               }
             },
             '@apostrophecms/i18n': {
@@ -1159,8 +1168,7 @@ describe('@apostrophecms/import-export', function () {
           modules: getAppConfig({
             '@apostrophecms/express': {
               options: {
-                session: { secret: 'supersecret' },
-                port: 3001
+                session: { secret: 'supersecret' }
               }
             },
             '@apostrophecms/i18n': {
@@ -1453,8 +1461,7 @@ function getAppConfig(modules = {}) {
   return {
     '@apostrophecms/express': {
       options: {
-        session: { secret: 'supersecret' },
-        port: 3000
+        session: { secret: 'supersecret' }
       }
     },
     '@apostrophecms/import-export': {},
