@@ -23,16 +23,6 @@ describe('@apostrophecms/import-export', function () {
   after(async function() {
     await cleanData([ attachmentPath, exportsPath ]);
     await t.destroy(apos);
-
-    apos = null;
-    importExportManager = null;
-    attachmentPath = null;
-    exportsPath = null;
-    gzip = null;
-    mimeType = null;
-    piecesTgzPath = null;
-    pageTgzPath = null;
-    cleanFile = null;
   });
 
   before(async function() {
