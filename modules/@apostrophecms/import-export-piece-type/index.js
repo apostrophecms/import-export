@@ -14,7 +14,9 @@ module.exports = {
           label: 'aposImportExport:import',
           modalOptions: {
             modal: 'AposImportModal'
-          }
+          },
+          canCreate: true,
+          canEdit: true
         }
       }
     };

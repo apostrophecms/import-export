@@ -861,8 +861,7 @@ describe('@apostrophecms/import-export', function () {
           modules: getAppConfig({
             '@apostrophecms/express': {
               options: {
-                session: { secret: 'supersecret' },
-                port: 3001
+                session: { secret: 'supersecret' }
               }
             },
             '@apostrophecms/i18n': {
@@ -1159,8 +1158,7 @@ describe('@apostrophecms/import-export', function () {
           modules: getAppConfig({
             '@apostrophecms/express': {
               options: {
-                session: { secret: 'supersecret' },
-                port: 3001
+                session: { secret: 'supersecret' }
               }
             },
             '@apostrophecms/i18n': {
@@ -1453,8 +1451,7 @@ function getAppConfig(modules = {}) {
   return {
     '@apostrophecms/express': {
       options: {
-        session: { secret: 'supersecret' },
-        port: 3000
+        session: { secret: 'supersecret' }
       }
     },
     '@apostrophecms/import-export': {},
