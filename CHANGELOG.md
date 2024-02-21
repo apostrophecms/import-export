@@ -1,6 +1,6 @@
 # Changelog
 
-## UNRELEASED
+## 1.3.0 (2024-02-21)
 
 * Requires the create and edit permissions to use the import utility operation
 
