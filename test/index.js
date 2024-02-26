@@ -220,6 +220,108 @@ describe('@apostrophecms/import-export', function () {
     await cleanFile(exportPath);
   });
 
+  it.only('should preserve lastPublishedAt property on import for existing drafts', async function() {
+    console.log('[TEST] should preserve lastPublishedAt property on import for existing drafts');
+
+    // Get the page2 that was meant for testing
+    const req = apos.task.getReq();
+    const page2 = await apos.page.find(req, { title: 'page2' }).toObject();
+    
+    // PUBLISH IT
+    const publishedResult = await apos.page.publish(req, page2);
+    // THEN UNPUBLISH IT
+    const draftPage = await apos.page.unpublish(req, page2);
+
+    // THEN EXPORT IT (as draft)
+    req.body = {
+      _ids: [ draftPage._id ],
+      extension: 'gzip',
+      type: draftPage.type
+    };
+
+    const { url } = await importExportManager.export(req, apos.page);
+    const fileName = path.basename(url);
+
+    pageTgzPath = path.join(exportsPath, fileName);
+    const exportPath = await gzip.input(pageTgzPath);
+
+    const { docs } = await getExtractedFiles(exportPath);
+    const exportedDraftPage = docs.find(doc => doc._id === draftPage._id);
+
+    console.log('docs (exported) >>>', docs);
+
+    // @TODO Delete:
+    // Test exported doc 
+    const exportedDoc = await apos.doc.db
+    .find({ type: /default-page|article|topic|@apostrophecms\/image/, title: 'page2' })
+    .toArray();
+    // Last published at est bien à "null" et c'est bien un draft
+
+    // Seems it correctly exported
+    // Now we PUBLISH it
+    const result = await apos.page.publish(req, draftPage);
+    console.log({ result });
+
+    const updatedPage2 = await apos.doc.db
+      .find({ title: 'page2', aposMode: 'published' })
+      .toArray();
+    console.log(updatedPage2);
+
+    // Rename tar file for import issue
+    const currentPath = pageTgzPath;
+    const newPath = currentPath.replace('.tar.gz', '-import.tar.gz');
+    try {
+      await fs.rename(currentPath, newPath);
+      console.log(`Fichier renommé de ${currentPath} à ${newPath}`);
+    } catch (error) {
+      console.error('Erreur lors du renommage du fichier :', error);
+    }
+
+    console.log('Then import it');
+
+    // IMPORT IT
+    req.body = {};
+    req.files = {
+      file: {
+        path: newPath,
+        type: mimeType
+      }
+    };
+
+    const {
+      duplicatedDocs,
+      importedAttachments,
+      exportPathId,
+      jobId,
+      notificationId
+    } = await importExportManager.import(req);
+
+    req.body = {
+      docIds: duplicatedDocs.map(doc => doc.aposDocId),
+      importedAttachments,
+      exportPathId,
+      jobId,
+      notificationId
+    }
+
+    await importExportManager.overrideDuplicates(req);
+
+    const NewUpdatedPage2 = await apos.doc.db
+    .find({ title: 'page2' })
+    .toArray();
+    console.log('NewUpdatedPage2 >>>', NewUpdatedPage2);
+
+    // Check that the imported docs are not `null` 
+
+    assert.deepEqual(NewUpdatedPage2.some((doc) => {
+      console.log('doc.lastPublishedAt > ', doc.lastPublishedAt)
+      return doc.lastPublishedAt === null;
+    }), false, 'expected none of the imported docs to have a `lastPublishedAt` value of `null`');
+
+    // @TODO: Cleanup
+    // ...
+  });
+
   it('should import pieces with related documents from a compressed file', async function() {
     const req = apos.task.getReq();
 
@@ -1410,7 +1512,19 @@ async function insertPieces(apos) {
         }
       ],
       metaType: 'area'
-    }
+    },
+  });
+
+  await apos.page.insert(req, '_home', 'lastChild', {
+    ...pageInstance,
+    title: 'page2',
+    type: 'default-page',
+    _articles: [],
+    main: {
+      _id: 'areaId',
+      items: [],
+      metaType: 'area'
+    },
   });
 }
 
