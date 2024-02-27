@@ -586,6 +586,7 @@ describe('@apostrophecms/import-export', function () {
     const manager = apos.doc.getManager('default-page');
     const pageInstance = manager.newInstance();
 
+    // PUBLISH a new page
     await apos.page.insert(req, '_home', 'lastChild', {
       ...pageInstance,
       title: 'page2',
@@ -597,11 +598,13 @@ describe('@apostrophecms/import-export', function () {
         metaType: 'area'
       }
     });
+
     const page2 = await apos.page.find(req, { title: 'page2' }).toObject();
 
-    const publishedResult = await apos.page.publish(req, page2);
+    // UNPUBLISH (draft) the page
     const draftPage = await apos.page.unpublish(req, page2);
 
+    // EXPORT the page (as draft)
     req.body = {
       _ids: [ draftPage._id ],
       extension: 'gzip',
@@ -612,49 +615,15 @@ describe('@apostrophecms/import-export', function () {
     const fileName = path.basename(url);
 
     pageTgzPath = path.join(exportsPath, fileName);
-    const exportPath = await gzip.input(pageTgzPath);
 
-    const { docs } = await getExtractedFiles(exportPath);
-    const exportedDraftPage = docs.find(doc => doc._id === draftPage._id);
+    // Now that it's exported as draft, PUBLISH the page again
+    const { lastPublishedAt } = await apos.page.publish(req, draftPage);
 
-    // @TODO Delete:
-    // Test exported doc
-    const exportedDoc = await apos.doc.db
-      .find({
-        type: /default-page|article|topic|@apostrophecms\/image/,
-        title: 'page2'
-      })
-      .toArray();
-    // Last published at est bien à "null" et c'est bien un draft
-
-    // Seems it correctly exported
-    // Now we PUBLISH it
-    const result = await apos.page.publish(req, draftPage);
-
-    const updatedPage2 = await apos.doc.db
-      .find({
-        title: 'page2',
-        aposMode: 'published'
-      })
-      .toArray();
-
-    // Rename tar file for import issue
-    const currentPath = pageTgzPath;
-    const newPath = currentPath.replace('.tar.gz', '-import.tar.gz');
-    try {
-      await fs.rename(currentPath, newPath);
-      console.log(`Fichier renommé de ${currentPath} à ${newPath}`);
-    } catch (error) {
-      console.error('Erreur lors du renommage du fichier :', error);
-    }
-
-    console.log('Then import it');
-
-    // IMPORT IT
+    // Finally, IMPORT the previously exported draft page
     req.body = {};
     req.files = {
       file: {
-        path: newPath,
+        path: pageTgzPath,
         type: mimeType
       }
     };
@@ -677,20 +646,13 @@ describe('@apostrophecms/import-export', function () {
 
     await importExportManager.overrideDuplicates(req);
 
-    const NewUpdatedPage2 = await apos.doc.db
+    const updatedPage = await apos.doc.db
       .find({ title: 'page2' })
       .toArray();
-    console.log('NewUpdatedPage2 >>>', NewUpdatedPage2);
 
-    // Check that the imported docs are not `null`
-
-    assert.deepEqual(NewUpdatedPage2.some((doc) => {
-      console.log('doc.lastPublishedAt > ', doc.lastPublishedAt);
-      return doc.lastPublishedAt === null;
-    }), false, 'expected none of the imported docs to have a `lastPublishedAt` value of `null`');
-
-    // @TODO: Cleanup
-    // ...
+    assert.deepEqual(updatedPage.every((doc) => {
+      return String(doc.lastPublishedAt) === String(lastPublishedAt);
+    }), true, `expected imported docs 'lastPublishedAt' value to be of '${lastPublishedAt}'`);
   });
 
   describe('#getFirstDifferentLocale', function() {
