@@ -581,6 +581,80 @@ describe('@apostrophecms/import-export', function () {
     await cleanFile(pageTgzPath.replace(gzip.allowedExtension, ''));
   });
 
+  it('should preserve lastPublishedAt property on import for existing drafts', async function() {
+    const req = apos.task.getReq();
+    const manager = apos.doc.getManager('default-page');
+    const pageInstance = manager.newInstance();
+
+    // PUBLISH a new page
+    await apos.page.insert(req, '_home', 'lastChild', {
+      ...pageInstance,
+      title: 'page2',
+      type: 'default-page',
+      _articles: [],
+      main: {
+        _id: 'areaId',
+        items: [],
+        metaType: 'area'
+      }
+    });
+
+    const page2 = await apos.page.find(req, { title: 'page2' }).toObject();
+
+    // UNPUBLISH (draft) the page
+    const draftPage = await apos.page.unpublish(req, page2);
+
+    // EXPORT the page (as draft)
+    req.body = {
+      _ids: [ draftPage._id ],
+      extension: 'gzip',
+      type: draftPage.type
+    };
+
+    const { url } = await importExportManager.export(req, apos.page);
+    const fileName = path.basename(url);
+
+    pageTgzPath = path.join(exportsPath, fileName);
+
+    // Now that it's exported as draft, PUBLISH the page again
+    const { lastPublishedAt } = await apos.page.publish(req, draftPage);
+
+    // Finally, IMPORT the previously exported draft page
+    req.body = {};
+    req.files = {
+      file: {
+        path: pageTgzPath,
+        type: mimeType
+      }
+    };
+
+    const {
+      duplicatedDocs,
+      importedAttachments,
+      exportPathId,
+      jobId,
+      notificationId
+    } = await importExportManager.import(req);
+
+    req.body = {
+      docIds: duplicatedDocs.map(doc => doc.aposDocId),
+      importedAttachments,
+      exportPathId,
+      jobId,
+      notificationId
+    };
+
+    await importExportManager.overrideDuplicates(req);
+
+    const updatedPage = await apos.doc.db
+      .find({ title: 'page2' })
+      .toArray();
+
+    assert.deepEqual(updatedPage.every((doc) => {
+      return String(doc.lastPublishedAt) === String(lastPublishedAt);
+    }), true, `expected imported docs 'lastPublishedAt' value to be of '${lastPublishedAt}'`);
+  });
+
   describe('#getFirstDifferentLocale', function() {
     it('should find among the docs the first locale that is different from the req one', async function() {
       const req = {
