@@ -4,7 +4,7 @@
 
 ### Changes
 
-* Migrate to Vue 3.
+* Compatible with both Apostrophe 3.x and Apostrophe 4.x (both Vue 2 and Vue 3).
 
 ### Fixes
 
