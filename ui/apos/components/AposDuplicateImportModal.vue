@@ -264,7 +264,7 @@ export default {
   justify-content: center;
 }
 
-::v-deep .apos-modal__inner {
+:deep(.apos-modal__inner) {
   top: auto;
   right: auto;
   bottom: auto;
@@ -273,27 +273,27 @@ export default {
   text-align: left;
 }
 
-::v-deep .apos-modal__overlay {
+:deep(.apos-modal__overlay) {
   .apos-modal+.apos-export & {
     display: block;
   }
 }
 
-::v-deep .apos-modal__body {
+:deep(.apos-modal__body) {
   padding: 30px 20px;
 }
 
-::v-deep .apos-modal__body-main {
+:deep(.apos-modal__body-main) {
   display: flex;
   flex-direction: column;
   align-items: baseline;
 }
 
-::v-deep .apos-toggle__slider {
+:deep(.apos-toggle__slider) {
   display: flex;
 }
 
-::v-deep .apos-input--select {
+:deep(.apos-input--select) {
   text-transform: capitalize;
 }
 
@@ -336,7 +336,7 @@ export default {
 }
 
 // Override button to style it exactly like other checkboxes
-::v-deep .apos-toggle {
+:deep(.apos-toggle) {
   .apos-button {
     padding: 0;
     transition: all 0.1s ease-in-out;
@@ -360,7 +360,7 @@ export default {
   }
 }
 
-::v-deep .apos-toggle--blank {
+:deep(.apos-toggle--blank) {
   .apos-button {
     border-color: var(--a-base-4);
     background-color: var(--a-base-10);
@@ -399,7 +399,7 @@ export default {
   }
 }
 
-::v-deep .apos-schema .apos-field {
+:deep(.apos-schema .apos-field) {
   margin-bottom: $spacing-base;
 }
 
@@ -412,7 +412,7 @@ export default {
   gap: 20px;
 }
 
-.apos-import-duplicate__btn ::v-deep .apos-button__label {
+.apos-import-duplicate__btn :deep(.apos-button__label) {
   text-transform: capitalize;
 }
 

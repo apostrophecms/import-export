@@ -1,12 +1,18 @@
 # Changelog
 
-## UNRELEASED
+## 1.4.0 (2024-03-12)
+
+### Changes
+
+* Compatible with both Apostrophe 3.x and Apostrophe 4.x (both Vue 2 and Vue 3).
 
 ### Fixes
 
 * Bug fix. When a piece or a page is created, published, then unpublished, and subsequently exported and re-imported, the manager modal incorrectly showed no published version. This occurs because the `lastPublishedAt` property of the draft document was set to null upon import, misleading the representation of the document's published state. Now it retains the original document's `lastPublishedAt` value.
 
 ## 1.3.0 (2024-02-21)
+
+### Changes
 
 * Requires the create and edit permissions to use the import utility operation
 
