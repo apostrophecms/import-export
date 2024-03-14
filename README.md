@@ -3,7 +3,7 @@
 
   <h1>Apostrophe Import Export Module</h1>
   <p>
-    <a aria-label="Apostrophe logo" href="https://v3.docs.apostrophecms.org">
+    <a aria-label="Apostrophe logo" href="https://docs.apostrophecms.org">
       <img src="https://img.shields.io/badge/MADE%20FOR%20ApostropheCMS-000000.svg?style=for-the-badge&logo=Apostrophe&labelColor=6516dd">
     </a>
     <a aria-label="Join the community on Discord" href="http://chat.apostrophecms.org">
@@ -15,7 +15,7 @@
   </p>
 </div>
 
-This A3 module enables import and export of pages and pieces, with or without related
+This module enables import and export of pages and pieces, with or without related
 documents such as files, images and other related types.
 
 ## Installation
@@ -142,7 +142,7 @@ module.exports = {
 
 ## Importing documents from another locale
 
-Exported documents maintain their locale settings. If the locale during import differs from the export locale, and only one locale is configured in the @apostrophecms/i18n module, the documents will be automatically rewritten to align with the new import locale.
+Exported documents maintain their locale settings. If the locale during import differs from the export locale, and only one locale is configured in the `@apostrophecms/i18n` module, the documents will be automatically rewritten to align with the new import locale.
 	
 If multiple locales are set up, the user will be prompted to choose between canceling the import or proceeding with it.
 
