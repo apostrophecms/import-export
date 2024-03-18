@@ -1,5 +1,10 @@
 # Changelog
 
+## UNRELEASED
+
+### Changes
+
+* Documentation update only. No code changes.
 ## 1.4.0 (2024-03-12)
 
 ### Changes
