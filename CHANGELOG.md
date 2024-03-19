@@ -5,6 +5,11 @@
 ### Changes
 
 * Documentation update only. No code changes.
+
+### Fixes
+
+* Fixes imported data with the wrong mode because `req.mode` was always `published`, even for draft documents.
+
 ## 1.4.0 (2024-03-12)
 
 ### Changes
