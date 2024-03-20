@@ -1,10 +1,10 @@
 # Changelog
 
-## UNRELEASED
+## 1.4.1 (2024-03-20)
 
 ### Changes
 
-* Documentation update only. No code changes.
+* Documentation updates.
 
 ### Fixes
 
