@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const methods = require('./lib/methods');
 const apiRoutes = require('./lib/apiRoutes');
-const gzip = require('./lib/formats/gzip');
+const formats = require('./lib/formats');
 
 module.exports = {
   bundle: {
@@ -21,8 +21,8 @@ module.exports = {
   },
   init(self) {
     self.formats = {
-      gzip,
-      ...(self.options.formats || {})
+      ...formats,
+      ...self.options.formats || {}
     };
 
     self.enableBrowserData();
