@@ -330,10 +330,6 @@ export default {
   display: flex;
 }
 
-:deep(.apos-input--select) {
-  text-transform: capitalize;
-}
-
 .apos-export__heading {
   @include type-title;
   line-height: var(--a-line-tall);

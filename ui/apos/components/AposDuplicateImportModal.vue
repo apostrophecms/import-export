@@ -127,6 +127,10 @@ export default {
       type: Array,
       required: true
     },
+    formatLabel: {
+      type: String,
+      required: true
+    },
     jobId: {
       type: String,
       required: true
@@ -216,7 +220,8 @@ export default {
           importedAttachments: this.importedAttachments,
           exportPathId: this.exportPathId,
           jobId: this.jobId,
-          overrideLocale: this.overrideLocale
+          overrideLocale: this.overrideLocale,
+          formatLabel: this.formatLabel
         }
       }).catch(() => {
         apos.notify('aposImportExport:exportFailed', {
@@ -291,10 +296,6 @@ export default {
 
 :deep(.apos-toggle__slider) {
   display: flex;
-}
-
-:deep(.apos-input--select) {
-  text-transform: capitalize;
 }
 
 .apos-import-duplicate__heading {
