@@ -147,3 +147,7 @@ Exported documents maintain their locale settings. If the locale during import d
 If multiple locales are set up, the user will be prompted to choose between canceling the import or proceeding with it.
 
 ![Screenshot highlighting the confirm modal letting the user choose between aborting on continuing the import when the docs locale is different from the site one.](https://static.apostrophecms.com/apostrophecms/import-export/images/different-locale-modal.png)
+
+## How to add a new format?
+
+TODO:
