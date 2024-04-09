@@ -330,6 +330,11 @@ export default {
   display: flex;
 }
 
+:deep(.apos-input--select) {
+  padding-right: 40px;
+  line-height: var(--a-line-tall);
+}
+
 .apos-export__heading {
   @include type-title;
   line-height: var(--a-line-tall);
