@@ -150,4 +150,124 @@ If multiple locales are set up, the user will be prompted to choose between canc
 
 ## How to add a new format?
 
-TODO:
+### Create a file for your format:
+
+Add your format under `lib/formats/<format_name>.js` and export it in l`ib/formats/index.js`.
+
+**Simple example** (for a single file without attachment files):
+
+```js
+// lib/formats/ods.js
+module.exports = {
+  label: 'ODS',
+  extension: '.ods',
+  allowedExtension: '.ods',
+  allowedTypes: [ 'application/vnd.oasis.opendocument.spreadsheet' ],
+  async import(filepath) {
+    // Read `filepath` using `fs.createReadStream`
+    // or any reader provided by a third-party library
+
+    // Return parsed docs as an array
+    return { docs };
+  },
+  async export(filepath, { docs }) {
+    // Write `docs` into `filepath` using `fs.createWriteStream`
+    // or any writer provided by a third-party library
+  }
+};
+```
+
+**Note**: The `import` and `export` functions should remain agnostic of any apostrophe logic.
+
+```js
+// lib/formats/index.js
+const ods = require('./ods');
+
+module.exports = {
+  // ...
+  ods
+};
+```
+
+### For formats with attachment files:
+
+If you want to add a format that includes attachment files such as an archive, you can enable the `includeAttachments` option and utilize extra arguments provided in the `import` and `export` functions.
+
+**Advanced example**:
+
+```js
+// lib/formats/zip.js
+module.exports = {
+  label: 'ZIP',
+  extension: '.zip',
+  allowedExtension: '.zip',
+  allowedTypes: [
+    'application/zip',
+    'application/x-zip',
+    'application/x-zip-compressed'
+  ],
+  includeAttachments: true,
+  async import(filepath) {
+    let exportPath = filepath;
+
+    // If the given path is the archive, we first need to extract it
+    // and define `exportPath` to the extracted folder, not the archive
+    if (filepath.endsWith(this.allowedExtension)) {
+      exportPath = filepath.replace(this.allowedExtension, '');
+
+      // Use format-specif extraction
+      await extract(filepath, exportPath);
+      await fsp.unlink(filepath);
+    }
+
+    // Read docs and attachments from `exportPath`
+    // given that they are stored in aposDocs.json and aposAttachments.json files:
+    const docs = await fsp.readFile(path.join(exportPath, 'aposDocs.json'));
+    const attachments = await fsp.readFile(path.join(exportPath, 'aposAttachments.json'));
+    const parsedDocs = EJSON.parse(docs);
+    const parsedAttachments = EJSON.parse(attachments);
+
+    // Add the attachment names and their path where they are going to be written to
+    const attachmentsInfo = parsedAttachments.map(attachment => ({
+      attachment,
+      file: {
+        name: `${attachment.name}.${attachment.extension}`,
+        path: path.join(exportPath, 'attachments', `${attachment._id}-${attachment.name}.${attachment.extension}`)
+      }
+    }));
+
+    // Return parsed docs as an array, attachments with their extra files info
+    // and `exportPath` since it we need to inform the caller where the extracted data is:
+    return {
+      docs: parsedDocs,
+      attachmentsInfo,
+      exportPath
+    };
+  },
+  async export(
+    filepath,
+    {
+      docs,
+      attachments = [],
+      attachmentUrls = {}
+    },
+    processAttachments
+  ) {
+    // Store the docs and attachments into `aposDocs.json` and `aposAttachments.json` files
+    // and add them to the archive
+
+    // Create a `attachments/` directory in the archive and store the attachment files inside it:
+    const addAttachment = async (attachmentPath, name, size) => {
+      // Read attachment from `attachmentPath`
+      // and store it into `attachments/<name>` inside the archive
+    }
+    const { attachmentError } = await processAttachments(attachmentUrls, addAttachment);
+
+    // Write the archive that contains `aposDocs.json`, `aposAttachments.json` and `attachments/`
+    // into `filepath` using `fs.createWriteStream` or any writer provided by a third-party library
+
+    // Return potential attachment processing error so that the caller is aware of it:
+    return { attachmentError };
+  }
+};
+```
