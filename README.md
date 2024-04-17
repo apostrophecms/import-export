@@ -163,14 +163,14 @@ module.exports = {
   extension: '.ods',
   allowedExtension: '.ods',
   allowedTypes: [ 'application/vnd.oasis.opendocument.spreadsheet' ],
-  async import(filepath) {
+  async input(filepath) {
     // Read `filepath` using `fs.createReadStream`
     // or any reader provided by a third-party library
 
     // Return parsed docs as an array
     return { docs };
   },
-  async export(filepath, { docs }) {
+  async output(filepath, { docs }) {
     // Write `docs` into `filepath` using `fs.createWriteStream`
     // or any writer provided by a third-party library
   }
@@ -207,7 +207,7 @@ module.exports = {
     'application/x-zip-compressed'
   ],
   includeAttachments: true,
-  async import(filepath) {
+  async input(filepath) {
     let exportPath = filepath;
 
     // If the given path is the archive, we first need to extract it
@@ -244,7 +244,7 @@ module.exports = {
       exportPath
     };
   },
-  async export(
+  async output(
     filepath,
     {
       docs,
