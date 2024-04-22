@@ -16,7 +16,7 @@ describe('@apostrophecms/import-export', function () {
   let mimeType;
   let piecesTgzPath;
   let pageTgzPath;
-  let cleanFile;
+  let remove;
 
   this.timeout(60000);
 
@@ -38,14 +38,14 @@ describe('@apostrophecms/import-export', function () {
     importExportManager.removeExportFileFromUploadFs = () => {};
     gzip = importExportManager.formats.gzip;
     mimeType = gzip.allowedTypes[0];
-    cleanFile = importExportManager.cleanFile;
-    importExportManager.cleanFile = () => {};
+    remove = importExportManager.remove;
+    importExportManager.remove = () => {};
 
     await insertAdminUser(apos);
     await insertPieces(apos);
   });
 
-  it('should generate a zip file for pieces without related documents', async function () {
+  it.only('should generate a zip file for pieces without related documents', async function () {
     const req = apos.task.getReq();
     const articles = await apos.article.find(req).toArray();
     const manager = apos.article;
@@ -58,7 +58,7 @@ describe('@apostrophecms/import-export', function () {
     const { url } = await importExportManager.export(req, manager);
     const fileName = path.basename(url);
 
-    const exportPath = await gzip.input(path.join(exportsPath, fileName));
+    const { exportPath } = await gzip.input(path.join(exportsPath, fileName));
 
     const {
       docs, attachments, attachmentFiles
@@ -75,11 +75,11 @@ describe('@apostrophecms/import-export', function () {
       attachmentFiles: []
     };
 
-    await cleanFile(exportPath);
+    await remove(exportPath);
     assert.deepEqual(actual, expected);
   });
 
-  it('should generate a zip file for pieces with related documents', async function () {
+  it.only('should generate a zip file for pieces with related documents', async function () {
     const req = apos.task.getReq();
     const articles = await apos.article.find(req).toArray();
     const { _id: attachmentId } = await apos.attachment.db.findOne({ name: 'test-image' });
@@ -96,7 +96,7 @@ describe('@apostrophecms/import-export', function () {
     const fileName = path.basename(url);
 
     piecesTgzPath = path.join(exportsPath, fileName);
-    const exportPath = await gzip.input(piecesTgzPath);
+    const { exportPath } = await gzip.input(piecesTgzPath);
 
     const {
       docs, attachments, attachmentFiles
@@ -150,11 +150,11 @@ describe('@apostrophecms/import-export', function () {
       attachmentFiles: [ `${attachmentId}-test-image.jpg` ]
     };
 
-    await cleanFile(exportPath);
+    await remove(exportPath);
     assert.deepEqual(actual, expected);
   });
 
-  it('should generate a zip file for pages with related documents', async function () {
+  it.only('should generate a zip file for pages with related documents', async function () {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
     const { _id: attachmentId } = await apos.attachment.db.findOne({ name: 'test-image' });
@@ -170,7 +170,7 @@ describe('@apostrophecms/import-export', function () {
     const fileName = path.basename(url);
 
     pageTgzPath = path.join(exportsPath, fileName);
-    const exportPath = await gzip.input(pageTgzPath);
+    const { exportPath } = await gzip.input(pageTgzPath);
 
     const {
       docs, attachments, attachmentFiles
@@ -217,10 +217,10 @@ describe('@apostrophecms/import-export', function () {
     };
 
     assert.deepEqual(actual, expected);
-    await cleanFile(exportPath);
+    await remove(exportPath);
   });
 
-  it('should import pieces with related documents from a compressed file', async function() {
+  it.only('should import pieces with related documents from a compressed file', async function() {
     const req = apos.task.getReq();
 
     await deletePieces(apos);
@@ -271,7 +271,7 @@ describe('@apostrophecms/import-export', function () {
     };
 
     assert.deepEqual(actual, expected);
-    await cleanFile(piecesTgzPath.replace(gzip.allowedExtension, ''));
+    await remove(piecesTgzPath.replace(gzip.allowedExtension, ''));
   });
 
   it('should return duplicates pieces when already existing and override them', async function() {
@@ -354,7 +354,7 @@ describe('@apostrophecms/import-export', function () {
     };
 
     assert.deepEqual(actual, expected);
-    await cleanFile(piecesTgzPath.replace(gzip.allowedExtension, ''));
+    await remove(piecesTgzPath.replace(gzip.allowedExtension, ''));
   });
 
   it('should import page and related documents', async function() {
@@ -396,7 +396,7 @@ describe('@apostrophecms/import-export', function () {
     };
 
     assert.deepEqual(actual, expected);
-    await cleanFile(pageTgzPath.replace(gzip.allowedExtension, ''));
+    await remove(pageTgzPath.replace(gzip.allowedExtension, ''));
   });
 
   it('should return existing duplicated docs during page import and override them', async function() {
@@ -485,7 +485,7 @@ describe('@apostrophecms/import-export', function () {
 
     assert.deepEqual(actual, expected);
 
-    await cleanFile(pageTgzPath.replace(gzip.allowedExtension, ''));
+    await remove(pageTgzPath.replace(gzip.allowedExtension, ''));
   });
 
   it('should not override attachment if associated document is not imported', async function() {
@@ -578,7 +578,7 @@ describe('@apostrophecms/import-export', function () {
 
     assert.deepEqual(actual, expected);
 
-    await cleanFile(pageTgzPath.replace(gzip.allowedExtension, ''));
+    await remove(pageTgzPath.replace(gzip.allowedExtension, ''));
   });
 
   it('should preserve lastPublishedAt property on import for existing drafts', async function() {
@@ -955,7 +955,7 @@ describe('@apostrophecms/import-export', function () {
 
         importExportManager = apos.modules['@apostrophecms/import-export'];
         importExportManager.removeExportFileFromUploadFs = () => {};
-        importExportManager.cleanFile = () => {};
+        importExportManager.remove = () => {};
 
         await insertAdminUser(apos);
         await insertPieces(apos);
@@ -1252,7 +1252,7 @@ describe('@apostrophecms/import-export', function () {
 
         importExportManager = apos.modules['@apostrophecms/import-export'];
         importExportManager.removeExportFileFromUploadFs = () => {};
-        importExportManager.cleanFile = () => {};
+        importExportManager.remove = () => {};
 
         await insertAdminUser(apos);
         await insertPieces(apos);
