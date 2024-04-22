@@ -35,7 +35,7 @@ describe('@apostrophecms/import-export', function () {
     attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
     exportsPath = path.join(apos.rootDir, 'public/uploads/exports');
     importExportManager = apos.modules['@apostrophecms/import-export'];
-    importExportManager.removeExportFileFromUploadFs = () => {};
+    importExportManager.removeFromUploadFs = () => {};
     gzip = importExportManager.formats.gzip;
     mimeType = gzip.allowedTypes[0];
     remove = importExportManager.remove;
@@ -79,7 +79,7 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
-  it.only('should generate a zip file for pieces with related documents', async function () {
+  it('should generate a zip file for pieces with related documents', async function () {
     const req = apos.task.getReq();
     const articles = await apos.article.find(req).toArray();
     const { _id: attachmentId } = await apos.attachment.db.findOne({ name: 'test-image' });
@@ -150,11 +150,11 @@ describe('@apostrophecms/import-export', function () {
       attachmentFiles: [ `${attachmentId}-test-image.jpg` ]
     };
 
-    await remove(exportPath);
+    // await remove(exportPath);
     assert.deepEqual(actual, expected);
   });
 
-  it.only('should generate a zip file for pages with related documents', async function () {
+  it('should generate a zip file for pages with related documents', async function () {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
     const { _id: attachmentId } = await apos.attachment.db.findOne({ name: 'test-image' });
@@ -220,7 +220,7 @@ describe('@apostrophecms/import-export', function () {
     await remove(exportPath);
   });
 
-  it.only('should import pieces with related documents from a compressed file', async function() {
+  it('should import pieces with related documents from a compressed file', async function() {
     const req = apos.task.getReq();
 
     await deletePieces(apos);
