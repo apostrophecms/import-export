@@ -1,5 +1,11 @@
 # Changelog
 
+## UNRELEASED
+
+### Changes
+
+* Corrects documentation of required permissions.
+
 ## 1.4.1 (2024-03-20)
 
 ### Changes
