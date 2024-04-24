@@ -280,34 +280,37 @@ You might want to scope one or multiple formats in another module for several re
 - You want to fully scope the format in a separate module and repository for an easier maintenance
 - ...
 
-To do so, simply create an apostrophe module that improves `@apostrophecms/import-export` and define the format in the `formats` option of the module.
+To do so, simply create an apostrophe module that improves `@apostrophecms/import-export` and register the formats in the `init` method.
 
-Then add the module to the project **package.json** and **app.js**.
 
 Example with an `import-export-excel` module:
 
 ```js
-// index.js
+const formats: {
+  xls: {
+    label: 'XLS',
+    extension: '.xls',
+    allowedExtension: '.xls',
+    allowedTypes: [ 'application/vnd.ms-excel' ],
+    async input(filepath) {},
+    async output(filepath, { docs }) {}
+  },
+  xlsx: {
+    label: 'XLSX',
+    extension: '.xlsx',
+    allowedExtension: '.xlsx',
+    allowedTypes: [ 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ],
+    async input(filepath) {},
+    async output(filepath, { docs }) {}
+  }
+};
+
 module.exports = {
   improve: '@apostrophecms/import-export',
-  options: {
-    formats: {,
-      xls: {
-        // ...
-      },
-      xlsx: {
-        label: 'XLSX',
-        extension: '.xlsx',
-        allowedExtension: '.xlsx',
-        allowedTypes: [ 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ],
-        async input(filepath) {
-          // ...
-        },
-        async output(filepath, { docs }) {
-          // ...
-        }
-      }
-    }
+  init(self) {
+    self.registerFormats(formats);
   }
 };
 ```
+
+Then add the module to the project **package.json** and **app.js**.
