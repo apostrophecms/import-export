@@ -177,7 +177,7 @@ module.exports = {
 };
 ```
 
-**Note**: The `import` and `export` functions should remain agnostic of any apostrophe logic.
+**Note**: The `input` and `output` functions should remain agnostic of any apostrophe logic.
 
 ```js
 // lib/formats/index.js
@@ -191,7 +191,7 @@ module.exports = {
 
 ### For formats with attachment files:
 
-If you want to add a format that includes attachment files such as an archive, you can enable the `includeAttachments` option and utilize extra arguments provided in the `import` and `export` functions.
+If you want to add a format that includes attachment files such as an archive, you can enable the `includeAttachments` option and utilize extra arguments provided in the `input` and `output` functions.
 
 **Advanced example**:
 
@@ -272,7 +272,7 @@ module.exports = {
 };
 ```
 
-### Add formats from a separate module
+### Add formats via a separate module
 
 You might want to scope one or multiple formats in another module for several reasons:
 
