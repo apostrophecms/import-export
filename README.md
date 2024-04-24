@@ -271,3 +271,43 @@ module.exports = {
   }
 };
 ```
+
+### Add formats from a separate module
+
+You might want to scope one or multiple formats in another module for several reasons:
+
+- The formats rely on a dependency that is not hosted on NPM (which is the case with [@apostrophecms/import-export-xlsx](https://github.com/apostrophecms/import-export-xlsx))
+- You want to fully scope the format in a separate module and repository for an easier maintenance
+- ...
+
+To do so, simply create an apostrophe module that improves `@apostrophecms/import-export` and define the format in the `formats` option of the module.
+
+Then add the module to the project **package.json** and **app.js**.
+
+Example with an `import-export-excel` module:
+
+```js
+// index.js
+module.exports = {
+  improve: '@apostrophecms/import-export',
+  options: {
+    formats: {,
+      xls: {
+        // ...
+      },
+      xlsx: {
+        label: 'XLSX',
+        extension: '.xlsx',
+        allowedExtension: '.xlsx',
+        allowedTypes: [ 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ],
+        async input(filepath) {
+          // ...
+        },
+        async output(filepath, { docs }) {
+          // ...
+        }
+      }
+    }
+  }
+};
+```

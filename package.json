@@ -37,7 +37,6 @@
     "csv-stringify": "^6.4.6",
     "dayjs": "^1.9.8",
     "lodash": "^4.17.21",
-    "tar-stream": "^3.1.6",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz"
+    "tar-stream": "^3.1.6"
   }
 }
