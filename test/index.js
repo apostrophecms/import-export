@@ -1479,15 +1479,11 @@ async function getExtractedFiles(extractPath) {
 }
 
 async function cleanData(paths) {
-  try {
-    for (const filePath of paths) {
-      const files = await fs.readdir(filePath);
-      for (const name of files) {
-        await fs.rm(path.join(filePath, name), { recursive: true });
-      }
+  for (const filePath of paths) {
+    const files = await fs.readdir(filePath);
+    for (const name of files) {
+      await fs.rm(path.join(filePath, name), { recursive: true });
     }
-  } catch (err) {
-    assert(!err);
   }
 }
 
