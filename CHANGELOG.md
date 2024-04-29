@@ -1,5 +1,16 @@
 # Changelog
 
+## UNRELEASED
+
+### Adds
+
+* Add CSV format.
+
+## Breaking changes
+
+* The signature of the `output` function from the gzip format has changed. It no longer takes the `apos` instance and now requires a `processAttachments` callback.
+* `import` and `overrideDuplicates` functions now require `formatLabel` to be passed in `req`.
+
 ## 1.4.1 (2024-03-20)
 
 ### Changes
