@@ -44,12 +44,12 @@ describe('@apostrophecms/import-export', function () {
   });
 
   beforeEach(async function() {
-    await deletePiecesAndPages(apos);
-    await deleteAttachments(apos, attachmentPath);
     await insertPiecesAndPages(apos);
   });
 
   afterEach(async function() {
+    await deletePiecesAndPages(apos);
+    await deleteAttachments(apos, attachmentPath);
     await cleanData([ tempPath, exportsPath, attachmentPath ]);
   });
 
@@ -1479,11 +1479,15 @@ async function getExtractedFiles(extractPath) {
 }
 
 async function cleanData(paths) {
-  for (const filePath of paths) {
-    const files = await fs.readdir(filePath);
-    for (const name of files) {
-      await fs.rm(path.join(filePath, name), { recursive: true });
+  try {
+    for (const filePath of paths) {
+      const files = await fs.readdir(filePath);
+      for (const name of files) {
+        await fs.rm(path.join(filePath, name), { recursive: true });
+      }
     }
+  } catch (err) {
+    assert(!err);
   }
 }
 
