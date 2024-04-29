@@ -40,17 +40,17 @@ describe('@apostrophecms/import-export', function () {
   });
 
   after(async function() {
-    await deletePiecesAndPages(apos);
-    await deleteAttachments(apos, attachmentPath);
     await t.destroy(apos);
-    await cleanData([ tempPath, exportsPath, attachmentPath ]);
   });
 
   beforeEach(async function() {
-    await cleanData([ tempPath, exportsPath, attachmentPath ]);
     await deletePiecesAndPages(apos);
     await deleteAttachments(apos, attachmentPath);
     await insertPiecesAndPages(apos);
+  });
+
+  afterEach(async function() {
+    await cleanData([ tempPath, exportsPath, attachmentPath ]);
   });
 
   it('should generate a zip file for pieces without related documents', async function () {
