@@ -102,7 +102,7 @@ Warning - While you can rename the exported file, you must not change the file e
 
 ### Permissions
 
-Any user that can publish a document can export and import documents of that same type. Users who can only create or modify documents of a specific type will not be import documents, but they will be able to export documents of that same type.
+Users who have both 'create' and 'edit' permissions for a document type can export and import those documents. However, users with other permissions for a document type, but lacking both 'create' or 'edit' permissions, cannot import documents. They can still export documents of that type.
 
 ### Options
 
