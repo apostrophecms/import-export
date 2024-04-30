@@ -10,20 +10,15 @@ const FormData = require('form-data');
 describe('@apostrophecms/import-export', function () {
   let apos;
   let importExportManager;
+  let tempPath;
   let attachmentPath;
   let exportsPath;
   let gzip;
   let mimeType;
   let piecesTgzPath;
   let pageTgzPath;
-  let cleanFile;
 
   this.timeout(60000);
-
-  after(async function() {
-    await cleanData([ attachmentPath, exportsPath ]);
-    await t.destroy(apos);
-  });
 
   before(async function() {
     apos = await t.create({
@@ -32,17 +27,30 @@ describe('@apostrophecms/import-export', function () {
       modules: getAppConfig()
     });
 
+    tempPath = path.join(apos.rootDir, 'data/temp/uploadfs');
     attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
     exportsPath = path.join(apos.rootDir, 'public/uploads/exports');
     importExportManager = apos.modules['@apostrophecms/import-export'];
-    importExportManager.removeExportFileFromUploadFs = () => {};
+    importExportManager.removeFromUploadFs = () => {};
+    importExportManager.remove = () => {};
     gzip = importExportManager.formats.gzip;
     mimeType = gzip.allowedTypes[0];
-    cleanFile = importExportManager.cleanFile;
-    importExportManager.cleanFile = () => {};
 
     await insertAdminUser(apos);
-    await insertPieces(apos);
+  });
+
+  after(async function() {
+    await t.destroy(apos);
+  });
+
+  beforeEach(async function() {
+    await insertPiecesAndPages(apos);
+  });
+
+  afterEach(async function() {
+    await deletePiecesAndPages(apos);
+    await deleteAttachments(apos, attachmentPath);
+    await cleanData([ tempPath, exportsPath, attachmentPath ]);
   });
 
   it('should generate a zip file for pieces without related documents', async function () {
@@ -58,7 +66,7 @@ describe('@apostrophecms/import-export', function () {
     const { url } = await importExportManager.export(req, manager);
     const fileName = path.basename(url);
 
-    const exportPath = await gzip.input(path.join(exportsPath, fileName));
+    const { exportPath } = await gzip.input(path.join(exportsPath, fileName));
 
     const {
       docs, attachments, attachmentFiles
@@ -75,7 +83,6 @@ describe('@apostrophecms/import-export', function () {
       attachmentFiles: []
     };
 
-    await cleanFile(exportPath);
     assert.deepEqual(actual, expected);
   });
 
@@ -96,7 +103,7 @@ describe('@apostrophecms/import-export', function () {
     const fileName = path.basename(url);
 
     piecesTgzPath = path.join(exportsPath, fileName);
-    const exportPath = await gzip.input(piecesTgzPath);
+    const { exportPath } = await gzip.input(piecesTgzPath);
 
     const {
       docs, attachments, attachmentFiles
@@ -150,7 +157,6 @@ describe('@apostrophecms/import-export', function () {
       attachmentFiles: [ `${attachmentId}-test-image.jpg` ]
     };
 
-    await cleanFile(exportPath);
     assert.deepEqual(actual, expected);
   });
 
@@ -170,7 +176,7 @@ describe('@apostrophecms/import-export', function () {
     const fileName = path.basename(url);
 
     pageTgzPath = path.join(exportsPath, fileName);
-    const exportPath = await gzip.input(pageTgzPath);
+    const { exportPath } = await gzip.input(pageTgzPath);
 
     const {
       docs, attachments, attachmentFiles
@@ -217,14 +223,26 @@ describe('@apostrophecms/import-export', function () {
     };
 
     assert.deepEqual(actual, expected);
-    await cleanFile(exportPath);
   });
 
   it('should import pieces with related documents from a compressed file', async function() {
     const req = apos.task.getReq();
+    const articles = await apos.article.find(req).toArray();
+    const manager = apos.article;
 
-    await deletePieces(apos);
-    await deletePage(apos);
+    req.body = {
+      _ids: articles.map(({ _id }) => _id),
+      extension: 'gzip',
+      relatedTypes: [ '@apostrophecms/image', 'topic' ],
+      type: req.t(manager.options.pluralLabel)
+    };
+
+    const { url } = await importExportManager.export(req, manager);
+    const fileName = path.basename(url);
+
+    piecesTgzPath = path.join(exportsPath, fileName);
+
+    await deletePiecesAndPages(apos);
     await deleteAttachments(apos, attachmentPath);
 
     req.body = {};
@@ -271,11 +289,24 @@ describe('@apostrophecms/import-export', function () {
     };
 
     assert.deepEqual(actual, expected);
-    await cleanFile(piecesTgzPath.replace(gzip.allowedExtension, ''));
   });
 
   it('should return duplicates pieces when already existing and override them', async function() {
     const req = apos.task.getReq();
+    const articles = await apos.article.find(req).toArray();
+    const manager = apos.article;
+
+    req.body = {
+      _ids: articles.map(({ _id }) => _id),
+      extension: 'gzip',
+      relatedTypes: [ '@apostrophecms/image', 'topic' ],
+      type: req.t(manager.options.pluralLabel)
+    };
+
+    const { url } = await importExportManager.export(req, manager);
+    const fileName = path.basename(url);
+
+    piecesTgzPath = path.join(exportsPath, fileName);
 
     req.body = {};
     req.files = {
@@ -290,7 +321,8 @@ describe('@apostrophecms/import-export', function () {
       importedAttachments,
       exportPathId,
       jobId,
-      notificationId
+      notificationId,
+      formatLabel
     } = await importExportManager.import(req);
 
     // We update the title of every targetted docs to be sure the update really occurs
@@ -312,7 +344,8 @@ describe('@apostrophecms/import-export', function () {
       importedAttachments,
       exportPathId,
       jobId,
-      notificationId
+      notificationId,
+      formatLabel
     };
 
     await importExportManager.overrideDuplicates(req);
@@ -339,10 +372,18 @@ describe('@apostrophecms/import-export', function () {
 
     const expected = {
       docTitles: [
-        'article2', 'article1',
-        'article2', 'article1',
-        'topic1', 'topic2',
-        'topic1', 'topic2'
+        'image1',
+        'image1',
+        'article1',
+        'article2',
+        'article1',
+        'article2',
+        'new title',
+        'topic2',
+        'topic1',
+        'new title',
+        'topic2',
+        'topic1'
       ],
       attachmentNames: [ 'test-image' ],
       attachmentFileNames: new Array(apos.attachment.imageSizes.length + 1)
@@ -354,14 +395,25 @@ describe('@apostrophecms/import-export', function () {
     };
 
     assert.deepEqual(actual, expected);
-    await cleanFile(piecesTgzPath.replace(gzip.allowedExtension, ''));
   });
 
   it('should import page and related documents', async function() {
     const req = apos.task.getReq();
+    const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
 
-    await deletePieces(apos);
-    await deletePage(apos);
+    req.body = {
+      _ids: [ page1._id ],
+      extension: 'gzip',
+      relatedTypes: [ '@apostrophecms/image', 'article' ],
+      type: page1.type
+    };
+
+    const { url } = await importExportManager.export(req, apos.page);
+    const fileName = path.basename(url);
+
+    pageTgzPath = path.join(exportsPath, fileName);
+
+    await deletePiecesAndPages(apos);
     await deleteAttachments(apos, attachmentPath);
 
     req.body = {};
@@ -396,11 +448,23 @@ describe('@apostrophecms/import-export', function () {
     };
 
     assert.deepEqual(actual, expected);
-    await cleanFile(pageTgzPath.replace(gzip.allowedExtension, ''));
   });
 
   it('should return existing duplicated docs during page import and override them', async function() {
     const req = apos.task.getReq();
+    const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
+
+    req.body = {
+      _ids: [ page1._id ],
+      extension: 'gzip',
+      relatedTypes: [ '@apostrophecms/image', 'article' ],
+      type: page1.type
+    };
+
+    const { url } = await importExportManager.export(req, apos.page);
+    const fileName = path.basename(url);
+
+    pageTgzPath = path.join(exportsPath, fileName);
 
     req.body = {};
     req.files = {
@@ -415,7 +479,8 @@ describe('@apostrophecms/import-export', function () {
       importedAttachments,
       exportPathId,
       jobId,
-      notificationId
+      notificationId,
+      formatLabel
     } = await importExportManager.import(req);
 
     // We update the title of every targetted docs to be sure the update really occurs
@@ -440,7 +505,8 @@ describe('@apostrophecms/import-export', function () {
       importedAttachments,
       exportPathId,
       jobId,
-      notificationId
+      notificationId,
+      formatLabel
     };
 
     await importExportManager.overrideDuplicates(req);
@@ -469,7 +535,9 @@ describe('@apostrophecms/import-export', function () {
       docTitles: [
         'image1',
         'image1',
+        'new title',
         'article2',
+        'new title',
         'article2',
         'page1',
         'page1'
@@ -484,12 +552,23 @@ describe('@apostrophecms/import-export', function () {
     };
 
     assert.deepEqual(actual, expected);
-
-    await cleanFile(pageTgzPath.replace(gzip.allowedExtension, ''));
   });
 
   it('should not override attachment if associated document is not imported', async function() {
     const req = apos.task.getReq();
+    const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
+
+    req.body = {
+      _ids: [ page1._id ],
+      extension: 'gzip',
+      relatedTypes: [ '@apostrophecms/image', 'article' ],
+      type: page1.type
+    };
+
+    const { url } = await importExportManager.export(req, apos.page);
+    const fileName = path.basename(url);
+
+    pageTgzPath = path.join(exportsPath, fileName);
 
     req.body = {};
     req.files = {
@@ -504,7 +583,8 @@ describe('@apostrophecms/import-export', function () {
       importedAttachments,
       exportPathId,
       jobId,
-      notificationId
+      notificationId,
+      formatLabel
     } = await importExportManager.import(req);
 
     // We update the title of every targetted docs to be sure the update really occurs
@@ -531,7 +611,8 @@ describe('@apostrophecms/import-export', function () {
       importedAttachments,
       exportPathId,
       jobId,
-      notificationId
+      notificationId,
+      formatLabel
     };
 
     await importExportManager.overrideDuplicates(req);
@@ -561,7 +642,9 @@ describe('@apostrophecms/import-export', function () {
       docTitles: [
         'new title',
         'new title',
+        'new title',
         'article2',
+        'new title',
         'article2',
         'page1',
         'page1'
@@ -577,8 +660,6 @@ describe('@apostrophecms/import-export', function () {
     };
 
     assert.deepEqual(actual, expected);
-
-    await cleanFile(pageTgzPath.replace(gzip.allowedExtension, ''));
   });
 
   it('should preserve lastPublishedAt property on import for existing drafts', async function() {
@@ -633,7 +714,8 @@ describe('@apostrophecms/import-export', function () {
       importedAttachments,
       exportPathId,
       jobId,
-      notificationId
+      notificationId,
+      formatLabel
     } = await importExportManager.import(req);
 
     req.body = {
@@ -641,7 +723,8 @@ describe('@apostrophecms/import-export', function () {
       importedAttachments,
       exportPathId,
       jobId,
-      notificationId
+      notificationId,
+      formatLabel
     };
 
     await importExportManager.overrideDuplicates(req);
@@ -747,51 +830,54 @@ describe('@apostrophecms/import-export', function () {
   describe('#import - overriding locales integration tests', function() {
     let req;
     let notify;
-    let getFilesData;
-    let readExportFile;
+    let input;
     let rewriteDocsWithCurrentLocale;
     let insertDocs;
 
     this.beforeEach(async function() {
       req = apos.task.getReq({
         locale: 'en',
-        body: {}
+        body: {},
+        files: {
+          file: {
+            path: '/some/path/to/file',
+            type: mimeType
+          }
+        }
       });
       notify = apos.notify;
-      getFilesData = apos.modules['@apostrophecms/import-export'].getFilesData;
-      readExportFile = apos.modules['@apostrophecms/import-export'].readExportFile;
+      input = gzip.input;
       rewriteDocsWithCurrentLocale = apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale;
       insertDocs = apos.modules['@apostrophecms/import-export'].insertDocs;
 
-      await deletePieces(apos);
-      await deletePage(apos);
+      await deletePiecesAndPages(apos);
       await deleteAttachments(apos, attachmentPath);
     });
 
     this.afterEach(function() {
       apos.notify = notify;
-      apos.modules['@apostrophecms/import-export'].getFilesData = getFilesData;
-      apos.modules['@apostrophecms/import-export'].readExportFile = readExportFile;
+      gzip.input = input;
       apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = rewriteDocsWithCurrentLocale;
       apos.modules['@apostrophecms/import-export'].insertDocs = insertDocs;
     });
 
     it('should import pieces with related documents from the extracted export path when provided', async function() {
-      const expectedPath = '/custom/extracted-export-path';
       // Since we are mocking this and not really uploading a file, we have to
       // manually call setExportPathId to establish a mapping to a safe
       // unique identifier to share with the "browser"
+      const expectedPath = '/custom/extracted-export-path';
       await importExportManager.setExportPathId(expectedPath);
-      const req = apos.task.getReq({
+
+      req = apos.task.getReq({
+        locale: 'en',
         body: {
-          exportPathId: await importExportManager.getExportPathId(expectedPath)
+          exportPathId: await importExportManager.getExportPathId(expectedPath),
+          formatLabel: 'gzip',
+          overrideLocale: true
         }
       });
 
-      apos.modules['@apostrophecms/import-export'].readExportFile = async () => {
-        throw new Error('should not have been called');
-      };
-      apos.modules['@apostrophecms/import-export'].getFilesData = async exportPath => {
+      gzip.input = async exportPath => {
         assert.equal(exportPath, expectedPath);
 
         return {
@@ -813,7 +899,7 @@ describe('@apostrophecms/import-export', function () {
 
     describe('when the site has only one locale', function() {
       it('should not rewrite the docs locale nor ask about it when the locale is not different', async function() {
-        apos.modules['@apostrophecms/import-export'].readExportFile = async req => {
+        gzip.input = async () => {
           return {
             docs: [
               {
@@ -828,7 +914,7 @@ describe('@apostrophecms/import-export', function () {
           };
         };
         apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
-          throw new Error('should not have been called');
+          throw new Error('rewriteDocsWithCurrentLocale should not have been called');
         };
         apos.modules['@apostrophecms/import-export'].insertDocs = async (req, docs) => {
           assert.deepEqual(docs, [
@@ -849,7 +935,7 @@ describe('@apostrophecms/import-export', function () {
         };
         apos.notify = async (req, message, options) => {
           if (options?.event?.name === 'import-export-import-locale-differs') {
-            throw new Error('should not have been called with event "import-locale-differ"');
+            throw new Error('notify should not have been called with event "import-locale-differ"');
           }
           return {};
         };
@@ -858,7 +944,7 @@ describe('@apostrophecms/import-export', function () {
       });
 
       it('should rewrite the docs locale without asking about it when the locale is different', async function() {
-        apos.modules['@apostrophecms/import-export'].readExportFile = async req => {
+        gzip.input = async () => {
           return {
             docs: [
               {
@@ -904,7 +990,7 @@ describe('@apostrophecms/import-export', function () {
         };
         apos.notify = async (req, message, options) => {
           if (options?.event?.name === 'import-export-import-locale-differs') {
-            throw new Error('should not have been called with event "import-locale-differ"');
+            throw new Error('notify should not have been called with event "import-locale-differ"');
           }
           return {};
         };
@@ -919,8 +1005,7 @@ describe('@apostrophecms/import-export', function () {
 
       let req;
       let notify;
-      let getFilesData;
-      let readExportFile;
+      let input;
       let rewriteDocsWithCurrentLocale;
       let insertDocs;
 
@@ -955,32 +1040,35 @@ describe('@apostrophecms/import-export', function () {
 
         importExportManager = apos.modules['@apostrophecms/import-export'];
         importExportManager.removeExportFileFromUploadFs = () => {};
-        importExportManager.cleanFile = () => {};
+        importExportManager.remove = () => {};
 
         await insertAdminUser(apos);
-        await insertPieces(apos);
+        await insertPiecesAndPages(apos);
       });
 
       this.beforeEach(async function() {
         req = apos.task.getReq({
           locale: 'en',
-          body: {}
+          body: {},
+          files: {
+            file: {
+              path: '/some/path/to/file',
+              type: mimeType
+            }
+          }
         });
         notify = apos.notify;
-        getFilesData = apos.modules['@apostrophecms/import-export'].getFilesData;
-        readExportFile = apos.modules['@apostrophecms/import-export'].readExportFile;
+        input = gzip.input;
         rewriteDocsWithCurrentLocale = apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale;
         insertDocs = apos.modules['@apostrophecms/import-export'].insertDocs;
 
-        await deletePieces(apos);
-        await deletePage(apos);
+        await deletePiecesAndPages(apos);
         await deleteAttachments(apos, attachmentPath);
       });
 
       this.afterEach(function() {
         apos.notify = notify;
-        apos.modules['@apostrophecms/import-export'].getFilesData = getFilesData;
-        apos.modules['@apostrophecms/import-export'].readExportFile = readExportFile;
+        gzip.input = input;
         apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = rewriteDocsWithCurrentLocale;
         apos.modules['@apostrophecms/import-export'].insertDocs = insertDocs;
       });
@@ -988,10 +1076,16 @@ describe('@apostrophecms/import-export', function () {
       it('should not rewrite the docs locale nor ask about it when the locale is not different', async function() {
         const req = apos.task.getReq({
           locale: 'fr',
-          body: {}
+          body: {},
+          files: {
+            file: {
+              path: '/some/path/to/file',
+              type: mimeType
+            }
+          }
         });
 
-        apos.modules['@apostrophecms/import-export'].readExportFile = async req => {
+        gzip.input = async req => {
           return {
             docs: [
               {
@@ -1006,7 +1100,7 @@ describe('@apostrophecms/import-export', function () {
           };
         };
         apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = () => {
-          throw new Error('should not have been called');
+          throw new Error('rewriteDocsWithCurrentLocale should not have been called');
         };
         apos.modules['@apostrophecms/import-export'].insertDocs = async (req, docs) => {
           assert.deepEqual(docs, [
@@ -1027,7 +1121,7 @@ describe('@apostrophecms/import-export', function () {
         };
         apos.notify = async (req, message, options) => {
           if (options?.event?.name === 'import-export-import-locale-differs') {
-            throw new Error('should not have been called with event "import-locale-differ"');
+            throw new Error('notify should not have been called with event "import-locale-differ"');
           }
           return {};
         };
@@ -1036,7 +1130,7 @@ describe('@apostrophecms/import-export', function () {
       });
 
       it('should not rewrite the docs locales nor insert them but ask about it when the locale is different', async function() {
-        apos.modules['@apostrophecms/import-export'].readExportFile = async req => {
+        gzip.input = async req => {
           return {
             docs: [
               {
@@ -1052,10 +1146,10 @@ describe('@apostrophecms/import-export', function () {
         };
 
         apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = () => {
-          throw new Error('should not have been called');
+          throw new Error('rewriteDocsWithCurrentLocale should not have been called');
         };
         apos.modules['@apostrophecms/import-export'].insertDocs = async (req, docs) => {
-          throw new Error('should not have been called');
+          throw new Error('insertDocs should not have been called');
         };
         apos.notify = async (req, message, options) => {
           assert.equal(options.event.name, 'import-export-import-locale-differs');
@@ -1065,14 +1159,22 @@ describe('@apostrophecms/import-export', function () {
       });
 
       it('should rewrite the docs locale when the locale is different and the `overrideLocale` param is provided', async function() {
+        // Since we are mocking this and not really uploading a file, we have to
+        // manually call setExportPathId to establish a mapping to a safe
+        // unique identifier to share with the "browser"
+        const expectedPath = '/custom/extracted-export-path';
+        await importExportManager.setExportPathId(expectedPath);
+
         const req = apos.task.getReq({
           locale: 'en',
           body: {
+            exportPathId: await importExportManager.getExportPathId(expectedPath),
+            formatLabel: 'gzip',
             overrideLocale: true
           }
         });
 
-        apos.modules['@apostrophecms/import-export'].readExportFile = async req => {
+        gzip.input = async req => {
           return {
             docs: [
               {
@@ -1119,7 +1221,7 @@ describe('@apostrophecms/import-export', function () {
         };
         apos.notify = async (req, message, options) => {
           if (options?.event?.name === 'import-export-import-locale-differs') {
-            throw new Error('should not have been called with event "import-locale-differ"');
+            throw new Error('notify should not have been called with event "import-locale-differ"');
           }
           return {};
         };
@@ -1131,36 +1233,37 @@ describe('@apostrophecms/import-export', function () {
 
   describe('#overrideDuplicates - overriding locales integration tests', function() {
     let req;
-    let getFilesData;
+    let input;
     let rewriteDocsWithCurrentLocale;
     let jobManager;
 
     this.beforeEach(async function() {
       req = apos.task.getReq({
         locale: 'en',
-        body: {}
+        body: {
+          formatLabel: 'gzip'
+        }
       });
       jobManager = apos.modules['@apostrophecms/job'];
-      getFilesData = apos.modules['@apostrophecms/import-export'].getFilesData;
+      input = gzip.input;
       rewriteDocsWithCurrentLocale = apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale;
 
       jobManager.success = () => {};
       jobManager.failure = () => {};
 
-      await deletePieces(apos);
-      await deletePage(apos);
+      await deletePiecesAndPages(apos);
       await deleteAttachments(apos, attachmentPath);
     });
 
     this.afterEach(function() {
+      gzip.input = input;
       apos.modules['@apostrophecms/job'].jobManager = jobManager;
-      apos.modules['@apostrophecms/import-export'].getFilesData = getFilesData;
       apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = rewriteDocsWithCurrentLocale;
     });
 
     describe('when the site has only one locale', function() {
       it('should not rewrite the docs locale when the locale is not different', async function() {
-        apos.modules['@apostrophecms/import-export'].getFilesData = async exportPath => {
+        gzip.input = async exportPath => {
           return {
             docs: [
               {
@@ -1175,14 +1278,14 @@ describe('@apostrophecms/import-export', function () {
           };
         };
         apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
-          throw new Error('should not have been called');
+          throw new Error('rewriteDocsWithCurrentLocale should not have been called');
         };
 
         await importExportManager.overrideDuplicates(req);
       });
 
       it('should rewrite the docs locale when the locale is different', async function() {
-        apos.modules['@apostrophecms/import-export'].getFilesData = async exportPath => {
+        gzip.input = async exportPath => {
           return {
             docs: [
               {
@@ -1218,7 +1321,7 @@ describe('@apostrophecms/import-export', function () {
       let apos;
       let importExportManager;
 
-      let getFilesData;
+      let input;
       let rewriteDocsWithCurrentLocale;
 
       after(async function() {
@@ -1252,36 +1355,37 @@ describe('@apostrophecms/import-export', function () {
 
         importExportManager = apos.modules['@apostrophecms/import-export'];
         importExportManager.removeExportFileFromUploadFs = () => {};
-        importExportManager.cleanFile = () => {};
+        importExportManager.remove = () => {};
 
         await insertAdminUser(apos);
-        await insertPieces(apos);
+        await insertPiecesAndPages(apos);
       });
 
       this.beforeEach(async function() {
         req = apos.task.getReq({
           locale: 'en',
-          body: {}
+          body: {
+            formatLabel: 'gzip'
+          }
         });
-        getFilesData = apos.modules['@apostrophecms/import-export'].getFilesData;
+        input = gzip.input;
         rewriteDocsWithCurrentLocale = apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale;
 
         jobManager = apos.modules['@apostrophecms/job'];
         jobManager.success = () => {};
         jobManager.failure = () => {};
 
-        await deletePieces(apos);
-        await deletePage(apos);
+        await deletePiecesAndPages(apos);
         await deleteAttachments(apos, attachmentPath);
       });
 
       this.afterEach(function() {
-        apos.modules['@apostrophecms/import-export'].getFilesData = getFilesData;
+        gzip.input = input;
         apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = rewriteDocsWithCurrentLocale;
       });
 
       it('should not rewrite the docs locale when the locale is not different', async function() {
-        apos.modules['@apostrophecms/import-export'].getFilesData = async exportPath => {
+        gzip.input = async exportPath => {
           return {
             docs: [
               {
@@ -1296,7 +1400,7 @@ describe('@apostrophecms/import-export', function () {
           };
         };
         apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
-          throw new Error('should not have been called');
+          throw new Error('rewriteDocsWithCurrentLocale should not have been called');
         };
 
         await importExportManager.overrideDuplicates(req);
@@ -1306,11 +1410,12 @@ describe('@apostrophecms/import-export', function () {
         const req = apos.task.getReq({
           locale: 'en',
           body: {
+            formatLabel: 'gzip',
             overrideLocale: true
           }
         });
 
-        apos.modules['@apostrophecms/import-export'].getFilesData = async exportPath => {
+        gzip.input = async exportPath => {
           return {
             docs: [
               {
@@ -1386,12 +1491,8 @@ async function cleanData(paths) {
   }
 }
 
-async function deletePieces(apos) {
+async function deletePiecesAndPages(apos) {
   await apos.doc.db.deleteMany({ type: /default-page|article|topic|@apostrophecms\/image/ });
-}
-
-async function deletePage(apos) {
-  await apos.doc.db.deleteMany({ title: 'page1' });
 }
 
 async function deleteAttachments(apos, attachmentPath) {
@@ -1399,7 +1500,7 @@ async function deleteAttachments(apos, attachmentPath) {
   await cleanData([ attachmentPath ]);
 }
 
-async function insertPieces(apos) {
+async function insertPiecesAndPages(apos) {
   const req = apos.task.getReq();
 
   const formData = new FormData();

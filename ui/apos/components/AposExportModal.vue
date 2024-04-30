@@ -331,7 +331,8 @@ export default {
 }
 
 :deep(.apos-input--select) {
-  text-transform: capitalize;
+  padding-right: 40px;
+  line-height: var(--a-line-tall);
 }
 
 .apos-export__heading {

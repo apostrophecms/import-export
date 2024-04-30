@@ -147,3 +147,170 @@ Exported documents maintain their locale settings. If the locale during import d
 If multiple locales are set up, the user will be prompted to choose between canceling the import or proceeding with it.
 
 ![Screenshot highlighting the confirm modal letting the user choose between aborting on continuing the import when the docs locale is different from the site one.](https://static.apostrophecms.com/apostrophecms/import-export/images/different-locale-modal.png)
+
+## How to add a new format?
+
+### Create a file for your format:
+
+Add your format under `lib/formats/<format_name>.js` and export it in l`ib/formats/index.js`.
+
+**Simple example** (for a single file without attachment files):
+
+```js
+// lib/formats/ods.js
+module.exports = {
+  label: 'ODS',
+  extension: '.ods',
+  allowedExtension: '.ods',
+  allowedTypes: [ 'application/vnd.oasis.opendocument.spreadsheet' ],
+  async input(filepath) {
+    // Read `filepath` using `fs.createReadStream`
+    // or any reader provided by a third-party library
+
+    // Return parsed docs as an array
+    return { docs };
+  },
+  async output(filepath, { docs }) {
+    // Write `docs` into `filepath` using `fs.createWriteStream`
+    // or any writer provided by a third-party library
+  }
+};
+```
+
+**Note**: The `input` and `output` functions should remain agnostic of any apostrophe logic.
+
+```js
+// lib/formats/index.js
+const ods = require('./ods');
+
+module.exports = {
+  // ...
+  ods
+};
+```
+
+### For formats with attachment files:
+
+If you want to add a format that includes attachment files such as an archive, you can enable the `includeAttachments` option and utilize extra arguments provided in the `input` and `output` functions.
+
+**Advanced example**:
+
+```js
+// lib/formats/zip.js
+module.exports = {
+  label: 'ZIP',
+  extension: '.zip',
+  allowedExtension: '.zip',
+  allowedTypes: [
+    'application/zip',
+    'application/x-zip',
+    'application/x-zip-compressed'
+  ],
+  includeAttachments: true,
+  async input(filepath) {
+    let exportPath = filepath;
+
+    // If the given path is the archive, we first need to extract it
+    // and define `exportPath` to the extracted folder, not the archive
+    if (filepath.endsWith(this.allowedExtension)) {
+      exportPath = filepath.replace(this.allowedExtension, '');
+
+      // Use format-specif extraction
+      await extract(filepath, exportPath);
+      await fsp.unlink(filepath);
+    }
+
+    // Read docs and attachments from `exportPath`
+    // given that they are stored in aposDocs.json and aposAttachments.json files:
+    const docs = await fsp.readFile(path.join(exportPath, 'aposDocs.json'));
+    const attachments = await fsp.readFile(path.join(exportPath, 'aposAttachments.json'));
+    const parsedDocs = EJSON.parse(docs);
+    const parsedAttachments = EJSON.parse(attachments);
+
+    // Add the attachment names and their path where they are going to be written to
+    const attachmentsInfo = parsedAttachments.map(attachment => ({
+      attachment,
+      file: {
+        name: `${attachment.name}.${attachment.extension}`,
+        path: path.join(exportPath, 'attachments', `${attachment._id}-${attachment.name}.${attachment.extension}`)
+      }
+    }));
+
+    // Return parsed docs as an array, attachments with their extra files info
+    // and `exportPath` since it we need to inform the caller where the extracted data is:
+    return {
+      docs: parsedDocs,
+      attachmentsInfo,
+      exportPath
+    };
+  },
+  async output(
+    filepath,
+    {
+      docs,
+      attachments = [],
+      attachmentUrls = {}
+    },
+    processAttachments
+  ) {
+    // Store the docs and attachments into `aposDocs.json` and `aposAttachments.json` files
+    // and add them to the archive
+
+    // Create a `attachments/` directory in the archive and store the attachment files inside it:
+    const addAttachment = async (attachmentPath, name, size) => {
+      // Read attachment from `attachmentPath`
+      // and store it into `attachments/<name>` inside the archive
+    }
+    const { attachmentError } = await processAttachments(attachmentUrls, addAttachment);
+
+    // Write the archive that contains `aposDocs.json`, `aposAttachments.json` and `attachments/`
+    // into `filepath` using `fs.createWriteStream` or any writer provided by a third-party library
+
+    // Return potential attachment processing error so that the caller is aware of it:
+    return { attachmentError };
+  }
+};
+```
+
+### Add formats via a separate module
+
+You might want to scope one or multiple formats in another module for several reasons:
+
+- The formats rely on a dependency that is not hosted on NPM (which is the case with [@apostrophecms/import-export-xlsx](https://github.com/apostrophecms/import-export-xlsx))
+- You want to fully scope the format in a separate module and repository for an easier maintenance
+- ...
+
+To do so, simply create an apostrophe module that improves `@apostrophecms/import-export` and register the formats in the `init` method.
+
+
+Example with an `import-export-excel` module:
+
+```js
+const formats: {
+  xls: {
+    label: 'XLS',
+    extension: '.xls',
+    allowedExtension: '.xls',
+    allowedTypes: [ 'application/vnd.ms-excel' ],
+    async input(filepath) {},
+    async output(filepath, { docs }) {}
+  },
+  xlsx: {
+    label: 'XLSX',
+    extension: '.xlsx',
+    allowedExtension: '.xlsx',
+    allowedTypes: [ 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ],
+    async input(filepath) {},
+    async output(filepath, { docs }) {}
+  }
+};
+
+module.exports = {
+  improve: '@apostrophecms/import-export',
+  init(self) {
+    self.registerFormats(formats);
+  }
+};
+```
+
+Then add the module to the project **package.json** and **app.js**.
