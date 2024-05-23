@@ -1,6 +1,6 @@
 # Changelog
 
-## UNRELEASED
+## 2.0.0 (2024-05-15)
 
 ### Changes
 
@@ -12,8 +12,7 @@
 
 ### Breaking changes
 
-**⚠️ The major version should be incremented: `2.0.0`. Please remove this line before releasing the module.**
-
+* This is a new major version, 2.0.0. To update to this version you must edit your `package.json` file and change the dependency to `^2.0.0` or similar.
 * The signature of the `output` function from the gzip format has changed. It no longer takes the `apos` instance and now requires a `processAttachments` callback.
 * `import` and `overrideDuplicates` functions now require `formatLabel` to be passed in `req`.
 
