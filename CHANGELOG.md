@@ -9,7 +9,7 @@ Thanks to this, this module reaches parity with the deprecated [`@apostrophecms/
 
 ### Fixes
 
-* We can now import pieces or pages with an import file that contains just the required fields. Before that, CSV import files had to contain all the document attributes, which was only the case when importing a file previously exported using this module.
+* We can now import pieces or pages with an import file that contains just the required fields.
 
 ## 2.0.0 (2024-05-15)
 
