@@ -1447,6 +1447,249 @@ describe('@apostrophecms/import-export', function () {
       });
     });
   });
+
+  describe.only('#import - man-made CSV file', function() {
+    let req;
+    let notify;
+    let input;
+    // let insertOrUpdateDoc;
+    // let insertOrUpdateDocWithKey;
+    let csv;
+
+    this.beforeEach(async function() {
+      csv = importExportManager.formats.csv;
+      mimeType = csv.allowedTypes[0];
+
+      req = apos.task.getReq({
+        locale: 'en',
+        body: {},
+        files: {
+          file: {
+            path: '/some/path/to/file',
+            type: mimeType
+          }
+        }
+      });
+      notify = apos.notify;
+      input = csv.input;
+      // insertOrUpdateDoc = apos.modules['@apostrophecms/import-export'].insertOrUpdateDoc;
+      // insertOrUpdateDocWithKey = apos.modules['@apostrophecms/import-export'].insertOrUpdateDocWithKey;
+
+      await deletePiecesAndPages(apos);
+      await deleteAttachments(apos, attachmentPath);
+    });
+
+    this.afterEach(function() {
+      apos.notify = notify;
+      csv.input = input;
+      // apos.modules['@apostrophecms/import-export'].insertOrUpdateDoc = insertOrUpdateDoc;
+      // apos.modules['@apostrophecms/import-export'].insertOrUpdateDocWithKey = insertOrUpdateDocWithKey;
+    });
+
+    it('should notify when the type is not provided', async function() {
+      csv.input = async () => {
+        return {
+          docs: [
+            {
+              title: 'topic1',
+              description: 'description1',
+              main: '<p><em>rich</em> <strong>text</strong></p>'
+            }
+          ]
+        };
+      };
+
+      const messages = [];
+
+      apos.notify = async (req, message, options) => {
+        messages.push(message);
+        return notify(req, message, options);
+      };
+
+      await importExportManager.import(req);
+
+      assert.equal(messages.some(message => message === 'aposImportExport:typeUnknown'), true);
+    });
+
+    it('should notify when the type does not exist', async function() {
+      csv.input = async () => {
+        return {
+          docs: [
+            {
+              type: 'random-type',
+              title: 'topic1',
+              description: 'description1',
+              main: '<p><em>rich</em> <strong>text</strong></p>'
+            }
+          ]
+        };
+      };
+
+      const messages = [];
+
+      apos.notify = async (req, message, options) => {
+        messages.push(message);
+        return notify(req, message, options);
+      };
+
+      await importExportManager.import(req);
+
+      assert.equal(messages.some(message => message === 'aposImportExport:typeUnknown'), true);
+    });
+
+    it('should notify when there is an update key and the type is not provided', async function() {
+      csv.input = async () => {
+        return {
+          docs: [
+            {
+              title: 'topic1 - edited',
+              'title:key': 'topic1',
+              description: 'description1',
+              main: '<p><em>rich</em> <strong>text</strong></p>'
+            }
+          ]
+        };
+      };
+
+      const messages = [];
+
+      apos.notify = async (req, message, options) => {
+        messages.push(message);
+        return notify(req, message, options);
+      };
+
+      await importExportManager.import(req);
+
+      assert.equal(messages.some(message => message === 'aposImportExport:typeColumnMissing'), true);
+    });
+
+    it.only('should notify when there is an update key and the type does not exist', async function() {
+      csv.input = async () => {
+        return {
+          docs: [
+            {
+              type: 'random-type',
+              title: 'topic1 - edited',
+              'title:key': 'topic1',
+              description: 'description1',
+              main: '<p><em>rich</em> <strong>text</strong></p>'
+            }
+          ]
+        };
+      };
+
+      const messages = [];
+
+      apos.notify = async (req, message, options) => {
+        messages.push(message);
+        return notify(req, message, options);
+      };
+
+      await importExportManager.import(req);
+
+      assert.equal(messages.some(message => message === 'aposImportExport:typeUnknownWithUpdateKey'), true);
+    });
+
+    it('should import a csv file that was not made from the import-export module', async function() {
+      csv.input = async () => {
+        return {
+          docs: [
+            {
+              type: 'topic',
+              title: 'topic1',
+              description: 'description1',
+              main: '<p><em>rich</em> <strong>text</strong></p>'
+            }
+          ]
+        };
+      };
+
+      await importExportManager.import(req);
+
+      const topics = await apos.doc.db
+        .find({ type: /topic/ })
+        .toArray();
+
+      assert.equal(topics.length, 1);
+      assert.equal(topics[0].title, 'topic1');
+      assert.equal(topics[0].slug, 'topic1');
+      assert.equal(topics[0].aposMode, 'draft');
+      assert.equal(topics[0].description, 'description1');
+      assert.equal(topics[0].main.items[0].content, '<p><em>rich</em> <strong>text</strong></p>');
+    });
+
+    it('should insert a doc as draft and published when there is an update key that does not match any existing doc', async function() {
+      csv.input = async () => {
+        return {
+          docs: [
+            {
+              type: 'topic',
+              'title:key': 'topic1',
+              title: 'topic1 - edited',
+              description: 'description1 - edited',
+              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
+            }
+          ]
+        };
+      };
+
+      await importExportManager.import(req);
+
+      const topics = await apos.doc.db
+        .find({ type: /topic/ })
+        .toArray();
+
+      assert.equal(topics.length, 2);
+
+      assert.equal(topics[0].title, 'topic1 - edited');
+      assert.equal(topics[0].slug, 'topic1-edited');
+      assert.equal(topics[0].aposMode, 'draft');
+      assert.equal(topics[0].description, 'description1 - edited');
+      assert.equal(topics[0].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+
+      assert.equal(topics[1].title, 'topic1 - edited');
+      assert.equal(topics[1].slug, 'topic1-edited');
+      assert.equal(topics[1].aposMode, 'published');
+      assert.equal(topics[1].description, 'description1 - edited');
+      assert.equal(topics[1].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+    });
+
+    it('should insert a doc when there is an empty update key', async function() {
+      csv.input = async () => {
+        return {
+          docs: [
+            {
+              type: 'topic',
+              'title:key': '',
+              title: 'topic1 - edited',
+              description: 'description1 - edited',
+              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
+            }
+          ]
+        };
+      };
+
+      await importExportManager.import(req);
+
+      const topics = await apos.doc.db
+        .find({ type: /topic/ })
+        .toArray();
+
+      assert.equal(topics.length, 2);
+
+      assert.equal(topics[0].title, 'topic1 - edited');
+      assert.equal(topics[0].slug, 'topic1-edited');
+      assert.equal(topics[0].aposMode, 'draft');
+      assert.equal(topics[0].description, 'description1 - edited');
+      assert.equal(topics[0].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+
+      assert.equal(topics[1].title, 'topic1 - edited');
+      assert.equal(topics[1].slug, 'topic1-edited');
+      assert.equal(topics[1].aposMode, 'published');
+      assert.equal(topics[1].description, 'description1 - edited');
+      assert.equal(topics[1].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+    });
+  });
 });
 
 function extractFileNames (files) {
@@ -1645,7 +1888,8 @@ function getAppConfig(modules = {}) {
                 '@apostrophecms/rich-text': {},
                 '@apostrophecms/image': {},
                 '@apostrophecms/video': {}
-              }
+              },
+              importAsRichText: true
             }
           },
           _articles: {
@@ -1688,6 +1932,16 @@ function getAppConfig(modules = {}) {
           description: {
             label: 'Description',
             type: 'string'
+          },
+          main: {
+            label: 'Main',
+            type: 'area',
+            options: {
+              widgets: {
+                '@apostrophecms/rich-text': {}
+              },
+              importAsRichText: true
+            }
           },
           _topics: {
             label: 'Related Topics',
