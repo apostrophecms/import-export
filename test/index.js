@@ -1448,12 +1448,10 @@ describe('@apostrophecms/import-export', function () {
     });
   });
 
-  describe.only('#import - man-made CSV file', function() {
+  describe('#import - man-made CSV file', function() {
     let req;
     let notify;
     let input;
-    // let insertOrUpdateDoc;
-    // let insertOrUpdateDocWithKey;
     let csv;
 
     this.beforeEach(async function() {
@@ -1472,8 +1470,6 @@ describe('@apostrophecms/import-export', function () {
       });
       notify = apos.notify;
       input = csv.input;
-      // insertOrUpdateDoc = apos.modules['@apostrophecms/import-export'].insertOrUpdateDoc;
-      // insertOrUpdateDocWithKey = apos.modules['@apostrophecms/import-export'].insertOrUpdateDocWithKey;
 
       await deletePiecesAndPages(apos);
       await deleteAttachments(apos, attachmentPath);
@@ -1482,8 +1478,6 @@ describe('@apostrophecms/import-export', function () {
     this.afterEach(function() {
       apos.notify = notify;
       csv.input = input;
-      // apos.modules['@apostrophecms/import-export'].insertOrUpdateDoc = insertOrUpdateDoc;
-      // apos.modules['@apostrophecms/import-export'].insertOrUpdateDocWithKey = insertOrUpdateDocWithKey;
     });
 
     it('should notify when the type is not provided', async function() {
@@ -1563,7 +1557,7 @@ describe('@apostrophecms/import-export', function () {
       assert.equal(messages.some(message => message === 'aposImportExport:typeColumnMissing'), true);
     });
 
-    it.only('should notify when there is an update key and the type does not exist', async function() {
+    it('should notify when there is an update key and the type does not exist', async function() {
       csv.input = async () => {
         return {
           docs: [
@@ -1590,7 +1584,7 @@ describe('@apostrophecms/import-export', function () {
       assert.equal(messages.some(message => message === 'aposImportExport:typeUnknownWithUpdateKey'), true);
     });
 
-    it('should import a csv file that was not made from the import-export module', async function() {
+    it('should import a piece from a csv file that was not made from the import-export module', async function() {
       csv.input = async () => {
         return {
           docs: [
@@ -1607,7 +1601,7 @@ describe('@apostrophecms/import-export', function () {
       await importExportManager.import(req);
 
       const topics = await apos.doc.db
-        .find({ type: /topic/ })
+        .find({ type: 'topic' })
         .toArray();
 
       assert.equal(topics.length, 1);
@@ -1618,7 +1612,33 @@ describe('@apostrophecms/import-export', function () {
       assert.equal(topics[0].main.items[0].content, '<p><em>rich</em> <strong>text</strong></p>');
     });
 
-    it('should insert a doc as draft and published when there is an update key that does not match any existing doc', async function() {
+    it('should import a page from a csv file that was not made from the import-export module', async function() {
+      csv.input = async () => {
+        return {
+          docs: [
+            {
+              type: 'default-page',
+              title: 'page1',
+              main: '<p><em>rich</em> <strong>text</strong></p>'
+            }
+          ]
+        };
+      };
+
+      await importExportManager.import(req);
+
+      const pages = await apos.doc.db
+        .find({ type: 'default-page' })
+        .toArray();
+
+      assert.equal(pages.length, 1);
+      assert.equal(pages[0].title, 'page1');
+      assert.equal(pages[0].slug, '/page1');
+      assert.equal(pages[0].aposMode, 'draft');
+      assert.equal(pages[0].main.items[0].content, '<p><em>rich</em> <strong>text</strong></p>');
+    });
+
+    it('should insert a piece as draft and published when there is an update key that does not match any existing doc', async function() {
       csv.input = async () => {
         return {
           docs: [
@@ -1636,7 +1656,7 @@ describe('@apostrophecms/import-export', function () {
       await importExportManager.import(req);
 
       const topics = await apos.doc.db
-        .find({ type: /topic/ })
+        .find({ type: 'topic' })
         .toArray();
 
       assert.equal(topics.length, 2);
@@ -1654,7 +1674,40 @@ describe('@apostrophecms/import-export', function () {
       assert.equal(topics[1].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
     });
 
-    it('should insert a doc when there is an empty update key', async function() {
+    it('should insert a page as draft and published when there is an update key that does not match any existing doc', async function() {
+      csv.input = async () => {
+        return {
+          docs: [
+            {
+              type: 'default-page',
+              'title:key': 'page1',
+              title: 'page1 - edited',
+              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
+            }
+          ]
+        };
+      };
+
+      await importExportManager.import(req);
+
+      const pages = await apos.doc.db
+        .find({ type: 'default-page' })
+        .toArray();
+
+      assert.equal(pages.length, 2);
+
+      assert.equal(pages[0].title, 'page1 - edited');
+      assert.equal(pages[0].slug, '/page1-edited');
+      assert.equal(pages[0].aposMode, 'draft');
+      assert.equal(pages[0].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+
+      assert.equal(pages[1].title, 'page1 - edited');
+      assert.equal(pages[1].slug, '/page1-edited');
+      assert.equal(pages[1].aposMode, 'published');
+      assert.equal(pages[1].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+    });
+
+    it('should insert a piece as draft and published when there is an empty update key', async function() {
       csv.input = async () => {
         return {
           docs: [
@@ -1672,7 +1725,7 @@ describe('@apostrophecms/import-export', function () {
       await importExportManager.import(req);
 
       const topics = await apos.doc.db
-        .find({ type: /topic/ })
+        .find({ type: 'topic' })
         .toArray();
 
       assert.equal(topics.length, 2);
@@ -1688,6 +1741,355 @@ describe('@apostrophecms/import-export', function () {
       assert.equal(topics[1].aposMode, 'published');
       assert.equal(topics[1].description, 'description1 - edited');
       assert.equal(topics[1].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+    });
+
+    it('should insert a page as draft and published when there is an empty update key', async function() {
+      csv.input = async () => {
+        return {
+          docs: [
+            {
+              type: 'default-page',
+              'title:key': '',
+              title: 'page1 - edited',
+              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
+            }
+          ]
+        };
+      };
+
+      await importExportManager.import(req);
+
+      const pages = await apos.doc.db
+        .find({ type: 'default-page' })
+        .toArray();
+
+      assert.equal(pages.length, 2);
+
+      assert.equal(pages[0].title, 'page1 - edited');
+      assert.equal(pages[0].slug, '/page1-edited');
+      assert.equal(pages[0].aposMode, 'draft');
+      assert.equal(pages[0].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+
+      assert.equal(pages[1].title, 'page1 - edited');
+      assert.equal(pages[1].slug, '/page1-edited');
+      assert.equal(pages[1].aposMode, 'published');
+      assert.equal(pages[1].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+    });
+
+    it('should update a piece draft and published versions when there is an update key that matches an existing doc', async function() {
+      csv.input = async () => {
+        return {
+          docs: [
+            {
+              type: 'topic',
+              'title:key': 'topic1',
+              title: 'topic1 - edited',
+              description: 'description1 - edited',
+              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
+            }
+          ]
+        };
+      };
+
+      const topic = await apos.topic.insert(req, {
+        ...apos.topic.newInstance(),
+        title: 'topic1',
+        description: 'description1',
+        main: '<p><em>rich</em> <strong>text</strong></p>'
+      });
+
+      await importExportManager.import(req);
+
+      const topics = await apos.doc.db
+        .find({ type: 'topic' })
+        .toArray();
+
+      assert.equal(topics.length, 2);
+
+      assert.equal(topics[0].aposDocId, topic.aposDocId);
+      assert.equal(topics[0].title, 'topic1 - edited');
+      assert.equal(topics[0].slug, 'topic1');
+      assert.equal(topics[0].aposMode, 'draft');
+      assert.equal(topics[0].description, 'description1 - edited');
+      assert.equal(topics[0].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+      assert.equal(topics[0].modified, false);
+
+      assert.equal(topics[1].aposDocId, topic.aposDocId);
+      assert.equal(topics[1].title, 'topic1 - edited');
+      assert.equal(topics[1].slug, 'topic1');
+      assert.equal(topics[1].aposMode, 'published');
+      assert.equal(topics[1].description, 'description1 - edited');
+      assert.equal(topics[1].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+    });
+
+    it('should update a page draft and published versions when there is an update key that matches an existing doc', async function() {
+      csv.input = async () => {
+        return {
+          docs: [
+            {
+              type: 'default-page',
+              'title:key': 'page1',
+              title: 'page1 - edited',
+              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
+            }
+          ]
+        };
+      };
+
+      const page = await apos.page.insert(req, '_home', 'lastChild', {
+        ...apos.modules['default-page'].newInstance(),
+        title: 'page1',
+        main: '<p><em>rich</em> <strong>text</strong></p>'
+      });
+
+      await importExportManager.import(req);
+
+      const pages = await apos.doc.db
+        .find({ type: 'default-page' })
+        .toArray();
+
+      assert.equal(pages.length, 2);
+
+      assert.equal(pages[0].aposDocId, page.aposDocId);
+      assert.equal(pages[0].title, 'page1 - edited');
+      assert.equal(pages[0].slug, '/page1');
+      assert.equal(pages[0].aposMode, 'draft');
+      assert.equal(pages[0].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+      assert.equal(pages[0].modified, false);
+
+      assert.equal(pages[1].aposDocId, page.aposDocId);
+      assert.equal(pages[1].title, 'page1 - edited');
+      assert.equal(pages[1].slug, '/page1');
+      assert.equal(pages[1].aposMode, 'published');
+      assert.equal(pages[1].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+    });
+
+    it('should update a piece draft and published versions when there is an update key that only matches the existing draft doc', async function() {
+      csv.input = async () => {
+        return {
+          docs: [
+            {
+              type: 'topic',
+              'title:key': 'topic1',
+              title: 'topic1 - edited',
+              description: 'description1 - edited',
+              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
+            }
+          ]
+        };
+      };
+
+      const topic = await apos.topic.insert(req, {
+        ...apos.topic.newInstance(),
+        title: 'topic1',
+        description: 'description1',
+        main: '<p><em>rich</em> <strong>text</strong></p>'
+      });
+
+      // check that the published doc is also updated, even with a different title
+      await apos.doc.db.updateOne(
+        {
+          aposDocId: topic.aposDocId,
+          aposMode: 'published'
+        },
+        {
+          $set: {
+            title: 'topic1 - published title that does not match the draft title nor the update key'
+          }
+        }
+      );
+
+      await importExportManager.import(req);
+
+      const topics = await apos.doc.db
+        .find({ type: 'topic' })
+        .toArray();
+
+      assert.equal(topics.length, 2);
+
+      assert.equal(topics[0].aposDocId, topic.aposDocId);
+      assert.equal(topics[0].title, 'topic1 - edited');
+      assert.equal(topics[0].slug, 'topic1');
+      assert.equal(topics[0].aposMode, 'draft');
+      assert.equal(topics[0].description, 'description1 - edited');
+      assert.equal(topics[0].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+      assert.equal(topics[0].modified, false);
+
+      assert.equal(topics[1].aposDocId, topic.aposDocId);
+      assert.equal(topics[1].title, 'topic1 - edited');
+      assert.equal(topics[1].slug, 'topic1');
+      assert.equal(topics[1].aposMode, 'published');
+      assert.equal(topics[1].description, 'description1 - edited');
+      assert.equal(topics[1].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+    });
+
+    it('should update a page draft and published versions when there is an update key that only matches the existing draft doc', async function() {
+      csv.input = async () => {
+        return {
+          docs: [
+            {
+              type: 'default-page',
+              'title:key': 'page1',
+              title: 'page1 - edited',
+              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
+            }
+          ]
+        };
+      };
+
+      const page = await apos.page.insert(req, '_home', 'lastChild', {
+        ...apos.modules['default-page'].newInstance(),
+        title: 'page1',
+        main: '<p><em>rich</em> <strong>text</strong></p>'
+      });
+
+      // check that the published doc is also updated, even with a different title
+      await apos.doc.db.updateOne(
+        {
+          aposDocId: page.aposDocId,
+          aposMode: 'published'
+        },
+        {
+          $set: {
+            title: 'page1 - published title that does not match the draft title nor the update key'
+          }
+        }
+      );
+
+      await importExportManager.import(req);
+
+      const pages = await apos.doc.db
+        .find({ type: 'default-page' })
+        .toArray();
+
+      assert.equal(pages.length, 2);
+
+      assert.equal(pages[0].aposDocId, page.aposDocId);
+      assert.equal(pages[0].title, 'page1 - edited');
+      assert.equal(pages[0].slug, '/page1');
+      assert.equal(pages[0].aposMode, 'draft');
+      assert.equal(pages[0].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+      assert.equal(pages[0].modified, false);
+
+      assert.equal(pages[1].aposDocId, page.aposDocId);
+      assert.equal(pages[1].title, 'page1 - edited');
+      assert.equal(pages[1].slug, '/page1');
+      assert.equal(pages[1].aposMode, 'published');
+      assert.equal(pages[1].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+    });
+
+    it('should update a piece draft and published versions when there is an update key that matches only the existing published doc', async function() {
+      csv.input = async () => {
+        return {
+          docs: [
+            {
+              type: 'topic',
+              'title:key': 'topic1',
+              title: 'topic1 - edited',
+              description: 'description1 - edited',
+              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
+            }
+          ]
+        };
+      };
+
+      const topic = await apos.topic.insert(req, {
+        ...apos.topic.newInstance(),
+        title: 'topic1',
+        description: 'description1',
+        main: '<p><em>rich</em> <strong>text</strong></p>'
+      });
+
+      // check that the draft doc is also updated, even with a different title
+      await apos.doc.db.updateOne(
+        {
+          aposDocId: topic.aposDocId,
+          aposMode: 'draft'
+        },
+        {
+          $set: {
+            title: 'topic1 - draft title that does not match the published title nor the update key'
+          }
+        }
+      );
+
+      await importExportManager.import(req);
+
+      const topics = await apos.doc.db
+        .find({ type: 'topic' })
+        .toArray();
+
+      assert.equal(topics.length, 2);
+
+      assert.equal(topics[0].aposDocId, topic.aposDocId);
+      assert.equal(topics[0].title, 'topic1 - edited');
+      assert.equal(topics[0].slug, 'topic1');
+      assert.equal(topics[0].aposMode, 'draft');
+      assert.equal(topics[0].description, 'description1 - edited');
+      assert.equal(topics[0].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+      assert.equal(topics[0].modified, false);
+
+      assert.equal(topics[1].aposDocId, topic.aposDocId);
+      assert.equal(topics[1].title, 'topic1 - edited');
+      assert.equal(topics[1].slug, 'topic1');
+      assert.equal(topics[1].aposMode, 'published');
+      assert.equal(topics[1].description, 'description1 - edited');
+      assert.equal(topics[1].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+    });
+
+    it('should update a page draft and published versions when there is an update key that only matches the existing published doc', async function() {
+      csv.input = async () => {
+        return {
+          docs: [
+            {
+              type: 'default-page',
+              'title:key': 'page1',
+              title: 'page1 - edited',
+              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
+            }
+          ]
+        };
+      };
+
+      const page = await apos.page.insert(req, '_home', 'lastChild', {
+        ...apos.modules['default-page'].newInstance(),
+        title: 'page1',
+        main: '<p><em>rich</em> <strong>text</strong></p>'
+      });
+
+      // check that the draft doc is also updated, even with a different title
+      await apos.doc.db.updateOne(
+        {
+          aposDocId: page.aposDocId,
+          aposMode: 'draft'
+        },
+        {
+          $set: {
+            title: 'page1 - draft title that does not match the published title nor the update key'
+          }
+        }
+      );
+
+      await importExportManager.import(req);
+
+      const pages = await apos.doc.db
+        .find({ type: 'default-page' })
+        .toArray();
+
+      assert.equal(pages.length, 2);
+
+      assert.equal(pages[0].aposDocId, page.aposDocId);
+      assert.equal(pages[0].title, 'page1 - edited');
+      assert.equal(pages[0].slug, '/page1');
+      assert.equal(pages[0].aposMode, 'draft');
+      assert.equal(pages[0].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
+      assert.equal(pages[0].modified, false);
+
+      assert.equal(pages[1].aposDocId, page.aposDocId);
+      assert.equal(pages[1].title, 'page1 - edited');
+      assert.equal(pages[1].slug, '/page1');
+      assert.equal(pages[1].aposMode, 'published');
+      assert.equal(pages[1].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
     });
   });
 });
