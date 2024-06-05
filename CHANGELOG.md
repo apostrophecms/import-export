@@ -1,5 +1,16 @@
 # Changelog
 
+## UNRELEASED
+
+### Adds
+
+* Add the possibility to set a **key column** in your import CSV file in order to update existing pieces and pages.  
+Thanks to this, this module reaches parity with the deprecated [`@apostrophecms/piece-type-importer`](https://github.com/apostrophecms/piece-type-importer) module.
+
+### Fixes
+
+* We can now import pieces or pages with an import file that contains just the required fields.
+
 ## 2.0.0 (2024-05-15)
 
 ### Changes

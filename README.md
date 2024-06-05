@@ -148,6 +148,34 @@ If multiple locales are set up, the user will be prompted to choose between canc
 
 ![Screenshot highlighting the confirm modal letting the user choose between aborting on continuing the import when the docs locale is different from the site one.](https://static.apostrophecms.com/apostrophecms/import-export/images/different-locale-modal.png)
 
+## Updating existing pieces using CSV format
+
+You can also update existing pieces via this module.
+
+To do that, you will need one (and only one) **key column** in your file. This column's name **must be exactly the name of the existing field** that uniquely identifies each row as an update of a specific existing piece, **followed by `:key`**.
+
+For instance, if you need to change the usernames of users in bulk, you might prepare a CSV file like this:
+
+```
+username:key,username
+bobsmith,bob.smith
+janedoe,jane.doe
+```
+
+The key column is the *old value*. You may optionally also present a *new value* for that same column in a separate column without `:key`. You may also include other columns, as you see fit. The important thing is that you must have one and only one `:key` column in order to carry out updates.
+
+Please note that both the draft and the published versions will be updated, even if one of them does not match the key column value.
+
+## Mixing inserts and updates
+
+If a row has no value for your `:key` column, it is treated as an insert, rather than an update.
+
+## Importing rich text (HTML) rather than plaintext
+
+By default, if you create a column in your CSV file for a field of type `area`, it will be imported as plaintext. Any special characters like `<` and `>` will be escaped so the user can see them. HTML is not supported.
+
+To import areas as rich text HTML markup, add the `importAsRichText: true` option to the `area` field in your schema.
+
 ## How to add a new format?
 
 ### Create a file for your format:
