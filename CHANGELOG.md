@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+* Fix export relationship when an area has grouped widgets
+
 ## 2.1.0 (2024-06-12)
 
 ### Adds
