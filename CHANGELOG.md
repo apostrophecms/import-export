@@ -1,6 +1,6 @@
 # Changelog
 
-## UNRELEASED
+## 2.1.1 (2024-06-21)
 
 ### Fixes
 
