@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Adds
+
+* Adds a `preventUpdateAssets` to the module that will not try to update already existing assets on import.
+
 ## 2.1.1 (2024-06-21)
 
 ### Fixes

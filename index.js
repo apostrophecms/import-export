@@ -17,7 +17,8 @@ module.exports = {
     i18n: {
       ns: 'aposImportExport',
       browser: true
-    }
+    },
+    preventUpdateAssets: false,
   },
   init(self) {
     self.formats = {
