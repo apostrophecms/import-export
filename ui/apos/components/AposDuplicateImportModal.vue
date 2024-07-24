@@ -245,7 +245,7 @@ export default {
         : this.duplicatedDocs.map(({ aposDocId }) => aposDocId);
     },
     docLabel(doc) {
-      const moduleOptions = apos.modules[this.type];
+      const moduleOptions = apos.modules[doc.type];
 
       return moduleOptions?.label
         ? this.$t(moduleOptions?.label)
