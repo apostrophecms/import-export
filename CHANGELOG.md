@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.3.0 (2024-07-24)
+
+### Adds
+
+* Add a scrollbar to the duplicate import modal 
+
 ## 2.2.0 (2024-07-12)
 
 ### Adds
