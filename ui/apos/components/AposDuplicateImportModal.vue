@@ -326,7 +326,7 @@ export default {
   flex-direction: column;
   align-items: baseline;
   max-height: 50vh;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .apos-import-duplicate__section thead {
