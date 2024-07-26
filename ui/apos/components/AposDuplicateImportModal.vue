@@ -325,7 +325,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: baseline;
-  max-height: 50vh;
+  max-height: 210px;
   overflow-y: auto;
 }
 
@@ -333,7 +333,7 @@ export default {
   position: sticky;
   top: 0;
   z-index: 1;
-  backgroud-color: var(--a-base-10);
+  background-color: var(--a-background-primary);
 }
 
 .apos-import-duplicate__section .apos-table__header {
