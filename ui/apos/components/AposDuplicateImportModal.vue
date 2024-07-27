@@ -332,7 +332,6 @@ export default {
 .apos-import-duplicate__section thead {
   position: sticky;
   top: 0;
-  z-index: 1;
   background-color: var(--a-background-primary);
 }
 
