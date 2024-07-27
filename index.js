@@ -18,7 +18,7 @@ module.exports = {
       ns: 'aposImportExport',
       browser: true
     },
-    preventUpdateAssets: false,
+    preventUpdateAssets: false
   },
   init(self) {
     self.formats = {
