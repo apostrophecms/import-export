@@ -22,30 +22,30 @@
           <div class="apos-import-duplicate__section">
             <table class="apos-table">
               <thead>
-                  <tr>
-                    <th class="apos-table__header">
-                      <AposButton
-                        class="apos-toggle"
-                        :class="{ 'apos-toggle--blank': !checked.length }"
-                        data-apos-test="contextMenuTrigger"
-                        type="quiet"
-                        :text-color="checkboxIconColor"
-                        :icon="checkboxIcon"
-                        :icon-only="true"
-                        :icon-size="10"
-                        @click.stop="toggle"
-                      />
-                    </th>
-                    <th class="apos-table__header">
-                      {{ $t('aposImportExport:title') }}
-                    </th>
-                    <th class="apos-table__header">
-                      {{ $t('aposImportExport:type') }}
-                    </th>
-                    <th class="apos-table__header">
-                      {{ $t('aposImportExport:lastEdited') }}
-                    </th>
-                  </tr>
+                <tr>
+                  <th class="apos-table__header">
+                    <AposButton
+                      class="apos-toggle"
+                      :class="{ 'apos-toggle--blank': !checked.length }"
+                      data-apos-test="contextMenuTrigger"
+                      type="quiet"
+                      :text-color="checkboxIconColor"
+                      :icon="checkboxIcon"
+                      :icon-only="true"
+                      :icon-size="10"
+                      @click.stop="toggle"
+                    />
+                  </th>
+                  <th class="apos-table__header">
+                    {{ $t('aposImportExport:title') }}
+                  </th>
+                  <th class="apos-table__header">
+                    {{ $t('aposImportExport:type') }}
+                  </th>
+                  <th class="apos-table__header">
+                    {{ $t('aposImportExport:lastEdited') }}
+                  </th>
+                </tr>
               </thead>
               <tbody>
                 <tr
