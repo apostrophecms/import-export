@@ -21,7 +21,7 @@
 
           <div class="apos-import-duplicate__section">
             <table class="apos-table">
-              <tbody>
+              <thead>
                 <tr>
                   <th class="apos-table__header">
                     <AposButton
@@ -46,6 +46,8 @@
                     {{ $t('aposImportExport:lastEdited') }}
                   </th>
                 </tr>
+              </thead>
+              <tbody>
                 <tr
                   v-for="doc in duplicatedDocs"
                   :key="doc.aposDocId"
@@ -243,7 +245,7 @@ export default {
         : this.duplicatedDocs.map(({ aposDocId }) => aposDocId);
     },
     docLabel(doc) {
-      const moduleOptions = apos.modules[this.type];
+      const moduleOptions = apos.modules[doc.type];
 
       return moduleOptions?.label
         ? this.$t(moduleOptions?.label)
@@ -323,6 +325,14 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: baseline;
+  max-height: 210px;
+  overflow-y: auto;
+}
+
+.apos-import-duplicate__section thead {
+  position: sticky;
+  top: 0;
+  background-color: var(--a-background-primary);
 }
 
 .apos-import-duplicate__section .apos-table__header {
