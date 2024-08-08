@@ -291,6 +291,7 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
+  // FIX
   it('should return duplicates pieces when already existing and override them', async function() {
     const req = apos.task.getReq();
     const articles = await apos.article.find(req).toArray();
@@ -450,6 +451,7 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
+  // FIX
   it('should return existing duplicated docs during page import and override them', async function() {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
@@ -554,6 +556,7 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
+  // check
   it('should not override attachment if associated document is not imported', async function() {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
@@ -985,6 +988,7 @@ describe('@apostrophecms/import-export', function () {
     });
 
     describe('when the site has only one locale', function() {
+      // FIX
       it('should not rewrite the docs locale nor ask about it when the locale is not different', async function() {
         gzip.input = async () => {
           return {
