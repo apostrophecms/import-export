@@ -1202,7 +1202,7 @@ describe('@apostrophecms/import-export', function () {
 
           return rewriteDocsWithCurrentLocale(req, docs);
         };
-        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, docs) => {
+        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs }) => {
           assert.deepEqual(docs, [
             {
               _id: '4:en:draft',
@@ -1213,11 +1213,7 @@ describe('@apostrophecms/import-export', function () {
             }
           ]);
 
-          return {
-            duplicatedDocs: [],
-            duplicatedIds: [],
-            failedIds: []
-          };
+          return [];
         };
         apos.notify = async (req, message, options) => {
           if (options?.event?.name === 'import-export-import-locale-differs') {
