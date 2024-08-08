@@ -738,6 +738,93 @@ describe('@apostrophecms/import-export', function () {
     }), true, `expected imported docs 'lastPublishedAt' value to be of '${lastPublishedAt}'`);
   });
 
+  describe('#checkDuplicates', function() {
+    let apos;
+
+    after(async function() {
+      await t.destroy(apos);
+    });
+
+    before(async function() {
+      apos = await t.create({
+        root: module,
+        testModule: true,
+        modules: getAppConfig({
+          '@apostrophecms/express': {
+            options: {
+              session: { secret: 'supersecret' }
+            }
+          },
+          '@apostrophecms/i18n': {
+            options: {
+              defaultLocale: 'en',
+              locales: {
+                en: { label: 'English' },
+                fr: {
+                  label: 'French',
+                  prefix: '/fr'
+                }
+              }
+            }
+          }
+        })
+      });
+
+      importExportManager = apos.modules['@apostrophecms/import-export'];
+    });
+
+    this.beforeEach(async function() {
+      await insertAdminUser(apos);
+      await insertPiecesAndPages(apos);
+    });
+
+    this.afterEach(async function() {
+      await deletePiecesAndPages(apos);
+      await deleteAttachments(apos, attachmentPath);
+    });
+
+    it('should check if documents to import have duplicates in the current locale', async function() {
+      const req = apos.task.getReq({ mode: 'draft' });
+      const frReq = apos.task.getReq({
+        locale: 'fr',
+        mode: 'draft'
+      });
+      const [ user ] = await apos.doc.db.find({ slug: 'user-admin' }).toArray();
+      const enArticles = await apos.article.find(req).toArray();
+
+      const enDocs = enArticles.concat(user);
+      const enDuplicates = await importExportManager.checkDuplicates(req, enDocs);
+
+      const frDocs = enDocs.map((doc) => {
+        return {
+          ...doc,
+          _id: doc._id.replace('en', 'fr'),
+          aposLocale: 'fr:draft'
+        };
+      });
+      const frDuplicates = await importExportManager.checkDuplicates(frReq, frDocs);
+
+      const actual = {
+        enDuplicates: [
+          enDocs.every((doc) => enDuplicates.duplicatedIds.has(doc.aposDocId)),
+          enDuplicates.duplicatedDocs.length
+        ],
+        frDuplicates: [
+          frDocs.every((doc) => frDuplicates.duplicatedIds.has(doc.aposDocId)),
+          frDuplicates.duplicatedIds.has(user.aposDocId),
+          frDuplicates.duplicatedDocs.length
+        ]
+      };
+      const expected = {
+        enDuplicates: [ true, 3 ],
+        frDuplicates: [ false, true, 1 ]
+      };
+
+      assert.deepStrictEqual(actual, expected);
+
+    });
+  });
+
   describe('#getFirstDifferentLocale', function() {
     it('should find among the docs the first locale that is different from the req one', async function() {
       const req = {
