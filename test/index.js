@@ -291,6 +291,7 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
+  // FIX
   it('should return duplicates pieces when already existing and override them', async function() {
     const req = apos.task.getReq();
     const articles = await apos.article.find(req).toArray();
@@ -450,6 +451,7 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
+  // FIX
   it('should return existing duplicated docs during page import and override them', async function() {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
@@ -554,6 +556,7 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
+  // check
   it('should not override attachment if associated document is not imported', async function() {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
@@ -738,6 +741,93 @@ describe('@apostrophecms/import-export', function () {
     }), true, `expected imported docs 'lastPublishedAt' value to be of '${lastPublishedAt}'`);
   });
 
+  describe('#checkDuplicates', function() {
+    let apos;
+
+    after(async function() {
+      await t.destroy(apos);
+    });
+
+    before(async function() {
+      apos = await t.create({
+        root: module,
+        testModule: true,
+        modules: getAppConfig({
+          '@apostrophecms/express': {
+            options: {
+              session: { secret: 'supersecret' }
+            }
+          },
+          '@apostrophecms/i18n': {
+            options: {
+              defaultLocale: 'en',
+              locales: {
+                en: { label: 'English' },
+                fr: {
+                  label: 'French',
+                  prefix: '/fr'
+                }
+              }
+            }
+          }
+        })
+      });
+
+      importExportManager = apos.modules['@apostrophecms/import-export'];
+    });
+
+    this.beforeEach(async function() {
+      await insertAdminUser(apos);
+      await insertPiecesAndPages(apos);
+    });
+
+    this.afterEach(async function() {
+      await deletePiecesAndPages(apos);
+      await deleteAttachments(apos, attachmentPath);
+    });
+
+    it('should check if documents to import have duplicates in the current locale', async function() {
+      const req = apos.task.getReq({ mode: 'draft' });
+      const frReq = apos.task.getReq({
+        locale: 'fr',
+        mode: 'draft'
+      });
+      const [ user ] = await apos.doc.db.find({ slug: 'user-admin' }).toArray();
+      const enArticles = await apos.article.find(req).toArray();
+
+      const enDocs = enArticles.concat(user);
+      const enDuplicates = await importExportManager.checkDuplicates(req, enDocs);
+
+      const frDocs = enDocs.map((doc) => {
+        return {
+          ...doc,
+          _id: doc._id.replace('en', 'fr'),
+          aposLocale: 'fr:draft'
+        };
+      });
+      const frDuplicates = await importExportManager.checkDuplicates(frReq, frDocs);
+
+      const actual = {
+        enDuplicates: [
+          enDocs.every((doc) => enDuplicates.duplicatedIds.has(doc.aposDocId)),
+          enDuplicates.duplicatedDocs.length
+        ],
+        frDuplicates: [
+          frDocs.every((doc) => frDuplicates.duplicatedIds.has(doc.aposDocId)),
+          frDuplicates.duplicatedIds.has(user.aposDocId),
+          frDuplicates.duplicatedDocs.length
+        ]
+      };
+      const expected = {
+        enDuplicates: [ true, 3 ],
+        frDuplicates: [ false, true, 1 ]
+      };
+
+      assert.deepStrictEqual(actual, expected);
+
+    });
+  });
+
   describe('#getFirstDifferentLocale', function() {
     it('should find among the docs the first locale that is different from the req one', async function() {
       const req = {
@@ -898,6 +988,7 @@ describe('@apostrophecms/import-export', function () {
     });
 
     describe('when the site has only one locale', function() {
+      // FIX
       it('should not rewrite the docs locale nor ask about it when the locale is not different', async function() {
         gzip.input = async () => {
           return {
@@ -1202,7 +1293,7 @@ describe('@apostrophecms/import-export', function () {
 
           return rewriteDocsWithCurrentLocale(req, docs);
         };
-        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, docs) => {
+        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs }) => {
           assert.deepEqual(docs, [
             {
               _id: '4:en:draft',
@@ -1213,11 +1304,7 @@ describe('@apostrophecms/import-export', function () {
             }
           ]);
 
-          return {
-            duplicatedDocs: [],
-            duplicatedIds: [],
-            failedIds: []
-          };
+          return [];
         };
         apos.notify = async (req, message, options) => {
           if (options?.event?.name === 'import-export-import-locale-differs') {
