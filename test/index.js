@@ -291,7 +291,6 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
-  // FIX
   it('should return duplicates pieces when already existing and override them', async function() {
     const req = apos.task.getReq();
     const articles = await apos.article.find(req).toArray();
@@ -451,7 +450,6 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
-  // FIX
   it('should return existing duplicated docs during page import and override them', async function() {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
@@ -556,7 +554,6 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
-  // check
   it('should not override attachment if associated document is not imported', async function() {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
@@ -951,6 +948,7 @@ describe('@apostrophecms/import-export', function () {
       apos.modules['@apostrophecms/import-export'].insertDocs = insertDocs;
     });
 
+    // FIX
     it('should import pieces with related documents from the extracted export path when provided', async function() {
       // Since we are mocking this and not really uploading a file, we have to
       // manually call setExportPathId to establish a mapping to a safe
@@ -1007,7 +1005,7 @@ describe('@apostrophecms/import-export', function () {
         apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
           throw new Error('rewriteDocsWithCurrentLocale should not have been called');
         };
-        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, docs) => {
+        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs }) => {
           assert.deepEqual(docs, [
             {
               _id: '4:en:draft',
@@ -1018,11 +1016,7 @@ describe('@apostrophecms/import-export', function () {
             }
           ]);
 
-          return {
-            duplicatedDocs: [],
-            duplicatedIds: [],
-            failedIds: []
-          };
+          return [];
         };
         apos.notify = async (req, message, options) => {
           if (options?.event?.name === 'import-export-import-locale-differs') {
@@ -1034,6 +1028,7 @@ describe('@apostrophecms/import-export', function () {
         await importExportManager.import(req);
       });
 
+      // FIX
       it('should rewrite the docs locale without asking about it when the locale is different', async function() {
         gzip.input = async () => {
           return {
@@ -1062,7 +1057,7 @@ describe('@apostrophecms/import-export', function () {
 
           return rewriteDocsWithCurrentLocale(req, docs);
         };
-        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, docs) => {
+        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs }) => {
           assert.deepEqual(docs, [
             {
               _id: '4:en:draft',
@@ -1193,7 +1188,7 @@ describe('@apostrophecms/import-export', function () {
         apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = () => {
           throw new Error('rewriteDocsWithCurrentLocale should not have been called');
         };
-        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, docs) => {
+        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs }) => {
           assert.deepEqual(docs, [
             {
               _id: '4:fr:draft',
@@ -1349,6 +1344,7 @@ describe('@apostrophecms/import-export', function () {
     });
 
     describe('when the site has only one locale', function() {
+      // FIX
       it('should not rewrite the docs locale when the locale is not different', async function() {
         gzip.input = async exportPath => {
           return {
@@ -1567,6 +1563,7 @@ describe('@apostrophecms/import-export', function () {
       csv.input = input;
     });
 
+    // FIX
     it('should notify when the type is not provided', async function() {
       csv.input = async () => {
         return {
