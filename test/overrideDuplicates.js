@@ -1,6 +1,6 @@
+const assert = require('assert').strict;
 const t = require('apostrophe/test-lib/util.js');
 const path = require('path');
-const assert = require('assert');
 const {
   getAppConfig, insertAdminUser, insertPiecesAndPages, deletePiecesAndPages, deleteAttachments
 } = require('./util');
