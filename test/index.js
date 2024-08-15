@@ -270,9 +270,18 @@ describe('@apostrophecms/import-export', function () {
       .find()
       .toArray();
 
+    const articlesWithRelatedImages = importedDocs
+      .filter(({ title }) => title === 'article1')
+      .map(({ image }) => ({
+        title: image?.title,
+        name: image?.name,
+        type: image?.type
+      }));
+
     const attachmentFiles = await fs.readdir(attachmentPath);
 
     const actual = {
+      articlesWithRelatedImages,
       docsLength: importedDocs.length,
       docsTitles: importedDocs.map(({ title }) => title),
       attachmentsNames: importedAttachments.map(({ name }) => name),
@@ -284,6 +293,17 @@ describe('@apostrophecms/import-export', function () {
     };
 
     const expected = {
+      articlesWithRelatedImages: [
+        {
+          title: 'test image',
+          name: 'test-image',
+          type: 'attachment'
+        },
+        {
+          title: 'test image',
+          name: 'test-image',
+          type: 'attachment'
+        } ],
       docsLength: 8,
       docsTitles: [
         'article2', 'article1',
