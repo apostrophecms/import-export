@@ -194,11 +194,17 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
         locale: 'fr',
         mode: 'draft'
       });
-      const [ user ] = await apos.doc.db.find({ slug: 'user-admin' }).toArray();
+      const [ nonLocalized ] = await apos.doc.db.find({ title: 'nonLocalized1' }).toArray();
       const enArticles = await apos.article.find(req).toArray();
 
-      const enDocs = enArticles.concat(user);
-      const enDuplicates = await importExportManager.checkDuplicates(req, enDocs);
+      const failedIds = [];
+      const reporting = { failure: () => {} };
+      const enDocs = enArticles.concat([ nonLocalized ]);
+      const enDuplicates = await importExportManager.checkDuplicates(req, {
+        reporting,
+        docs: enDocs,
+        failedIds
+      });
 
       const frDocs = enDocs.map((doc) => {
         return {
@@ -207,7 +213,11 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
           aposLocale: 'fr:draft'
         };
       });
-      const frDuplicates = await importExportManager.checkDuplicates(frReq, frDocs);
+      const frDuplicates = await importExportManager.checkDuplicates(frReq, {
+        reporting,
+        docs: frDocs,
+        failedIds
+      });
 
       const actual = {
         enDuplicates: [
@@ -216,7 +226,7 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
         ],
         frDuplicates: [
           frDocs.every((doc) => frDuplicates.duplicatedIds.has(doc.aposDocId)),
-          frDuplicates.duplicatedIds.has(user.aposDocId),
+          frDuplicates.duplicatedIds.has(nonLocalized.aposDocId),
           frDuplicates.duplicatedDocs.length
         ]
       };

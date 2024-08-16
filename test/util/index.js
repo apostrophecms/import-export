@@ -51,7 +51,13 @@ function getAppConfig(modules = {}) {
         }
       }
     },
-
+    nonLocalized: {
+      extend: '@apostrophecms/piece-type',
+      options: {
+        alias: 'nonLocalized',
+        localized: false
+      }
+    },
     article: {
       extend: '@apostrophecms/piece-type',
       options: {
@@ -173,6 +179,11 @@ async function insertPiecesAndPages(apos) {
   const attachment = await apos.http.post('/api/v1/@apostrophecms/attachment/upload', {
     body: formData,
     jar
+  });
+
+  await apos.nonLocalized.insert(req, {
+    ...apos.nonLocalized.newInstance(),
+    title: 'nonLocalized1'
   });
 
   const image1 = await apos.image.insert(req, {
