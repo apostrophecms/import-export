@@ -33,7 +33,5 @@
   "or": "or",
   "title": "Title",
   "type": "Type",
-  "typeColumnMissing": "\"type\" is missing for the document with \"{{ updateKey }}\" as update key.",
-  "typeUnknown": "Unknown \"{{ type }}\" type.",
-  "typeUnknownWithUpdateKey": "Unknown \"{{ type }}\" type for the document with \"{{ updateKey }}\" as update key."
+  "typeUnknown": "Type \"{{ type }}\" is not valid."
 }

@@ -6,6 +6,13 @@
 
 * Add a scrollbar to the duplicate import modal to handle too many duplicates, and fixed the "Type" column to display the correct document type. Thanks to (Borel Kuomo)(https://github.com/borelkoumo) for this contribution.
 
+### Fixes
+
+* Adds a method `checkDuplicates` to pre check for duplicates before importing, allows to insert attachments before documents to avoid them being stripped.
+* Uses the new method `simulateRelationshipsFromStorage` from core to simulate relationships on data from DB to be able to pass the convert,
+also uses the new option `fetchRelationships: false` on the convert to avoid fetching relationships from the DB.
+It prevents issues when a relationship has not been inserted yet.
+
 ## 2.2.0 (2024-07-12)
 
 ### Adds
