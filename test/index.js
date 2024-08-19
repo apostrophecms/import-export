@@ -936,60 +936,6 @@ describe('@apostrophecms/import-export', function () {
       assert.equal(messages.some(message => message === 'aposImportExport:typeUnknown'), true);
     });
 
-    // TODO: Waiting to see if we really need a different error if there is no type and an update key..
-    it.skip('should notify when there is an update key and the type is not provided', async function() {
-      csv.input = async () => {
-        return {
-          docs: [
-            {
-              title: 'topic1 - edited',
-              'title:key': 'topic1',
-              description: 'description1',
-              main: '<p><em>rich</em> <strong>text</strong></p>'
-            }
-          ]
-        };
-      };
-
-      const messages = [];
-
-      apos.notify = async (req, message, options) => {
-        messages.push(message);
-        return notify(req, message, options);
-      };
-
-      await importExportManager.import(req);
-
-      assert.equal(messages.some(message => message === 'aposImportExport:typeColumnMissing'), true);
-    });
-
-    it.skip('should notify when there is an update key and the type does not exist', async function() {
-      csv.input = async () => {
-        return {
-          docs: [
-            {
-              type: 'random-type',
-              title: 'topic1 - edited',
-              'title:key': 'topic1',
-              description: 'description1',
-              main: '<p><em>rich</em> <strong>text</strong></p>'
-            }
-          ]
-        };
-      };
-
-      const messages = [];
-
-      apos.notify = async (req, message, options) => {
-        messages.push(message);
-        return notify(req, message, options);
-      };
-
-      await importExportManager.import(req);
-
-      assert.equal(messages.some(message => message === 'aposImportExport:typeUnknownWithUpdateKey'), true);
-    });
-
     it('should import a piece from a csv file that was not made from the import-export module', async function() {
       csv.input = async () => {
         return {
