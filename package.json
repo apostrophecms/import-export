@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "eslint": "eslint --ext .js,.vue .",
-    "lint": "npm run eslint",
+    "stylelint": "stylelint ui/**/*.{scss,vue}",
+    "lint": "npm run eslint && npm run stylelint",
     "mocha": "mocha",
     "test": "npm run lint && npm run mocha"
   },
@@ -17,7 +18,7 @@
   "author": "Apostrophe Technologies",
   "license": "UNLICENSED",
   "devDependencies": {
-    "apostrophe": "github:apostrophecms/apostrophe",
+    "apostrophe": "github:apostrophecms/apostrophe#pro-6418-parked-singletons",
     "eslint": "^8.44.0",
     "eslint-config-apostrophe": "^4.2.0",
     "eslint-config-standard": "^17.1.0",

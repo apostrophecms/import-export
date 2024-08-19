@@ -237,13 +237,13 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
         enDuplicates: [
           enDocs.every((doc) => enDuplicates.duplicatedIds.has(doc.aposDocId)),
           enDuplicates.duplicatedDocs.length,
-          enDuplicates.duplicatedDocs.filter(doc => !!doc._replaceId).length
+          enDuplicates.duplicatedDocs.filter(doc => !!doc.replaceId).length
         ],
         frDuplicates: [
           frDocs.every((doc) => frDuplicates.duplicatedIds.has(doc.aposDocId)),
           frDuplicates.duplicatedIds.has(nonLocalized.aposDocId),
           frDuplicates.duplicatedDocs.length,
-          enDuplicates.duplicatedDocs.filter(doc => !!doc._replaceId).length
+          enDuplicates.duplicatedDocs.filter(doc => !!doc.replaceId).length
         ]
       };
       const expected = {

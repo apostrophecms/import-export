@@ -1,3 +1,13 @@
 {
-  "extends": "stylelint-config-apostrophe"
+  "extends": "stylelint-config-apostrophe",
+  "overrides": [
+    {
+      "files": ["*.vue", "**/*.vue"],
+      "customSyntax": "postcss-html"
+    },
+    {
+      "files": ["*.s{c,a}ss", "**/*.s{c,a}ss"],
+      "customSyntax": "postcss-scss"
+    }
+  ]
 }

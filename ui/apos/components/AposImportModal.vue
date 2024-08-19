@@ -147,28 +147,28 @@ export default {
 .apos-import {
   z-index: $z-index-modal;
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 
   &__heading {
     @include type-title;
+
     line-height: var(--a-line-tall);
     margin: 0;
   }
 
   &__warning {
     @include type-small;
+
     max-width: 348px;
     padding: 10px;
   }
 
   &__description {
     @include type-base;
+
     max-width: 370px;
     line-height: var(--a-line-tallest);
   }
@@ -178,29 +178,29 @@ export default {
   }
 
   &__separator {
-    background-color: var(--a-base-9);
     position: relative;
-    height: 1px;
     width: calc(100% - 10px);
+    height: 1px;
     margin: 10px 0;
+    background-color: var(--a-base-9);
 
     &::before {
+      position: absolute;
+      right: 0;
+      left: -30px;
+      width: calc(100% + 60px);
+      height: 100%;
       content: "";
       background-color: var(--a-base-9);
-      position: absolute;
-      height: 100%;
-      width: calc(100% + 60px);
-      left: -30px;
-      right: 0;
     }
   }
 
   &__btns {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-top: 10px;
+    justify-content: space-between;
     width: 100%;
+    margin-top: 10px;
   }
 
   &__btn {
@@ -211,10 +211,7 @@ export default {
 }
 
 :deep(.apos-modal__inner) {
-  top: auto;
-  right: auto;
-  bottom: auto;
-  left: auto;
+  inset: auto;
   max-width: 700px;
   height: auto;
   text-align: left;

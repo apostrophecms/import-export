@@ -179,6 +179,13 @@ export default {
       return this.checked.length
         ? 'var(--a-white)'
         : 'transparent';
+    },
+    replaceDocIds() {
+      return this.checked.map(
+        aposDocId => this.duplicatedDocs.find(doc => doc.replaceId && doc.aposDocId === aposDocId)
+      )
+        .filter(Boolean)
+        .map(({ aposDocId, replaceId }) => [ aposDocId, replaceId ]);
     }
   },
 
@@ -219,6 +226,7 @@ export default {
       apos.http.post('/api/v1/@apostrophecms/import-export/override-duplicates', {
         body: {
           docIds: this.checked,
+          replaceDocIds: this.replaceDocIds,
           importedAttachments: this.importedAttachments,
           exportPathId: this.exportPathId,
           jobId: this.jobId,
@@ -259,29 +267,25 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+/* stylelint-disable declaration-property-unit-allowed-list */
+/* stylelint-disable time-min-milliseconds */
 .apos-import-duplicate {
   z-index: $z-index-modal;
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 :deep(.apos-modal__inner) {
-  top: auto;
-  right: auto;
-  bottom: auto;
-  left: auto;
+  inset: auto;
   height: auto;
   text-align: left;
 }
 
 :deep(.apos-modal__overlay) {
-  .apos-modal+.apos-export & {
+  .apos-modal.apos-export & {
     display: block;
   }
 }
@@ -302,6 +306,7 @@ export default {
 
 .apos-import-duplicate__heading {
   @include type-title;
+
   line-height: var(--a-line-tall);
   margin: 0;
   text-transform: capitalize;
@@ -309,19 +314,21 @@ export default {
 
 .apos-import-duplicate__description {
   @include type-base;
-  font-size: var(--a-type-large);
-  text-align: left;
-  line-height: var(--a-line-tallest);
+
+  width: calc(100% - 20px);
   margin-top: 15px;
   margin-bottom: 20px;
   padding: 10px;
-  background-color: var(--a-warning-fade);
   color: var(--a-warning-dark);
-  width: calc(100% - 20px);
+  font-size: var(--a-type-large);
+  text-align: left;
+  line-height: var(--a-line-tallest);
+  background-color: var(--a-warning-fade);
 }
 
 .apos-import-duplicate__section {
   @include type-base;
+
   display: flex;
   flex-direction: column;
   align-items: baseline;
@@ -349,8 +356,6 @@ export default {
 // Override button to style it exactly like other checkboxes
 :deep(.apos-toggle) {
   .apos-button {
-    padding: 0;
-    transition: all 0.1s ease-in-out;
     display: inline-flex;
     flex-shrink: 0;
     align-items: center;
@@ -358,14 +363,18 @@ export default {
     justify-content: center;
     width: 12px;
     height: 12px;
-    border-radius: 3px;
+    padding: 0;
     border: 1px solid var(--a-primary);
+    transition: all 0.1s ease-in-out;
+    border-radius: 3px;
     background-color: var(--a-primary);
   }
+
   .apos-button:hover:not([disabled]),
   .apos-button:focus:not([disabled]) {
     transform: none;
   }
+
   .apos-button:focus {
     box-shadow: 0 0 10px var(--a-primary);
   }
@@ -376,13 +385,16 @@ export default {
     border-color: var(--a-base-4);
     background-color: var(--a-base-10);
   }
+
   .apos-button:hover {
     border-color: var(--a-base-2);
   }
+
   .apos-button:focus {
     outline: none;
     box-shadow: 0 0 5px var(--a-base-1);
   }
+
   .apos-button svg {
     // We need to hide the checkbox-blank-icon svg (wish there were a "blank" svg in the material icons)
     // because it is visible inside the input.
@@ -393,20 +405,20 @@ export default {
 }
 
 .apos-import-duplicate__separator {
-  background-color: var(--a-base-9);
   position: relative;
-  height: 1px;
   width: calc(100% - 10px);
+  height: 1px;
   margin: 10px 0;
+  background-color: var(--a-base-9);
 
-  &:before {
+  &::before {
+    position: absolute;
+    right: 0;
+    left: -30px;
+    width: calc(100% + 60px);
+    height: 100%;
     content: "";
     background-color: var(--a-base-9);
-    position: absolute;
-    height: 100%;
-    width: calc(100% + 60px);
-    left: -30px;
-    right: 0;
   }
 }
 
@@ -416,10 +428,10 @@ export default {
 
 .apos-import-duplicate__btns {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
+  justify-content: space-between;
   width: 100%;
+  margin-top: 10px;
   gap: 20px;
 }
 
