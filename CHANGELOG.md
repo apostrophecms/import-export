@@ -1,10 +1,10 @@
 # Changelog
 
-## UNRELEASED
+## 2.3.0 (2024-08-08)
 
 ### Adds
 
-* Add a scrollbar to the duplicate import modal to handle too many duplicates, and fixed the "Type" column to display the correct document type.
+* Add a scrollbar to the duplicate import modal to handle too many duplicates, and fixed the "Type" column to display the correct document type. Thanks to (Borel Kuomo)(https://github.com/borelkoumo) for this contribution.
 
 ### Fixes
 

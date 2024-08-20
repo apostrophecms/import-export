@@ -33,5 +33,5 @@
   "or": "or",
   "title": "Title",
   "type": "Type",
-  "typeUnknown": "Unknown \"{{ type }}\" type."
+  "typeUnknown": "Type \"{{ type }}\" is not valid."
 }
