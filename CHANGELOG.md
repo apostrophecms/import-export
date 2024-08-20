@@ -19,6 +19,7 @@ It prevents issues when a relationship has not been inserted yet.
 ### Adds
 
 * Adds a `preventUpdateAssets` to the module that will not try to update already existing assets on import.
+* Add export in-Editor context operation for singleton pieces.
 
 ## 2.1.1 (2024-06-21)
 
