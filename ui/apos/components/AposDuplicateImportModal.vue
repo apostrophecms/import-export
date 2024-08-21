@@ -267,8 +267,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-/* stylelint-disable declaration-property-unit-allowed-list */
-/* stylelint-disable time-min-milliseconds */
 .apos-import-duplicate {
   z-index: $z-index-modal;
   position: fixed;
@@ -365,7 +363,7 @@ export default {
     height: 12px;
     padding: 0;
     border: 1px solid var(--a-primary);
-    transition: all 0.1s ease-in-out;
+    transition: all 0.1 ease-in-out;
     border-radius: 3px;
     background-color: var(--a-primary);
   }

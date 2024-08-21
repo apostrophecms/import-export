@@ -288,8 +288,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-/* stylelint-disable declaration-property-unit-allowed-list */
-/* stylelint-disable time-min-milliseconds */
 .apos-export {
   z-index: $z-index-modal;
   position: fixed;
@@ -430,13 +428,13 @@ export default {
 
 .fade-enter-active {
   .apos-export__section-container {
-    animation: expand .3s;
+    animation: expand .3;
   }
 }
 
 .fade-leave-active {
   .apos-export__section-container {
-    animation: expand .3s reverse;
+    animation: expand .3 reverse;
   }
 }
 
