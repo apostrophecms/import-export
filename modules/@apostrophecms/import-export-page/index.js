@@ -21,7 +21,32 @@ module.exports = {
       }
     };
   },
+  batchOperations(self) {
+    if (self.options.importExport?.export === false) {
+      return {};
+    }
 
+    return {
+      add: {
+        'import-export-export-batch': {
+          label: 'aposImportExport:export',
+          messages: {
+            progress: 'aposImportExport:exporting',
+            completed: 'aposImportExport:exported',
+            icon: 'database-export-icon',
+            resultsEventName: 'import-export-export-download'
+          },
+          modal: 'AposExportModal'
+        }
+      },
+      group: {
+        more: {
+          icon: 'dots-vertical-icon',
+          operations: [ 'import-export-export-batch' ]
+        }
+      }
+    };
+  },
   apiRoutes(self) {
     return {
       post: {
@@ -40,6 +65,17 @@ module.exports = {
 
             return self.apos.modules['@apostrophecms/import-export'].export(req, self);
           }
+        },
+        importExportExportBatch(req) {
+          // Add the page type label to req.body for notifications.
+          // Should be done before calling the job's `run` method.
+          req.body.type = req.t(self.options.label);
+
+          return self.apos.modules['@apostrophecms/job'].run(
+            req,
+            (req, reporting) => self.apos.modules['@apostrophecms/import-export']
+              .export(req, self, reporting)
+          );
         }
       }
     };
