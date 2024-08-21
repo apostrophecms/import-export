@@ -27,8 +27,8 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-vue": "^9.19.2",
     "mocha": "^10.2.0",
-    "stylelint": "^15.9.0",
-    "stylelint-config-apostrophe": "^3.0.0",
+    "stylelint": "^16.0.0",
+    "stylelint-config-apostrophe": "^4.1.0",
     "vue-eslint-parser": "^9.3.2"
   },
   "dependencies": {
