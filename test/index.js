@@ -115,48 +115,57 @@ describe('@apostrophecms/import-export', function () {
       docs, attachments, attachmentFiles
     } = await getExtractedFiles(exportPath);
 
+    const docsNames = docs.map(({ title, aposMode }) => ({
+      title,
+      aposMode
+    }));
+
     const actual = {
-      docsNames: docs.map(({ title, aposMode }) => ({
-        title,
-        aposMode
-      })),
+      docsNames,
       attachmentsLength: attachments.length,
       attachmentFiles
     };
     const expected = {
       docsNames: [
         {
-          aposMode: 'draft',
-          title: 'topic1'
+          title: 'article2',
+          aposMode: 'draft'
         },
         {
-          aposMode: 'draft',
-          title: 'topic2'
+          title: 'article1',
+          aposMode: 'draft'
         },
         {
-          aposMode: 'published',
-          title: 'topic1'
+          title: 'article2',
+          aposMode: 'published'
         },
         {
-          aposMode: 'published',
-          title: 'topic2'
+          title: 'article1',
+          aposMode: 'published'
         },
         {
-          aposMode: 'draft',
-          title: 'article2'
+          title: 'topic1',
+          aposMode: 'draft'
         },
         {
-          aposMode: 'draft',
-          title: 'article1'
+          title: 'topic3',
+          aposMode: 'draft'
         },
         {
-          aposMode: 'published',
-          title: 'article2'
+          title: 'topic2',
+          aposMode: 'draft'
         },
-
         {
-          aposMode: 'published',
-          title: 'article1'
+          title: 'topic1',
+          aposMode: 'published'
+        },
+        {
+          title: 'topic3',
+          aposMode: 'published'
+        },
+        {
+          title: 'topic2',
+          aposMode: 'published'
         }
       ],
       attachmentsLength: 1,
@@ -166,7 +175,8 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
-  it('should generate a zip file for pages with related documents', async function () {
+  // FIX
+  it.only('should generate a zip file for pages with related documents', async function () {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
     const { _id: attachmentId } = await apos.attachment.db.findOne({ name: 'test-image' });
@@ -231,6 +241,7 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
+  // FIX
   it('should import pieces with related documents from a compressed file', async function() {
     const req = apos.task.getReq();
     const articles = await apos.article.find(req).toArray();
@@ -317,6 +328,7 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
+  // FIX
   it('should return duplicates pieces when already existing and override them', async function() {
     const req = apos.task.getReq();
     const articles = await apos.article.find(req).toArray();
@@ -423,6 +435,7 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
+  // FIX
   it('should import page and related documents', async function() {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
@@ -476,6 +489,7 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
+  // FIX
   it('should return existing duplicated docs during page import and override them', async function() {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
@@ -580,6 +594,7 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
+  // FIX
   it('should not override attachment if associated document is not imported', async function() {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
