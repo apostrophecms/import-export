@@ -764,6 +764,24 @@ describe('@apostrophecms/import-export', function () {
     }), true, `expected imported docs 'lastPublishedAt' value to be of '${lastPublishedAt}'`);
   });
 
+  it('should get related types of a given doc type', async function() {
+    const req = apos.task.getReq();
+    const relatedTypesArticles = importExportManager.getRelatedTypes(req, apos.article.schema);
+    const relatedTypesTopics = importExportManager.getRelatedTypes(req, apos.topic.schema);
+
+    const actual = {
+      relatedTypesArticles,
+      relatedTypesTopics
+    };
+    const expected = {
+      relatedTypesArticles: [ 'topic', '@apostrophecms/image', '@apostrophecms/image-tag' ],
+      relatedTypesTopics: [ 'topic' ]
+    };
+
+    assert.deepEqual(actual, expected);
+
+  });
+
   describe('#getFirstDifferentLocale', function() {
     it('should find among the docs the first locale that is different from the req one', async function() {
       const req = {
