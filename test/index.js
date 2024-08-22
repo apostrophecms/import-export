@@ -125,6 +125,7 @@ describe('@apostrophecms/import-export', function () {
       attachmentsLength: attachments.length,
       attachmentFiles
     };
+
     const expected = {
       docsNames: [
         {
@@ -175,8 +176,7 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
-  // FIX
-  it.only('should generate a zip file for pages with related documents', async function () {
+  it('should generate a zip file for pages with related documents', async function () {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
     const { _id: attachmentId } = await apos.attachment.db.findOne({ name: 'test-image' });
@@ -211,6 +211,14 @@ describe('@apostrophecms/import-export', function () {
       docsNames: [
         {
           aposMode: 'draft',
+          title: 'page1'
+        },
+        {
+          aposMode: 'published',
+          title: 'page1'
+        },
+        {
+          aposMode: 'draft',
           title: 'image1'
         },
         {
@@ -224,14 +232,6 @@ describe('@apostrophecms/import-export', function () {
         {
           aposMode: 'published',
           title: 'article2'
-        },
-        {
-          aposMode: 'draft',
-          title: 'page1'
-        },
-        {
-          aposMode: 'published',
-          title: 'page1'
         }
       ],
       attachmentsLength: 1,
@@ -241,7 +241,6 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
-  // FIX
   it('should import pieces with related documents from a compressed file', async function() {
     const req = apos.task.getReq();
     const articles = await apos.article.find(req).toArray();
@@ -313,12 +312,12 @@ describe('@apostrophecms/import-export', function () {
           name: 'test-image',
           type: 'attachment'
         } ],
-      docsLength: 8,
+      docsLength: 10,
       docsTitles: [
         'article2', 'article1',
         'article2', 'article1',
-        'topic1', 'topic2',
-        'topic1', 'topic2'
+        'topic1', 'topic3', 'topic2',
+        'topic1', 'topic3', 'topic2'
       ],
       attachmentsNames: [ 'test-image' ],
       attachmentFileNames: new Array(apos.attachment.imageSizes.length + 1)
@@ -328,7 +327,6 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
-  // FIX
   it('should return duplicates pieces when already existing and override them', async function() {
     const req = apos.task.getReq();
     const articles = await apos.article.find(req).toArray();
@@ -377,8 +375,13 @@ describe('@apostrophecms/import-export', function () {
     }
 
     delete req.files;
+
+    // Overrides all docs excepted topic3
+    const docIds = duplicatedDocs
+      .filter((doc) => doc.title !== 'topic3')
+      .map(({ aposDocId }) => aposDocId);
     req.body = {
-      docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
+      docIds,
       importedAttachments,
       exportPathId,
       jobId,
@@ -428,14 +431,13 @@ describe('@apostrophecms/import-export', function () {
         .fill('test-image'),
       job: {
         good: 9,
-        total: 9
+        total: 11
       }
     };
 
     assert.deepEqual(actual, expected);
   });
 
-  // FIX
   it('should import page and related documents', async function() {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
@@ -489,7 +491,6 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
-  // FIX
   it('should return existing duplicated docs during page import and override them', async function() {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
@@ -594,7 +595,6 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
-  // FIX
   it('should not override attachment if associated document is not imported', async function() {
     const req = apos.task.getReq();
     const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
