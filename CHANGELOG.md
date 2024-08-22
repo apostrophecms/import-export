@@ -12,6 +12,7 @@
 * Uses the new method `simulateRelationshipsFromStorage` from core to simulate relationships on data from DB to be able to pass the convert,
 also uses the new option `fetchRelationships: false` on the convert to avoid fetching relationships from the DB.
 It prevents issues when a relationship has not been inserted yet.
+* Requires a duplicate confirmation for existing singleton documents (including parked pages), keeping their original ID's while importing (if the user chooses to do so).
 
 ## 2.2.0 (2024-07-12)
 

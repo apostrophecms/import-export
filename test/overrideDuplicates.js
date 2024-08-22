@@ -147,6 +147,18 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
                 }
               }
             }
+          },
+          '@apostrophecms/page': {
+            options: {
+              park: [
+                {
+                  parkedId: 'search-parked',
+                  slug: '/search',
+                  title: 'Search',
+                  type: '@apostrophecms/search'
+                }
+              ]
+            }
           }
         })
       });
@@ -196,10 +208,12 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
       });
       const [ nonLocalized ] = await apos.doc.db.find({ title: 'nonLocalized1' }).toArray();
       const enArticles = await apos.article.find(req).toArray();
+      const parkedPages = await apos.page.find(req, { parkedId: { $exists: true } }).toArray();
+      const singleton = await apos.global.findGlobal(req);
 
       const failedIds = [];
       const reporting = { failure: () => {} };
-      const enDocs = enArticles.concat([ nonLocalized ]);
+      const enDocs = enArticles.concat([ nonLocalized, singleton ]).concat(parkedPages);
       const enDuplicates = await importExportManager.checkDuplicates(req, {
         reporting,
         docs: enDocs,
@@ -222,17 +236,19 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
       const actual = {
         enDuplicates: [
           enDocs.every((doc) => enDuplicates.duplicatedIds.has(doc.aposDocId)),
-          enDuplicates.duplicatedDocs.length
+          enDuplicates.duplicatedDocs.length,
+          enDuplicates.duplicatedDocs.filter(doc => !!doc.replaceId).length
         ],
         frDuplicates: [
           frDocs.every((doc) => frDuplicates.duplicatedIds.has(doc.aposDocId)),
           frDuplicates.duplicatedIds.has(nonLocalized.aposDocId),
-          frDuplicates.duplicatedDocs.length
+          frDuplicates.duplicatedDocs.length,
+          enDuplicates.duplicatedDocs.filter(doc => !!doc.replaceId).length
         ]
       };
       const expected = {
-        enDuplicates: [ true, 3 ],
-        frDuplicates: [ false, true, 1 ]
+        enDuplicates: [ true, 6, 3 ],
+        frDuplicates: [ false, true, 4, 3 ]
       };
 
       assert.deepStrictEqual(actual, expected);

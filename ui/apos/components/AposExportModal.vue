@@ -291,20 +291,14 @@ export default {
 .apos-export {
   z-index: $z-index-modal;
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 :deep(.apos-modal__inner) {
-  top: auto;
-  right: auto;
-  bottom: auto;
-  left: auto;
+  inset: auto;
   height: auto;
   text-align: left;
 }
@@ -316,8 +310,8 @@ export default {
 }
 
 :deep(.apos-modal__body) {
-  padding: 30px 20px;
   width: 375px;
+  padding: 30px 20px;
 }
 
 :deep(.apos-modal__body-main) {
@@ -337,6 +331,7 @@ export default {
 
 .apos-export__heading {
   @include type-title;
+
   line-height: var(--a-line-tall);
   margin: 0;
   text-transform: capitalize;
@@ -344,14 +339,16 @@ export default {
 
 .apos-export__description {
   @include type-base;
+
+  margin-top: 5px;
   font-size: var(--a-type-large);
   text-align: left;
   line-height: var(--a-line-tallest);
-  margin-top: 5px;
 }
 
 .apos-export__section {
   @include type-base;
+
   display: flex;
   flex-direction: column;
   align-items: baseline;
@@ -364,19 +361,20 @@ export default {
 
 .apos-export__settings {
   @include type-base;
-  font-weight: 600;
-  color: var(--a-base-3);
+
   margin-top: 20px;
+  color: var(--a-base-3);
+  font-weight: 600;
 }
 
 .apos-export__settings-row {
-  font-size: var(--a-type-base);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 70px;
-  height: 43px;
   width: 100%;
+  height: 43px;
+  font-size: var(--a-type-base);
+  gap: 70px;
 }
 
 .apos-export__settings-row--column {
@@ -388,21 +386,21 @@ export default {
 }
 
 .apos-export__separator {
-  background-color: var(--a-base-9);
   position: relative;
-  height: 1px;
   width: calc(100% - 10px);
+  height: 1px;
   margin: 10px 0;
+  background-color: var(--a-base-9);
 }
 
 .apos-export__separator--full-width::before {
+  position: absolute;
+  right: 0;
+  left: -30px;
+  width: calc(100% + 60px);
+  height: 100%;
   content: "";
   background-color: var(--a-base-9);
-  position: absolute;
-  height: 100%;
-  width: calc(100% + 60px);
-  left: -30px;
-  right: 0;
 }
 
 :deep(.apos-schema) .apos-field {
@@ -411,10 +409,10 @@ export default {
 
 .apos-export__btns {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
+  justify-content: space-between;
   width: 100%;
+  margin-top: 10px;
   gap: 20px;
 }
 
@@ -430,12 +428,13 @@ export default {
 
 .fade-enter-active {
   .apos-export__section-container {
-    animation: expand .3s;
+    animation: expand .3;
   }
 }
+
 .fade-leave-active {
   .apos-export__section-container {
-    animation: expand .3s reverse;
+    animation: expand .3 reverse;
   }
 }
 
