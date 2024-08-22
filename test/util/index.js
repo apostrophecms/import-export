@@ -237,7 +237,6 @@ async function insertPiecesAndPages(apos) {
     jar
   });
 
-  console.log('image1', image1);
   await apos.page.insert(req, '_home', 'lastChild', {
     ...pageInstance,
     title: 'page1',
