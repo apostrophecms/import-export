@@ -229,7 +229,7 @@ export default {
       this.relatedTypes = await apos.http.get('/api/v1/@apostrophecms/import-export/related', {
         busy: true,
         qs: {
-          type: this.type
+          types: [ this.type ]
         }
       });
       this.checkedRelatedTypes = this.relatedTypes;
