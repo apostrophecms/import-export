@@ -1,5 +1,12 @@
 # Changelog
 
+## UNRELEASED
+
+### Fixes
+
+* Exported related documents now contain the entier document and not only the projected fields. 
+* The `related` route also returns the related types of the exported documents related documents.
+
 ## 2.3.0 (2024-08-08)
 
 ### Adds
