@@ -120,10 +120,17 @@ describe('@apostrophecms/import-export', function () {
       aposMode
     }));
 
+    const topicsContainNonProjectedFields = docs
+      .filter(({ type }) => type === 'topic')
+      .every(({
+        createdAt, titleSortified, aposLocale
+      }) => createdAt && titleSortified && aposLocale);
+
     const actual = {
       docsNames,
       attachmentsLength: attachments.length,
-      attachmentFiles
+      attachmentFiles,
+      topicsContainNonProjectedFields
     };
 
     const expected = {
@@ -170,7 +177,8 @@ describe('@apostrophecms/import-export', function () {
         }
       ],
       attachmentsLength: 1,
-      attachmentFiles: [ `${attachmentId}-test-image.jpg` ]
+      attachmentFiles: [ `${attachmentId}-test-image.jpg` ],
+      topicsContainNonProjectedFields: true
     };
 
     assert.deepEqual(actual, expected);
