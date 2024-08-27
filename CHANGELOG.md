@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+### Adds
+
+* Singletons can now be imported through `contextOperations` since they have no manager modal and thus, no `utilityOperation` available.
+
 ### Fixes
 
 * Exported related documents now contain the entire document and not only the projected fields. 
