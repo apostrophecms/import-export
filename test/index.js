@@ -115,52 +115,70 @@ describe('@apostrophecms/import-export', function () {
       docs, attachments, attachmentFiles
     } = await getExtractedFiles(exportPath);
 
+    const docsNames = docs.map(({ title, aposMode }) => ({
+      title,
+      aposMode
+    }));
+
+    const topicsContainNonProjectedFields = docs
+      .filter(({ type }) => type === 'topic')
+      .every(({
+        createdAt, titleSortified, aposLocale
+      }) => createdAt && titleSortified && aposLocale);
+
     const actual = {
-      docsNames: docs.map(({ title, aposMode }) => ({
-        title,
-        aposMode
-      })),
+      docsNames,
       attachmentsLength: attachments.length,
-      attachmentFiles
+      attachmentFiles,
+      topicsContainNonProjectedFields
     };
+
     const expected = {
       docsNames: [
         {
-          aposMode: 'draft',
-          title: 'topic1'
+          title: 'article2',
+          aposMode: 'draft'
         },
         {
-          aposMode: 'draft',
-          title: 'topic2'
+          title: 'article1',
+          aposMode: 'draft'
         },
         {
-          aposMode: 'published',
-          title: 'topic1'
+          title: 'article2',
+          aposMode: 'published'
         },
         {
-          aposMode: 'published',
-          title: 'topic2'
+          title: 'article1',
+          aposMode: 'published'
         },
         {
-          aposMode: 'draft',
-          title: 'article2'
+          title: 'topic1',
+          aposMode: 'draft'
         },
         {
-          aposMode: 'draft',
-          title: 'article1'
+          title: 'topic3',
+          aposMode: 'draft'
         },
         {
-          aposMode: 'published',
-          title: 'article2'
+          title: 'topic2',
+          aposMode: 'draft'
         },
-
         {
-          aposMode: 'published',
-          title: 'article1'
+          title: 'topic1',
+          aposMode: 'published'
+        },
+        {
+          title: 'topic3',
+          aposMode: 'published'
+        },
+        {
+          title: 'topic2',
+          aposMode: 'published'
         }
       ],
       attachmentsLength: 1,
-      attachmentFiles: [ `${attachmentId}-test-image.jpg` ]
+      attachmentFiles: [ `${attachmentId}-test-image.jpg` ],
+      topicsContainNonProjectedFields: true
     };
 
     assert.deepEqual(actual, expected);
@@ -201,6 +219,14 @@ describe('@apostrophecms/import-export', function () {
       docsNames: [
         {
           aposMode: 'draft',
+          title: 'page1'
+        },
+        {
+          aposMode: 'published',
+          title: 'page1'
+        },
+        {
+          aposMode: 'draft',
           title: 'image1'
         },
         {
@@ -214,14 +240,6 @@ describe('@apostrophecms/import-export', function () {
         {
           aposMode: 'published',
           title: 'article2'
-        },
-        {
-          aposMode: 'draft',
-          title: 'page1'
-        },
-        {
-          aposMode: 'published',
-          title: 'page1'
         }
       ],
       attachmentsLength: 1,
@@ -302,12 +320,12 @@ describe('@apostrophecms/import-export', function () {
           name: 'test-image',
           type: 'attachment'
         } ],
-      docsLength: 8,
+      docsLength: 10,
       docsTitles: [
         'article2', 'article1',
         'article2', 'article1',
-        'topic1', 'topic2',
-        'topic1', 'topic2'
+        'topic1', 'topic3', 'topic2',
+        'topic1', 'topic3', 'topic2'
       ],
       attachmentsNames: [ 'test-image' ],
       attachmentFileNames: new Array(apos.attachment.imageSizes.length + 1)
@@ -365,8 +383,13 @@ describe('@apostrophecms/import-export', function () {
     }
 
     delete req.files;
+
+    // Overrides all docs excepted topic3
+    const docIds = duplicatedDocs
+      .filter((doc) => doc.title !== 'topic3')
+      .map(({ aposDocId }) => aposDocId);
     req.body = {
-      docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
+      docIds,
       importedAttachments,
       exportPathId,
       jobId,
@@ -416,7 +439,7 @@ describe('@apostrophecms/import-export', function () {
         .fill('test-image'),
       job: {
         good: 9,
-        total: 9
+        total: 11
       }
     };
 
@@ -762,6 +785,24 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(updatedPage.every((doc) => {
       return String(doc.lastPublishedAt) === String(lastPublishedAt);
     }), true, `expected imported docs 'lastPublishedAt' value to be of '${lastPublishedAt}'`);
+  });
+
+  it('should get related types of a given doc type', async function() {
+    const req = apos.task.getReq();
+    const relatedTypesArticles = importExportManager.getRelatedTypes(req, apos.article.schema);
+    const relatedTypesTopics = importExportManager.getRelatedTypes(req, apos.topic.schema);
+
+    const actual = {
+      relatedTypesArticles,
+      relatedTypesTopics
+    };
+    const expected = {
+      relatedTypesArticles: [ 'topic', '@apostrophecms/image', '@apostrophecms/image-tag' ],
+      relatedTypesTopics: [ 'topic' ]
+    };
+
+    assert.deepEqual(actual, expected);
+
   });
 
   describe('#getFirstDifferentLocale', function() {
