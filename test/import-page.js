@@ -161,6 +161,7 @@ describe('@apostrophecms/import-export:import-page', function () {
       )
       .toArray();
 
+    // export
     const exportReq = apos.task.getReq({
       body: {
         _ids: ids.map(({ _id }) => _id),
@@ -173,6 +174,10 @@ describe('@apostrophecms/import-export:import-page', function () {
     const fileName = path.basename(url);
     const exportFilePath = path.join(exportsPath, fileName);
 
+    // cleanup
+    await apos.doc.db.deleteMany({ type: 'test-page' });
+
+    // import
     const mimeType = apos.modules['@apostrophecms/import-export'].formats.gzip.allowedTypes.at(0);
     const importReq = apos.task.getReq({
       body: {},
