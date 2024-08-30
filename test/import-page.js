@@ -270,7 +270,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           lowSearchText: importedDocs.at(1).lowSearchText,
           metaType: 'doc',
           orphan: false,
-          path: `${homeDraft.aposDocId}/${importedDocs.at(1).aposDocId}`,
+          path: `${homePublished.aposDocId}/${importedDocs.at(1).aposDocId}`,
           parked: null,
           parkedId: null,
           rank: 1,
@@ -350,7 +350,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           lowSearchText: importedDocs.at(3).lowSearchText,
           metaType: 'doc',
           orphan: false,
-          path: `${homeDraft.aposDocId}/${importedDocs.at(1).aposDocId}/${importedDocs.at(3).aposDocId}`,
+          path: `${homePublished.aposDocId}/${importedDocs.at(1).aposDocId}/${importedDocs.at(3).aposDocId}`,
           parked: null,
           parkedId: null,
           rank: 1,
@@ -366,19 +366,15 @@ describe('@apostrophecms/import-export:import-page', function () {
             username: null
           },
           visibility: 'public'
-        },
+        }
       ]
     };
 
-    // assert.deepEqual(actual, expected);
-    assert.deepEqual(
-        actual.docs.slice(0, 4),
-      expected.docs.slice(0, 4),
-    );
+    assert.deepEqual(actual, expected);
   });
 
   // TODO: re-import same tarball twice
-  it('should import pages from same tarball twice without issues', async function () {
+  it.skip('should import pages from same tarball twice without issues', async function () {
     const actual = {};
     const expected = {};
 
