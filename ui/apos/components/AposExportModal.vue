@@ -149,6 +149,10 @@ export default {
       type: Array,
       default: () => []
     },
+    checkedTypes: {
+      type: Array,
+      default: () => []
+    },
     doc: {
       type: Object,
       default: null
@@ -204,6 +208,11 @@ export default {
         label: format.label,
         value: format.name
       }));
+    },
+    checkedTypesComputed() {
+      return this.moduleName === '@apostrophecms/page' && !this.type
+        ? this.checkedTypes
+        : [ this.type ];
     }
   },
 
@@ -229,7 +238,7 @@ export default {
       this.relatedTypes = await apos.http.get('/api/v1/@apostrophecms/import-export/related', {
         busy: true,
         qs: {
-          types: [ this.type ]
+          types: this.checkedTypesComputed
         }
       });
       this.checkedRelatedTypes = this.relatedTypes;
