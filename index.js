@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const handlers = require('./lib/handlers');
 const methods = require('./lib/methods');
 const apiRoutes = require('./lib/apiRoutes');
 const formats = require('./lib/formats');
@@ -28,6 +29,7 @@ module.exports = {
 
     self.enableBrowserData();
   },
+  handlers,
   methods,
   apiRoutes
 };

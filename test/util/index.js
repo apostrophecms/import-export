@@ -73,7 +73,24 @@ function getAppConfig(modules = {}) {
           _topics: {
             label: 'Topics',
             type: 'relationship',
-            withType: 'topic'
+            withType: 'topic',
+            builders: {
+              project: {
+                title: 1,
+                image: 1,
+                main: 1,
+                aposMode: 1
+              }
+            }
+          },
+          main: {
+            label: '',
+            type: 'area',
+            options: {
+              widgets: {
+                '@apostrophecms/image': {}
+              }
+            }
           }
         }
       }
