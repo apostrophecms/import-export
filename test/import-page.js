@@ -1,26 +1,30 @@
 const assert = require('assert').strict;
 const path = require('path');
+const fs = require('fs/promises');
 const t = require('apostrophe/test-lib/util.js');
 const { getAppConfig } = require('./util/index.js');
 
-describe('@apostrophecms/import-export:import-page', function () {
-  let apos;
-  let exportsPath;
-
-  this.timeout(t.timeout);
-
-  beforeEach(async function() {
-    await t.destroy(apos);
-
+const server = {
+  start: () => {
     const appConfig = getAppConfig();
-    apos = await t.create({
+
+    return t.create({
       root: module,
       testModule: true,
       modules: {
         ...appConfig,
         '@apostrophecms/page': {
           options: {
-            park: [],
+            park: [
+              {
+                parkedId: 'custom',
+                type: 'custom-page',
+                _defaults: {
+                  slug: '/custom',
+                  title: 'Custom',
+                }
+              }
+            ],
             types: [
               {
                 name: '@apostrophecms/home-page',
@@ -29,16 +33,36 @@ describe('@apostrophecms/import-export:import-page', function () {
               {
                 name: 'test-page',
                 label: 'Test Page'
+              },
+              {
+                name: 'custom-page',
+                label: 'Custom Page'
               }
             ]
           }
+        },
+        'custom-page': {
+          extend: '@apostrophecms/page-type'
         },
         'test-page': {
           extend: '@apostrophecms/page-type'
         }
       }
     });
+  },
+  stop: async (apos) => {
+    await t.destroy(apos);
+  }
+}
+describe('@apostrophecms/import-export:import-page', function () {
+  let apos;
+  let exportsPath;
 
+  this.timeout(t.timeout);
+
+  beforeEach(async function() {
+    await server.stop(apos);
+    apos = await server.start();
     exportsPath = path.join(apos.rootDir, 'public/uploads/exports');
 
     const req = apos.task.getReq({ mode: 'draft' });
@@ -373,19 +397,435 @@ describe('@apostrophecms/import-export:import-page', function () {
     assert.deepEqual(actual, expected);
   });
 
-  // TODO: re-import same tarball twice
-  it.skip('should import pages from same tarball twice without issues', async function () {
-    const actual = {};
-    const expected = {};
+  it('should import pages from same tarball twice without issues', async function () {
+    const req = apos.task.getReq({ mode: 'draft' });
+
+    const manager = apos.page;
+    const ids = await manager
+      .find(
+        req,
+        {
+          title: {
+            $in: [
+              'Level 2 Page 1',
+              'Level 4 Page 1'
+            ]
+          }
+        },
+        {
+          project: {
+            _id: 1
+          }
+        }
+      )
+      .toArray();
+
+    // export
+    const exportReq = apos.task.getReq({
+      body: {
+        _ids: ids.map(({ _id }) => _id),
+        extension: 'gzip',
+        relatedTypes: [ '@apostrophecms/home-page', '@apostrophecms/image', '@apostrophecms/image-tag', 'test-page' ],
+        type: req.t('apostrophe:pages')
+      }
+    });
+    const { url } = await apos.modules['@apostrophecms/import-export'].export(exportReq, manager);
+    const fileName = path.basename(url);
+    const exportFilePath = path.join(exportsPath, fileName);
+    const exportFilePathDuplicate = exportFilePath.concat('-duplicate.tar.gz');
+    await fs.copyFile(exportFilePath, exportFilePathDuplicate);
+
+    // cleanup
+    await apos.doc.db.deleteMany({ type: '@apostrophecms/home-page' });
+    await apos.doc.db.deleteMany({ type: '@apostrophecms/image' });
+    await apos.doc.db.deleteMany({ type: '@apostrophecms/image-tag' });
+    await apos.doc.db.deleteMany({ type: 'custom-page' });
+    await apos.doc.db.deleteMany({ type: 'test-page' });
+    await server.stop(apos);
+    apos = await server.start();
+
+    // import
+    const mimeType = apos.modules['@apostrophecms/import-export'].formats.gzip.allowedTypes.at(0);
+    const importReq = apos.task.getReq({
+      body: {},
+      files: {
+        file: {
+          path: exportFilePath,
+          type: mimeType
+        }
+      }
+    });
+    const importDuplicateReq = apos.task.getReq({
+      body: {},
+      files: {
+        file: {
+          path: exportFilePathDuplicate,
+          type: mimeType
+        }
+      }
+    });
+    await apos.modules['@apostrophecms/import-export'].import(importReq);
+    await apos.modules['@apostrophecms/import-export'].import(importDuplicateReq);
+
+    const importedDocs = await apos.doc.db
+      .find({ type: /@apostrophecms\/image|@apostrophecms\/image-tag|test-page/ })
+      .sort({
+        type: 1,
+        title: 1,
+        aposMode: 1
+      })
+      .toArray();
+    const homeDraft = await apos.page.find(apos.task.getReq({ mode: 'draft' }), { slug: '/' }).toObject();
+    const homePublished = await apos.page.find(apos.task.getReq({ mode: 'published' }), { slug: '/' }).toObject();
+
+    const actual = {
+      docs: importedDocs
+    };
+    const expected = {
+      docs: [
+        {
+          _id: importedDocs.at(0)._id,
+          aposDocId: importedDocs.at(0).aposDocId,
+          aposLocale: 'en:draft',
+          aposMode: 'draft',
+          archived: false,
+          cacheInvalidatedAt: importedDocs.at(0).cacheInvalidatedAt,
+          createdAt: importedDocs.at(0).createdAt,
+          highSearchText: importedDocs.at(0).highSearchText,
+          highSearchWords: [
+            'level',
+            '2',
+            'page',
+            '1',
+            'test',
+            'public'
+          ],
+          lastPublishedAt: importedDocs.at(0).lastPublishedAt,
+          level: 1,
+          lowSearchText: importedDocs.at(0).lowSearchText,
+          metaType: 'doc',
+          modified: false,
+          path: `${homeDraft.aposDocId}/${importedDocs.at(0).aposDocId}`,
+          rank: 0,
+          searchSummary: '',
+          slug: '/level-2-page-1',
+          title: 'Level 2 Page 1',
+          titleSortified: 'level 2 page 1',
+          type: 'test-page',
+          updatedAt: importedDocs.at(0).updatedAt,
+          updatedBy: {
+            _id: null, // TODO: should be my user id
+            title: 'System Task',
+            username: null
+          },
+          visibility: 'public'
+        },
+        {
+          _id: importedDocs.at(1)._id,
+          aposDocId: importedDocs.at(1).aposDocId,
+          aposLocale: 'en:published',
+          aposMode: 'published',
+          archived: false,
+          cacheInvalidatedAt: importedDocs.at(1).cacheInvalidatedAt,
+          createdAt: importedDocs.at(1).createdAt,
+          highSearchText: importedDocs.at(1).highSearchText,
+          highSearchWords: [
+            'level',
+            '2',
+            'page',
+            '1',
+            'test',
+            'public'
+          ],
+          lastPublishedAt: importedDocs.at(1).lastPublishedAt,
+          level: 1,
+          lowSearchText: importedDocs.at(1).lowSearchText,
+          metaType: 'doc',
+          orphan: false,
+          path: `${homePublished.aposDocId}/${importedDocs.at(1).aposDocId}`,
+          parked: null,
+          parkedId: null,
+          rank: 0,
+          searchSummary: '',
+          slug: '/level-2-page-1',
+          title: 'Level 2 Page 1',
+          titleSortified: 'level 2 page 1',
+          type: 'test-page',
+          updatedAt: importedDocs.at(1).updatedAt,
+          updatedBy: {
+            _id: null, // TODO: should be my user id
+            title: 'System Task',
+            username: null
+          },
+          visibility: 'public'
+        },
+        {
+          _id: importedDocs.at(2)._id,
+          aposDocId: importedDocs.at(2).aposDocId,
+          aposLocale: 'en:draft',
+          aposMode: 'draft',
+          archived: false,
+          cacheInvalidatedAt: importedDocs.at(2).cacheInvalidatedAt,
+          createdAt: importedDocs.at(2).createdAt,
+          highSearchText: importedDocs.at(2).highSearchText,
+          highSearchWords: [
+            'level',
+            '4',
+            'page',
+            '1',
+            '2',
+            '3',
+            'test',
+            'public'
+          ],
+          lastPublishedAt: importedDocs.at(2).lastPublishedAt,
+          level: 2,
+          lowSearchText: importedDocs.at(2).lowSearchText,
+          metaType: 'doc',
+          modified: false,
+          path: `${homeDraft.aposDocId}/${importedDocs.at(0).aposDocId}/${importedDocs.at(2).aposDocId}`,
+          rank: 0,
+          searchSummary: '',
+          slug: '/level-2-page-1/level-4-page-1',
+          title: 'Level 4 Page 1',
+          titleSortified: 'level 4 page 1',
+          type: 'test-page',
+          updatedAt: importedDocs.at(2).updatedAt,
+          updatedBy: {
+            _id: null, // TODO: should be my user id
+            title: 'System Task',
+            username: null
+          },
+          visibility: 'public'
+        },
+        {
+          _id: importedDocs.at(3)._id,
+          aposDocId: importedDocs.at(3).aposDocId,
+          aposLocale: 'en:published',
+          aposMode: 'published',
+          archived: false,
+          cacheInvalidatedAt: importedDocs.at(3).cacheInvalidatedAt,
+          createdAt: importedDocs.at(3).createdAt,
+          highSearchText: importedDocs.at(3).highSearchText,
+          highSearchWords: [
+            'level',
+            '4',
+            'page',
+            '1',
+            '2',
+            '3',
+            'test',
+            'public'
+          ],
+          lastPublishedAt: importedDocs.at(3).lastPublishedAt,
+          level: 2,
+          lowSearchText: importedDocs.at(3).lowSearchText,
+          metaType: 'doc',
+          orphan: false,
+          path: `${homePublished.aposDocId}/${importedDocs.at(1).aposDocId}/${importedDocs.at(3).aposDocId}`,
+          parked: null,
+          parkedId: null,
+          rank: 0,
+          searchSummary: '',
+          slug: '/level-2-page-1/level-4-page-1',
+          title: 'Level 4 Page 1',
+          titleSortified: 'level 4 page 1',
+          type: 'test-page',
+          updatedAt: importedDocs.at(3).updatedAt,
+          updatedBy: {
+            _id: null, // TODO: should be my user id
+            title: 'System Task',
+            username: null
+          },
+          visibility: 'public'
+        }
+      ]
+    };
 
     assert.deepEqual(actual, expected);
   });
 
-  // TODO: import pages and sub-pages with existing nested parkedId
-  it.skip('should import pages with existing parkedId and children', async function () {
-    const actual = {};
-    const expected = {};
+  it('should import pages with existing parkedId and children', async function () {
+    const req = apos.task.getReq({ mode: 'draft' });
+
+    const manager = apos.page;
+    const customPage = await manager.find(req, { slug: '/custom' }).toObject();
+    const customLevel2Page1 = await manager.insert(
+      req,
+      customPage._id,
+      'lastChild',
+      {
+        title: 'Custom Level 2 Page 1',
+        type: 'test-page',
+        slug: '/custom/custom-level-2-page-1'
+      }
+    );
+    const customLevel3Page1 = await manager.insert(
+      req,
+      customLevel2Page1._id,
+      'lastChild',
+      {
+        title: 'Custom Level 3 Page 1',
+        type: 'test-page',
+        slug: '/custom/custom-level-2-page-1/custom-level-3-page-1'
+      }
+    );
+    await manager.publish(req, customLevel2Page1);
+    await manager.publish(req, customLevel3Page1);
+
+    const ids = await manager
+      .find(
+        req,
+        {
+          title: {
+            $in: [
+              'Custom Level 3 page 1'
+            ]
+          }
+        },
+        {
+          project: {
+            _id: 1
+          }
+        }
+      )
+      .toArray();
+
+    // export
+    const exportReq = apos.task.getReq({
+      body: {
+        _ids: ids.map(({ _id }) => _id),
+        extension: 'gzip',
+        relatedTypes: [ '@apostrophecms/home-page', '@apostrophecms/image', '@apostrophecms/image-tag', 'custom-page', 'test-page' ],
+        type: req.t('apostrophe:pages')
+      }
+    });
+    const { url } = await apos.modules['@apostrophecms/import-export'].export(exportReq, manager);
+    const fileName = path.basename(url);
+    const exportFilePath = path.join(exportsPath, fileName);
+
+    // cleanup
+    await apos.doc.db.deleteMany({ type: '@apostrophecms/home-page' });
+    await apos.doc.db.deleteMany({ type: '@apostrophecms/image' });
+    await apos.doc.db.deleteMany({ type: '@apostrophecms/image-tag' });
+    await apos.doc.db.deleteMany({ type: 'test-page' });
+    await apos.doc.db.deleteMany({ type: 'custom-page' });
+    await server.stop(apos);
+    apos = await server.start();
+
+    // import
+    const mimeType = apos.modules['@apostrophecms/import-export'].formats.gzip.allowedTypes.at(0);
+    const importReq = apos.task.getReq({
+      body: {},
+      files: {
+        file: {
+          path: exportFilePath,
+          type: mimeType
+        }
+      }
+    });
+    await apos.modules['@apostrophecms/import-export'].import(importReq);
+
+    const importedDocs = await apos.doc.db
+      .find({ type: /@apostrophecms\/image|@apostrophecms\/image-tag|test-page/ })
+      .sort({
+        type: 1,
+        title: 1,
+        aposMode: 1
+      })
+      .toArray();
+    const customDraft = await apos.page.find(apos.task.getReq({ mode: 'draft' }), { slug: '/custom' }).toObject();
+    const customPublished = await apos.page.find(apos.task.getReq({ mode: 'published' }), { slug: '/custom' }).toObject();
+    const homeDraft = await apos.page.find(apos.task.getReq({ mode: 'draft' }), { slug: '/' }).toObject();
+    const homePublished = await apos.page.find(apos.task.getReq({ mode: 'published' }), { slug: '/' }).toObject();
+    console.log({ importedDocs })
+
+    const actual = {
+      docs: importedDocs
+    };
+    const expected = {
+      docs: [
+        {
+          _id: importedDocs.at(0)._id,
+          aposDocId: importedDocs.at(0).aposDocId,
+          aposLocale: 'en:draft',
+          aposMode: 'draft',
+          archived: false,
+          cacheInvalidatedAt: importedDocs.at(0).cacheInvalidatedAt,
+          createdAt: importedDocs.at(0).createdAt,
+          highSearchText: importedDocs.at(0).highSearchText,
+          highSearchWords: [
+            'custom',
+            'level',
+            '3',
+            'page',
+            '1',
+            'test',
+            'public'
+          ],
+          lastPublishedAt: importedDocs.at(0).lastPublishedAt,
+          level: 2,
+          lowSearchText: importedDocs.at(0).lowSearchText,
+          metaType: 'doc',
+          modified: false,
+          path: `${homeDraft.aposDocId}/${customDraft.aposDocId}/${importedDocs.at(0).aposDocId}`,
+          rank: 0,
+          searchSummary: '',
+          slug: '/custom/custom-level-3-page-1',
+          title: 'Custom Level 3 Page 1',
+          titleSortified: 'custom level 3 page 1',
+          type: 'test-page',
+          updatedAt: importedDocs.at(0).updatedAt,
+          updatedBy: {
+            _id: null, // TODO: should be my user id
+            title: 'System Task',
+            username: null
+          },
+          visibility: 'public'
+        },
+        {
+          _id: importedDocs.at(1)._id,
+          aposDocId: importedDocs.at(1).aposDocId,
+          aposLocale: 'en:published',
+          aposMode: 'published',
+          archived: false,
+          cacheInvalidatedAt: importedDocs.at(1).cacheInvalidatedAt,
+          createdAt: importedDocs.at(1).createdAt,
+          highSearchText: importedDocs.at(1).highSearchText,
+          highSearchWords: [
+            'custom',
+            'level',
+            '3',
+            'page',
+            '1',
+            'test',
+            'public'
+          ],
+          lastPublishedAt: importedDocs.at(1).lastPublishedAt,
+          level: 2,
+          lowSearchText: importedDocs.at(1).lowSearchText,
+          metaType: 'doc',
+          orphan: false,
+          path: `${homePublished.aposDocId}/${customPublished.aposDocId}/${importedDocs.at(1).aposDocId}`,
+          parked: null,
+          parkedId: null,
+          rank: 0,
+          searchSummary: '',
+          slug: '/custom/custom-level-3-page-1',
+          title: 'Custom Level 3 Page 1',
+          titleSortified: 'custom level 3 page 1',
+          type: 'test-page',
+          updatedAt: importedDocs.at(1).updatedAt,
+          updatedBy: {
+            _id: null, // TODO: should be my user id
+            title: 'System Task',
+            username: null
+          },
+          visibility: 'public'
+        }
+      ]
+    };
 
     assert.deepEqual(actual, expected);
-  })
+  });
 });
