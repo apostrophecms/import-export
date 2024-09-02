@@ -234,7 +234,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           metaType: 'doc',
           modified: false,
           path: `${homeDraft.aposDocId}/${importedDocs.at(0).aposDocId}`,
-          rank: 1,
+          rank: 0,
           searchSummary: '',
           slug: '/level-2-page-1',
           title: 'Level 2 Page 1',
@@ -273,7 +273,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           path: `${homePublished.aposDocId}/${importedDocs.at(1).aposDocId}`,
           parked: null,
           parkedId: null,
-          rank: 1,
+          rank: 0,
           searchSummary: '',
           slug: '/level-2-page-1',
           title: 'Level 2 Page 1',
@@ -307,12 +307,12 @@ describe('@apostrophecms/import-export:import-page', function () {
             'public'
           ],
           lastPublishedAt: importedDocs.at(2).lastPublishedAt,
-          level: 1,
+          level: 2,
           lowSearchText: importedDocs.at(2).lowSearchText,
           metaType: 'doc',
           modified: false,
           path: `${homeDraft.aposDocId}/${importedDocs.at(0).aposDocId}/${importedDocs.at(2).aposDocId}`,
-          rank: 1,
+          rank: 0,
           searchSummary: '',
           slug: '/level-2-page-1/level-4-page-1',
           title: 'Level 4 Page 1',
@@ -346,14 +346,14 @@ describe('@apostrophecms/import-export:import-page', function () {
             'public'
           ],
           lastPublishedAt: importedDocs.at(3).lastPublishedAt,
-          level: 1,
+          level: 2,
           lowSearchText: importedDocs.at(3).lowSearchText,
           metaType: 'doc',
           orphan: false,
           path: `${homePublished.aposDocId}/${importedDocs.at(1).aposDocId}/${importedDocs.at(3).aposDocId}`,
           parked: null,
           parkedId: null,
-          rank: 1,
+          rank: 0,
           searchSummary: '',
           slug: '/level-2-page-1/level-4-page-1',
           title: 'Level 4 Page 1',
@@ -380,4 +380,12 @@ describe('@apostrophecms/import-export:import-page', function () {
 
     assert.deepEqual(actual, expected);
   });
+
+  // TODO: import pages and sub-pages with existing nested parkedId
+  it.skip('should import pages with existing parkedId and children', async function () {
+    const actual = {};
+    const expected = {};
+
+    assert.deepEqual(actual, expected);
+  })
 });
