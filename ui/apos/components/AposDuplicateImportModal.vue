@@ -226,6 +226,7 @@ export default {
       apos.http.post('/api/v1/@apostrophecms/import-export/override-duplicates', {
         body: {
           docIds: this.checked,
+          duplicatedDocs: this.duplicatedDocs,
           replaceDocIds: this.replaceDocIds,
           importedAttachments: this.importedAttachments,
           exportPathId: this.exportPathId,

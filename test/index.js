@@ -385,8 +385,12 @@ describe('@apostrophecms/import-export', function () {
     delete req.files;
 
     // Overrides all docs excepted topic3
+    const docIds = duplicatedDocs
+      .filter((doc) => doc.title !== 'topic3')
+      .map(({ aposDocId }) => aposDocId);
     req.body = {
-      duplicatedDocs: duplicatedDocs.filter((doc) => doc.title !== 'topic3'),
+      docIds,
+      duplicatedDocs,
       importedAttachments,
       exportPathId,
       jobId,
@@ -547,6 +551,7 @@ describe('@apostrophecms/import-export', function () {
 
     delete req.files;
     req.body = {
+      docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
       duplicatedDocs,
       importedAttachments,
       exportPathId,
@@ -651,7 +656,10 @@ describe('@apostrophecms/import-export', function () {
 
     delete req.files;
     req.body = {
-      duplicatedDocs: duplicatedDocs.filter(({ type }) => type !== '@apostrophecms/image'),
+      docIds: duplicatedDocs
+        .filter(({ type }) => type !== '@apostrophecms/image')
+        .map(({ aposDocId }) => aposDocId),
+      duplicatedDocs,
       importedAttachments,
       exportPathId,
       jobId,
@@ -763,6 +771,7 @@ describe('@apostrophecms/import-export', function () {
     } = await importExportManager.import(req);
 
     req.body = {
+      docIds: duplicatedDocs.map(doc => doc.aposDocId),
       duplicatedDocs,
       importedAttachments,
       exportPathId,

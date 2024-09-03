@@ -747,6 +747,7 @@ describe('@apostrophecms/import-export:import-page', function () {
     } = await apos.modules['@apostrophecms/import-export'].import(importReq);
     const importDuplicateReq = apos.task.getReq({
       body: {
+        docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
         duplicatedDocs,
         importedAttachments,
         exportPathId,
