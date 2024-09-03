@@ -67,9 +67,9 @@ module.exports = {
           }
         },
         importExportExportBatch(req) {
-          // Add the page type label to req.body for notifications.
+          // Add the pages label to req.body for notifications.
           // Should be done before calling the job's `run` method.
-          req.body.type = req.t(self.options.label);
+          req.body.type = req.t('apostrophe:pages');
 
           return self.apos.modules['@apostrophecms/job'].run(
             req,
