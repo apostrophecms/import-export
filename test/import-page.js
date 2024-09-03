@@ -21,7 +21,7 @@ const server = {
                 type: 'custom-page',
                 _defaults: {
                   slug: '/custom',
-                  title: 'Custom',
+                  title: 'Custom'
                 }
               }
             ],
@@ -53,7 +53,8 @@ const server = {
   stop: async (apos) => {
     await t.destroy(apos);
   }
-}
+};
+
 describe('@apostrophecms/import-export:import-page', function () {
   let apos;
   let exportsPath;
@@ -716,7 +717,13 @@ describe('@apostrophecms/import-export:import-page', function () {
 
     const customDraft = await apos.page.find(apos.task.getReq({ mode: 'draft' }), { slug: '/custom' }).toObject();
     const customPublished = await apos.page.find(apos.task.getReq({ mode: 'published' }), { slug: '/custom' }).toObject();
-    const newCustomDraft = await apos.page.update(apos.task.getReq({ mode: 'draft' }), { ...customDraft, title: 'New Custom' });
+    const newCustomDraft = await apos.page.update(
+      apos.task.getReq({ mode: 'draft' }),
+      {
+        ...customDraft,
+        title: 'New Custom'
+      }
+    );
     await apos.page.publish(apos.task.getReq({ mode: 'draft' }), newCustomDraft);
 
     // import
@@ -747,7 +754,7 @@ describe('@apostrophecms/import-export:import-page', function () {
         notificationId,
         formatLabel
       }
-    })
+    });
     await await apos.modules['@apostrophecms/import-export'].overrideDuplicates(importDuplicateReq);
 
     const importedDocs = await apos.doc.db
@@ -758,7 +765,7 @@ describe('@apostrophecms/import-export:import-page', function () {
         aposMode: 1
       })
       .toArray();
-    console.log(importedDocs)
+    console.log(importedDocs);
     const homeDraft = await apos.page.find(apos.task.getReq({ mode: 'draft' }), { slug: '/' }).toObject();
     const homePublished = await apos.page.find(apos.task.getReq({ mode: 'published' }), { slug: '/' }).toObject();
 
