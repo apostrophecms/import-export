@@ -12,7 +12,7 @@
       <AposModalBody>
         <template #bodyMain>
           <h2 class="apos-import__heading">
-            {{ $t('aposImportExport:import', { type: $t(labels.plural) }) }}
+            {{ $t('aposImportExport:import', { type: moduleLabel }) }}
           </h2>
           <!-- eslint-disable vue/no-v-html -->
           <p
@@ -42,7 +42,7 @@
             <AposButton
               class="apos-import__btn"
               icon="apos-import-export-upload-icon"
-              :label="$t('aposImportExport:import', { type: $t(labels.plural) })"
+              :label="$t('aposImportExport:import', { type: moduleLabel })"
               type="primary"
               :disabled="!selectedFile"
               @click="runImport"
@@ -94,6 +94,15 @@ export default {
   },
 
   computed: {
+    moduleLabel() {
+      // Indicates this is an Editor context menu item action.
+      if (this.moduleAction) {
+        return this.$t(this.labels.plural);
+      }
+      // Use the module label, fallback to the plural label (which is most
+      // likely empty).
+      return this.$t(apos.modules[this.moduleName]?.label ?? this.labels.plural);
+    },
     formats() {
       return apos.modules['@apostrophecms/import-export'].formats;
     },
