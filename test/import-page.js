@@ -231,6 +231,20 @@ describe('@apostrophecms/import-export:import-page', function () {
     const homeDraft = await apos.page.find(apos.task.getReq({ mode: 'draft' }), { slug: '/' }).toObject();
     const homePublished = await apos.page.find(apos.task.getReq({ mode: 'published' }), { slug: '/' }).toObject();
 
+    const level1 = await apos.doc.db
+      .find({
+        level: 1
+      })
+      .sort({
+        level: 1,
+        rank: 1,
+        type: 1,
+        title: 1,
+        aposMode: 1
+      })
+      .toArray();
+    console.log(level1)
+
     const actual = {
       docs: importedDocs
     };
@@ -261,7 +275,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           path: `${homeDraft.aposDocId}/${importedDocs.at(0).aposDocId}`,
           rank: 0,
           searchSummary: '',
-          slug: '/level-2-page-1',
+          slug: '/level-1-page-1/level-2-page-1',
           title: 'Level 2 Page 1',
           titleSortified: 'level 2 page 1',
           type: 'test-page',
@@ -300,7 +314,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           parkedId: null,
           rank: 0,
           searchSummary: '',
-          slug: '/level-2-page-1',
+          slug: '/level-1-page-1/level-2-page-1',
           title: 'Level 2 Page 1',
           titleSortified: 'level 2 page 1',
           type: 'test-page',
@@ -339,7 +353,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           path: `${homeDraft.aposDocId}/${importedDocs.at(0).aposDocId}/${importedDocs.at(2).aposDocId}`,
           rank: 0,
           searchSummary: '',
-          slug: '/level-2-page-1/level-4-page-1',
+          slug: '/level-1-page-1/level-2-page-1/level-3-page-1/level-4-page-1',
           title: 'Level 4 Page 1',
           titleSortified: 'level 4 page 1',
           type: 'test-page',
@@ -380,7 +394,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           parkedId: null,
           rank: 0,
           searchSummary: '',
-          slug: '/level-2-page-1/level-4-page-1',
+          slug: '/level-1-page-1/level-2-page-1/level-3-page-1/level-4-page-1',
           title: 'Level 4 Page 1',
           titleSortified: 'level 4 page 1',
           type: 'test-page',
@@ -509,7 +523,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           path: `${homeDraft.aposDocId}/${importedDocs.at(0).aposDocId}`,
           rank: 0,
           searchSummary: '',
-          slug: '/level-2-page-1',
+          slug: '/level-1-page-1/level-2-page-1',
           title: 'Level 2 Page 1',
           titleSortified: 'level 2 page 1',
           type: 'test-page',
@@ -548,7 +562,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           parkedId: null,
           rank: 0,
           searchSummary: '',
-          slug: '/level-2-page-1',
+          slug: '/level-1-page-1/level-2-page-1',
           title: 'Level 2 Page 1',
           titleSortified: 'level 2 page 1',
           type: 'test-page',
@@ -587,7 +601,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           path: `${homeDraft.aposDocId}/${importedDocs.at(0).aposDocId}/${importedDocs.at(2).aposDocId}`,
           rank: 0,
           searchSummary: '',
-          slug: '/level-2-page-1/level-4-page-1',
+          slug: '/level-1-page-1/level-2-page-1/level-3-page-1/level-4-page-1',
           title: 'Level 4 Page 1',
           titleSortified: 'level 4 page 1',
           type: 'test-page',
@@ -628,7 +642,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           parkedId: null,
           rank: 0,
           searchSummary: '',
-          slug: '/level-2-page-1/level-4-page-1',
+          slug: '/level-1-page-1/level-2-page-1/level-3-page-1/level-4-page-1',
           title: 'Level 4 Page 1',
           titleSortified: 'level 4 page 1',
           type: 'test-page',
@@ -646,7 +660,7 @@ describe('@apostrophecms/import-export:import-page', function () {
     assert.deepEqual(actual, expected);
   });
 
-  it.only('should import pages with existing parkedId and children', async function () {
+  it('should import pages with existing parkedId and children', async function () {
     const req = apos.task.getReq({ mode: 'draft' });
 
     const manager = apos.page;
@@ -918,7 +932,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           path: `${homeDraft.aposDocId}/${customDraft.aposDocId}/${importedDocs.at(3).aposDocId}`,
           rank: 2,
           searchSummary: '',
-          slug: '/custom/custom-level-3-page-1',
+          slug: '/custom/custom-level-2-page-1/custom-level-3-page-1',
           title: 'Custom Level 3 Page 1',
           titleSortified: 'custom level 3 page 1',
           type: 'test-page',
@@ -958,7 +972,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           parkedId: null,
           rank: 0,
           searchSummary: '',
-          slug: '/custom/custom-level-3-page-1',
+          slug: '/custom/custom-level-2-page-1/custom-level-3-page-1',
           title: 'Custom Level 3 Page 1',
           titleSortified: 'custom level 3 page 1',
           type: 'test-page',
