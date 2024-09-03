@@ -740,8 +740,7 @@ describe('@apostrophecms/import-export:import-page', function () {
     } = await apos.modules['@apostrophecms/import-export'].import(importReq);
     const importDuplicateReq = apos.task.getReq({
       body: {
-        docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
-        replaceDocIds: duplicatedDocs.map(({ aposDocId, replaceId }) => [ aposDocId, replaceId ]),
+        duplicatedDocs,
         importedAttachments,
         exportPathId,
         jobId,
@@ -759,6 +758,7 @@ describe('@apostrophecms/import-export:import-page', function () {
         aposMode: 1
       })
       .toArray();
+    console.log(importedDocs)
     const homeDraft = await apos.page.find(apos.task.getReq({ mode: 'draft' }), { slug: '/' }).toObject();
     const homePublished = await apos.page.find(apos.task.getReq({ mode: 'published' }), { slug: '/' }).toObject();
 
@@ -965,12 +965,6 @@ describe('@apostrophecms/import-export:import-page', function () {
       ]
     };
 
-    //assert.deepEqual(actual, expected);
-    assert.deepEqual(
-        actual.docs.slice(0, 1),
-      expected.docs.slice(0, 1),
-    );
+    assert.deepEqual(actual, expected);
   });
-
-  // TODO: treat parkedId as duplicate
 });
