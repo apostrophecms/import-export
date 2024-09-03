@@ -57,9 +57,15 @@
 <script>
 export default {
   props: {
+    // The Manager context menu items send moduleAction
     moduleAction: {
       type: String,
-      required: true
+      default: ''
+    },
+    // The Editor context menu items send moduleName
+    moduleName: {
+      type: String,
+      default: ''
     },
     action: {
       type: String,
@@ -100,6 +106,12 @@ export default {
       return this.formats
         .map(format => format.allowedExtension)
         .join(',');
+    },
+    universalModuleAction() {
+      if (this.moduleAction) {
+        return this.moduleAction;
+      }
+      return apos.modules[this.moduleName]?.action;
     }
   },
 
@@ -122,12 +134,20 @@ export default {
     cancel () {
       this.modal.showModal = false;
     },
-    async runImport () {
+    async runImport() {
+      if (!this.universalModuleAction) {
+        console.error('AposImportModal: No module action found');
+        apos.notify('aposImportExport:importFailed', {
+          type: 'danger',
+          dismiss: true
+        });
+        return;
+      }
       const formData = new FormData();
       formData.append('file', this.selectedFile);
 
       apos.bus.$emit('import-export-import-started');
-      apos.http.post(`${this.moduleAction}/${this.action}`, {
+      apos.http.post(`${this.universalModuleAction}/${this.action}`, {
         body: formData
       }).catch(() => {
         apos.notify('aposImportExport:importFailed', {
