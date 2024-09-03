@@ -211,7 +211,7 @@ export default {
     },
     checkedTypesComputed() {
       return this.moduleName === '@apostrophecms/page' && !this.type
-        ? this.checkedTypes
+        ? [ ...new Set(this.checkedTypes) ]
         : [ this.type ];
     }
   },
