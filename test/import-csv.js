@@ -41,13 +41,8 @@ describe('@apostrophecms/import-export:csv', function () {
     attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
     exportsPath = path.join(apos.rootDir, 'public/uploads/exports');
     importExportManager = apos.modules['@apostrophecms/import-export'];
-    const superRemove = importExportManager.remove;
-    importExportManager.remove = async (filepath) => {
-      // need because we fake csv using input instead of a file
-      if (filepath) {
-        await superRemove(filepath);
-      }
-    };
+    importExportManager.removeFromUploadFs = () => {};
+    importExportManager.remove = () => {};
     gzip = importExportManager.formats.gzip;
     mimeType = gzip.allowedTypes[0];
 
