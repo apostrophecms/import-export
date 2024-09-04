@@ -49,6 +49,7 @@ describe('@apostrophecms/import-export', function () {
     exportsPath = path.join(apos.rootDir, 'public/uploads/exports');
     importExportManager = apos.modules['@apostrophecms/import-export'];
     importExportManager.removeFromUploadFs = () => {};
+    importExportManager.remove = () => {};
     gzip = importExportManager.formats.gzip;
     mimeType = gzip.allowedTypes[0];
 
