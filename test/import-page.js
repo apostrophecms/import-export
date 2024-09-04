@@ -46,6 +46,15 @@ const server = {
         },
         'test-page': {
           extend: '@apostrophecms/page-type'
+        },
+        '@apostrophecms/import-export': {
+          options: {
+            importExport: {
+              export: {
+                expiration: 10 * 1000
+              }
+            }
+          }
         }
       }
     });
@@ -58,13 +67,14 @@ const server = {
 describe('@apostrophecms/import-export:import-page', function () {
   let apos;
   let exportsPath;
+  let tempPath;
 
   this.timeout(t.timeout);
 
   beforeEach(async function() {
-    await server.stop(apos);
     apos = await server.start();
     exportsPath = path.join(apos.rootDir, 'public/uploads/exports');
+    tempPath = path.join(apos.rootDir, 'data/temp/uploadfs');
 
     const req = apos.task.getReq({ mode: 'draft' });
 
@@ -167,6 +177,8 @@ describe('@apostrophecms/import-export:import-page', function () {
     await apos.doc.db.deleteMany({ type: '@apostrophecms/image-tag' });
     await apos.doc.db.deleteMany({ type: 'custom-page' });
     await apos.doc.db.deleteMany({ type: 'test-page' });
+
+    await server.stop(apos);
   });
 
   it('should import pages', async function () {
@@ -204,6 +216,8 @@ describe('@apostrophecms/import-export:import-page', function () {
     const { url } = await apos.modules['@apostrophecms/import-export'].export(exportReq, manager);
     const fileName = path.basename(url);
     const exportFilePath = path.join(exportsPath, fileName);
+    const importFilePath = path.join(tempPath, fileName);
+    await fs.copyFile(exportFilePath, importFilePath);
 
     // cleanup
     await apos.doc.db.deleteMany({ type: '@apostrophecms/archive-page' });
@@ -221,7 +235,7 @@ describe('@apostrophecms/import-export:import-page', function () {
       body: {},
       files: {
         file: {
-          path: exportFilePath,
+          path: importFilePath,
           type: mimeType
         }
       }
@@ -441,8 +455,10 @@ describe('@apostrophecms/import-export:import-page', function () {
     const { url } = await apos.modules['@apostrophecms/import-export'].export(exportReq, manager);
     const fileName = path.basename(url);
     const exportFilePath = path.join(exportsPath, fileName);
-    const exportFilePathDuplicate = exportFilePath.concat('-duplicate.tar.gz');
-    await fs.copyFile(exportFilePath, exportFilePathDuplicate);
+    const importFilePath = path.join(tempPath, fileName);
+    const importFilePathDuplicate = importFilePath.concat('-duplicate.tar.gz');
+    await fs.copyFile(exportFilePath, importFilePath);
+    await fs.copyFile(exportFilePath, importFilePathDuplicate);
 
     // cleanup
     await apos.doc.db.deleteMany({ type: '@apostrophecms/archive-page' });
@@ -460,7 +476,7 @@ describe('@apostrophecms/import-export:import-page', function () {
       body: {},
       files: {
         file: {
-          path: exportFilePath,
+          path: importFilePath,
           type: mimeType
         }
       }
@@ -469,7 +485,7 @@ describe('@apostrophecms/import-export:import-page', function () {
       body: {},
       files: {
         file: {
-          path: exportFilePathDuplicate,
+          path: importFilePathDuplicate,
           type: mimeType
         }
       }
@@ -714,6 +730,8 @@ describe('@apostrophecms/import-export:import-page', function () {
     const { url } = await apos.modules['@apostrophecms/import-export'].export(exportReq, manager);
     const fileName = path.basename(url);
     const exportFilePath = path.join(exportsPath, fileName);
+    const importFilePath = path.join(tempPath, fileName);
+    await fs.copyFile(exportFilePath, importFilePath);
 
     // cleanup
     await apos.doc.db.deleteMany({ type: '@apostrophecms/archive-page' });
@@ -742,7 +760,7 @@ describe('@apostrophecms/import-export:import-page', function () {
       body: {},
       files: {
         file: {
-          path: exportFilePath,
+          path: importFilePath,
           type: mimeType
         }
       }
