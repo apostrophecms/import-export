@@ -8,7 +8,7 @@
     "stylelint": "stylelint ui/**/*.{scss,vue}",
     "lint": "npm run eslint && npm run stylelint",
     "mocha": "mocha",
-    "test": "npm run lint && npm run mocha --ignore=test/import-page.js && npm run mocha test/import-page.js"
+    "test": "npm run lint && mocha --ignore=test/import-page.js && mocha test/import-page.js"
   },
   "repository": {
     "type": "git",
