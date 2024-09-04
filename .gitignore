@@ -9,3 +9,5 @@ node_modules
 
 # vim swp files
 .*.sw*
+/test/public/uploads
+/test/public/exports
