@@ -161,8 +161,11 @@ describe('@apostrophecms/import-export:import-page', function () {
   });
 
   afterEach(async function() {
+    await apos.doc.db.deleteMany({ type: '@apostrophecms/archive-page' });
+    await apos.doc.db.deleteMany({ type: '@apostrophecms/home-page' });
     await apos.doc.db.deleteMany({ type: '@apostrophecms/image' });
     await apos.doc.db.deleteMany({ type: '@apostrophecms/image-tag' });
+    await apos.doc.db.deleteMany({ type: 'custom-page' });
     await apos.doc.db.deleteMany({ type: 'test-page' });
   });
 
@@ -203,9 +206,14 @@ describe('@apostrophecms/import-export:import-page', function () {
     const exportFilePath = path.join(exportsPath, fileName);
 
     // cleanup
+    await apos.doc.db.deleteMany({ type: '@apostrophecms/archive-page' });
+    await apos.doc.db.deleteMany({ type: '@apostrophecms/home-page' });
     await apos.doc.db.deleteMany({ type: '@apostrophecms/image' });
     await apos.doc.db.deleteMany({ type: '@apostrophecms/image-tag' });
+    await apos.doc.db.deleteMany({ type: 'custom-page' });
     await apos.doc.db.deleteMany({ type: 'test-page' });
+    await server.stop(apos);
+    apos = await server.start();
 
     // import
     const mimeType = apos.modules['@apostrophecms/import-export'].formats.gzip.allowedTypes.at(0);
@@ -230,20 +238,6 @@ describe('@apostrophecms/import-export:import-page', function () {
       .toArray();
     const homeDraft = await apos.page.find(apos.task.getReq({ mode: 'draft' }), { slug: '/' }).toObject();
     const homePublished = await apos.page.find(apos.task.getReq({ mode: 'published' }), { slug: '/' }).toObject();
-
-    const level1 = await apos.doc.db
-      .find({
-        level: 1
-      })
-      .sort({
-        level: 1,
-        rank: 1,
-        type: 1,
-        title: 1,
-        aposMode: 1
-      })
-      .toArray();
-    console.log(level1)
 
     const actual = {
       docs: importedDocs
@@ -273,7 +267,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           metaType: 'doc',
           modified: false,
           path: `${homeDraft.aposDocId}/${importedDocs.at(0).aposDocId}`,
-          rank: 0,
+          rank: 1,
           searchSummary: '',
           slug: '/level-1-page-1/level-2-page-1',
           title: 'Level 2 Page 1',
@@ -312,7 +306,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           path: `${homePublished.aposDocId}/${importedDocs.at(1).aposDocId}`,
           parked: null,
           parkedId: null,
-          rank: 0,
+          rank: 1,
           searchSummary: '',
           slug: '/level-1-page-1/level-2-page-1',
           title: 'Level 2 Page 1',
@@ -451,6 +445,7 @@ describe('@apostrophecms/import-export:import-page', function () {
     await fs.copyFile(exportFilePath, exportFilePathDuplicate);
 
     // cleanup
+    await apos.doc.db.deleteMany({ type: '@apostrophecms/archive-page' });
     await apos.doc.db.deleteMany({ type: '@apostrophecms/home-page' });
     await apos.doc.db.deleteMany({ type: '@apostrophecms/image' });
     await apos.doc.db.deleteMany({ type: '@apostrophecms/image-tag' });
@@ -521,7 +516,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           metaType: 'doc',
           modified: false,
           path: `${homeDraft.aposDocId}/${importedDocs.at(0).aposDocId}`,
-          rank: 0,
+          rank: 1,
           searchSummary: '',
           slug: '/level-1-page-1/level-2-page-1',
           title: 'Level 2 Page 1',
@@ -560,7 +555,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           path: `${homePublished.aposDocId}/${importedDocs.at(1).aposDocId}`,
           parked: null,
           parkedId: null,
-          rank: 0,
+          rank: 1,
           searchSummary: '',
           slug: '/level-1-page-1/level-2-page-1',
           title: 'Level 2 Page 1',
@@ -721,11 +716,12 @@ describe('@apostrophecms/import-export:import-page', function () {
     const exportFilePath = path.join(exportsPath, fileName);
 
     // cleanup
+    await apos.doc.db.deleteMany({ type: '@apostrophecms/archive-page' });
     await apos.doc.db.deleteMany({ type: '@apostrophecms/home-page' });
     await apos.doc.db.deleteMany({ type: '@apostrophecms/image' });
     await apos.doc.db.deleteMany({ type: '@apostrophecms/image-tag' });
-    await apos.doc.db.deleteMany({ type: 'test-page' });
     await apos.doc.db.deleteMany({ type: 'custom-page' });
+    await apos.doc.db.deleteMany({ type: 'test-page' });
     await server.stop(apos);
     apos = await server.start();
 
@@ -759,10 +755,14 @@ describe('@apostrophecms/import-export:import-page', function () {
       notificationId,
       formatLabel
     } = await apos.modules['@apostrophecms/import-export'].import(importReq);
+    const replaceDocIds = duplicatedDocs
+      .filter(({ replaceId }) => replaceId)
+      .map(({ aposDocId, replaceId }) => ([ aposDocId, replaceId ]));
     const importDuplicateReq = apos.task.getReq({
       body: {
         docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
         duplicatedDocs,
+        replaceDocIds,
         importedAttachments,
         exportPathId,
         jobId,
@@ -780,7 +780,6 @@ describe('@apostrophecms/import-export:import-page', function () {
         aposMode: 1
       })
       .toArray();
-    console.log(importedDocs);
     const homeDraft = await apos.page.find(apos.task.getReq({ mode: 'draft' }), { slug: '/' }).toObject();
     const homePublished = await apos.page.find(apos.task.getReq({ mode: 'published' }), { slug: '/' }).toObject();
 
@@ -807,6 +806,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           level: 1,
           lowSearchText: importedDocs.at(0).lowSearchText,
           metaType: 'doc',
+          modified: false,
           orphan: false,
           parked: [
             'parkedId',
@@ -921,6 +921,7 @@ describe('@apostrophecms/import-export:import-page', function () {
             '3',
             'page',
             '1',
+            '2',
             'test',
             'public'
           ],
@@ -930,7 +931,7 @@ describe('@apostrophecms/import-export:import-page', function () {
           metaType: 'doc',
           modified: false,
           path: `${homeDraft.aposDocId}/${customDraft.aposDocId}/${importedDocs.at(3).aposDocId}`,
-          rank: 2,
+          rank: 0,
           searchSummary: '',
           slug: '/custom/custom-level-2-page-1/custom-level-3-page-1',
           title: 'Custom Level 3 Page 1',
@@ -959,6 +960,7 @@ describe('@apostrophecms/import-export:import-page', function () {
             '3',
             'page',
             '1',
+            '2',
             'test',
             'public'
           ],
