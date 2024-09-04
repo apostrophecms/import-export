@@ -773,14 +773,10 @@ describe('@apostrophecms/import-export:import-page', function () {
       notificationId,
       formatLabel
     } = await apos.modules['@apostrophecms/import-export'].import(importReq);
-    const replaceDocIds = duplicatedDocs
-      .filter(({ replaceId }) => replaceId)
-      .map(({ aposDocId, replaceId }) => ([ aposDocId, replaceId ]));
     const importDuplicateReq = apos.task.getReq({
       body: {
         docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
         duplicatedDocs,
-        replaceDocIds,
         importedAttachments,
         exportPathId,
         jobId,
