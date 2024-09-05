@@ -1,16 +1,20 @@
 # Changelog
 
-## UNRELEASED
+## 2.4.0 (2024-09-05)
 
 ### Adds
 
-* Singletons can now be imported through `contextOperations` since they have no manager modal and thus, no `utilityOperation` available.
+* Singletons can now be imported through `contextOperations` since they have no manager modal and thus no `utilityOperation` available.
 * Pages can be exported via an Export batch operation.
 
 ### Fixes
 
 * Exported related documents now contain the entire document and not only the projected fields. 
 * The `related` route also returns the related types of the exported documents related documents.
+* Greatly improved performance when imports involve attachments that already exist on the target site.
+* Cropped images are imported properly.
+* Page tree relationships are maintained.
+* In general: many fixes to bring this module up to speed for use cases that involve selecting multiple documents.
 
 ## 2.3.0 (2024-08-08)
 
