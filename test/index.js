@@ -434,9 +434,9 @@ describe('@apostrophecms/import-export', function () {
         'topic2',
         'topic1'
       ],
-      attachmentNames: [ 'test-image' ],
+      attachmentNames: [ 'new-name' ],
       attachmentFileNames: new Array(apos.attachment.imageSizes.length + 1)
-        .fill('test-image'),
+        .fill('new-name'),
       job: {
         good: 9,
         total: 11
@@ -591,9 +591,9 @@ describe('@apostrophecms/import-export', function () {
         'page1',
         'page1'
       ],
-      attachmentNames: [ 'test-image' ],
+      attachmentNames: [ 'new-name' ],
       attachmentFileNames: new Array(apos.attachment.imageSizes.length + 1)
-        .fill('test-image'),
+        .fill('new-name'),
       job: {
         good: 7,
         total: 7
