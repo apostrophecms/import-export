@@ -5,6 +5,7 @@
 ### Adds
 
 * Singletons can now be imported through `contextOperations` since they have no manager modal and thus, no `utilityOperation` available.
+* Pages can be exported via an Export batch operation.
 
 ### Fixes
 

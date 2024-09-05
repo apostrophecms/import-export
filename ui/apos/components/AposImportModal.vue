@@ -12,7 +12,7 @@
       <AposModalBody>
         <template #bodyMain>
           <h2 class="apos-import__heading">
-            {{ $t('aposImportExport:import', { type: $t(labels.plural) }) }}
+            {{ $t('aposImportExport:import', { type: moduleLabel }) }}
           </h2>
           <!-- eslint-disable vue/no-v-html -->
           <p
@@ -42,7 +42,7 @@
             <AposButton
               class="apos-import__btn"
               icon="apos-import-export-upload-icon"
-              :label="$t('aposImportExport:import', { type: $t(labels.plural) })"
+              :label="$t('aposImportExport:import', { type: moduleLabel })"
               type="primary"
               :disabled="!selectedFile"
               @click="runImport"
@@ -57,9 +57,15 @@
 <script>
 export default {
   props: {
+    // The Manager context menu items send moduleAction
     moduleAction: {
       type: String,
-      required: true
+      default: ''
+    },
+    // The Editor context menu items send moduleName
+    moduleName: {
+      type: String,
+      default: ''
     },
     action: {
       type: String,
@@ -88,6 +94,15 @@ export default {
   },
 
   computed: {
+    moduleLabel() {
+      // Indicates this is an Editor context menu item action.
+      if (this.moduleAction) {
+        return this.$t(this.labels.plural);
+      }
+      // Use the module label, fallback to the plural label (which is most
+      // likely empty).
+      return this.$t(apos.modules[this.moduleName]?.label ?? this.labels.plural);
+    },
     formats() {
       return apos.modules['@apostrophecms/import-export'].formats;
     },
@@ -100,6 +115,12 @@ export default {
       return this.formats
         .map(format => format.allowedExtension)
         .join(',');
+    },
+    universalModuleAction() {
+      if (this.moduleAction) {
+        return this.moduleAction;
+      }
+      return apos.modules[this.moduleName]?.action;
     }
   },
 
@@ -122,12 +143,20 @@ export default {
     cancel () {
       this.modal.showModal = false;
     },
-    async runImport () {
+    async runImport() {
+      if (!this.universalModuleAction) {
+        console.error('AposImportModal: No module action found');
+        apos.notify('aposImportExport:importFailed', {
+          type: 'danger',
+          dismiss: true
+        });
+        return;
+      }
       const formData = new FormData();
       formData.append('file', this.selectedFile);
 
       apos.bus.$emit('import-export-import-started');
-      apos.http.post(`${this.moduleAction}/${this.action}`, {
+      apos.http.post(`${this.universalModuleAction}/${this.action}`, {
         body: formData
       }).catch(() => {
         apos.notify('aposImportExport:importFailed', {
