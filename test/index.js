@@ -30,7 +30,18 @@ describe('@apostrophecms/import-export', function () {
     apos = await t.create({
       root: module,
       testModule: true,
-      modules: getAppConfig()
+      modules: {
+        ...getAppConfig(),
+        '@apostrophecms/import-export': {
+          options: {
+            importExport: {
+              export: {
+                expiration: 10 * 1000
+              }
+            }
+          }
+        }
+      }
     });
 
     tempPath = path.join(apos.rootDir, 'data/temp/uploadfs');
@@ -56,7 +67,7 @@ describe('@apostrophecms/import-export', function () {
   afterEach(async function() {
     await deletePiecesAndPages(apos);
     await deleteAttachments(apos, attachmentPath);
-    await cleanData([ tempPath, exportsPath, attachmentPath ]);
+    await cleanData([ tempPath, exportsPath ]);
   });
 
   it('should generate a zip file for pieces without related documents', async function () {
@@ -263,8 +274,9 @@ describe('@apostrophecms/import-export', function () {
 
     const { url } = await importExportManager.export(req, manager);
     const fileName = path.basename(url);
-
-    piecesTgzPath = path.join(exportsPath, fileName);
+    const exportFilePath = path.join(exportsPath, fileName);
+    const importFilePath = path.join(tempPath, fileName);
+    await fs.copyFile(exportFilePath, importFilePath);
 
     await deletePiecesAndPages(apos);
     await deleteAttachments(apos, attachmentPath);
@@ -272,7 +284,7 @@ describe('@apostrophecms/import-export', function () {
     req.body = {};
     req.files = {
       file: {
-        path: piecesTgzPath,
+        path: importFilePath,
         type: mimeType
       }
     };
@@ -349,13 +361,14 @@ describe('@apostrophecms/import-export', function () {
 
     const { url } = await importExportManager.export(req, manager);
     const fileName = path.basename(url);
-
-    piecesTgzPath = path.join(exportsPath, fileName);
+    const exportFilePath = path.join(exportsPath, fileName);
+    const importFilePath = path.join(tempPath, fileName);
+    await fs.copyFile(exportFilePath, importFilePath);
 
     req.body = {};
     req.files = {
       file: {
-        path: piecesTgzPath,
+        path: importFilePath,
         type: mimeType
       }
     };
@@ -390,6 +403,7 @@ describe('@apostrophecms/import-export', function () {
       .map(({ aposDocId }) => aposDocId);
     req.body = {
       docIds,
+      duplicatedDocs,
       importedAttachments,
       exportPathId,
       jobId,
@@ -459,8 +473,9 @@ describe('@apostrophecms/import-export', function () {
 
     const { url } = await importExportManager.export(req, apos.page);
     const fileName = path.basename(url);
-
-    pageTgzPath = path.join(exportsPath, fileName);
+    const exportFilePath = path.join(exportsPath, fileName);
+    const importFilePath = path.join(tempPath, fileName);
+    await fs.copyFile(exportFilePath, importFilePath);
 
     await deletePiecesAndPages(apos);
     await deleteAttachments(apos, attachmentPath);
@@ -468,7 +483,7 @@ describe('@apostrophecms/import-export', function () {
     req.body = {};
     req.files = {
       file: {
-        path: pageTgzPath,
+        path: importFilePath,
         type: mimeType
       }
     };
@@ -512,13 +527,14 @@ describe('@apostrophecms/import-export', function () {
 
     const { url } = await importExportManager.export(req, apos.page);
     const fileName = path.basename(url);
-
-    pageTgzPath = path.join(exportsPath, fileName);
+    const exportFilePath = path.join(exportsPath, fileName);
+    const importFilePath = path.join(tempPath, fileName);
+    await fs.copyFile(exportFilePath, importFilePath);
 
     req.body = {};
     req.files = {
       file: {
-        path: pageTgzPath,
+        path: importFilePath,
         type: mimeType
       }
     };
@@ -551,6 +567,7 @@ describe('@apostrophecms/import-export', function () {
     delete req.files;
     req.body = {
       docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
+      duplicatedDocs,
       importedAttachments,
       exportPathId,
       jobId,
@@ -616,13 +633,14 @@ describe('@apostrophecms/import-export', function () {
 
     const { url } = await importExportManager.export(req, apos.page);
     const fileName = path.basename(url);
-
-    pageTgzPath = path.join(exportsPath, fileName);
+    const exportFilePath = path.join(exportsPath, fileName);
+    const importFilePath = path.join(tempPath, fileName);
+    await fs.copyFile(exportFilePath, importFilePath);
 
     req.body = {};
     req.files = {
       file: {
-        path: pageTgzPath,
+        path: importFilePath,
         type: mimeType
       }
     };
@@ -657,6 +675,7 @@ describe('@apostrophecms/import-export', function () {
       docIds: duplicatedDocs
         .filter(({ type }) => type !== '@apostrophecms/image')
         .map(({ aposDocId }) => aposDocId),
+      duplicatedDocs,
       importedAttachments,
       exportPathId,
       jobId,
@@ -743,8 +762,9 @@ describe('@apostrophecms/import-export', function () {
 
     const { url } = await importExportManager.export(req, apos.page);
     const fileName = path.basename(url);
-
-    pageTgzPath = path.join(exportsPath, fileName);
+    const exportFilePath = path.join(exportsPath, fileName);
+    const importFilePath = path.join(tempPath, fileName);
+    await fs.copyFile(exportFilePath, importFilePath);
 
     // Now that it's exported as draft, PUBLISH the page again
     const { lastPublishedAt } = await apos.page.publish(req, draftPage);
@@ -753,7 +773,7 @@ describe('@apostrophecms/import-export', function () {
     req.body = {};
     req.files = {
       file: {
-        path: pageTgzPath,
+        path: importFilePath,
         type: mimeType
       }
     };
@@ -769,6 +789,7 @@ describe('@apostrophecms/import-export', function () {
 
     req.body = {
       docIds: duplicatedDocs.map(doc => doc.aposDocId),
+      duplicatedDocs,
       importedAttachments,
       exportPathId,
       jobId,
@@ -895,25 +916,25 @@ describe('@apostrophecms/import-export', function () {
   });
 
   describe('#import - man-made CSV file', function() {
-    let req;
     let notify;
     let input;
     let csv;
+
+    const getImportReq = () => apos.task.getReq({
+      locale: 'en',
+      body: {},
+      files: {
+        file: {
+          path: null,
+          type: mimeType
+        }
+      }
+    });
 
     this.beforeEach(async function() {
       csv = importExportManager.formats.csv;
       mimeType = csv.allowedTypes[0];
 
-      req = apos.task.getReq({
-        locale: 'en',
-        body: {},
-        files: {
-          file: {
-            path: '/some/path/to/file',
-            type: mimeType
-          }
-        }
-      });
       notify = apos.notify;
       input = csv.input;
 
@@ -946,7 +967,7 @@ describe('@apostrophecms/import-export', function () {
         return notify(req, message, options);
       };
 
-      await importExportManager.import(req);
+      await importExportManager.import(getImportReq());
 
       assert.equal(messages.some(message => message === 'aposImportExport:typeUnknown'), true);
     });
@@ -972,7 +993,7 @@ describe('@apostrophecms/import-export', function () {
         return notify(req, message, options);
       };
 
-      await importExportManager.import(req);
+      await importExportManager.import(getImportReq());
 
       assert.equal(messages.some(message => message === 'aposImportExport:typeUnknown'), true);
     });
@@ -991,7 +1012,7 @@ describe('@apostrophecms/import-export', function () {
         };
       };
 
-      await importExportManager.import(req);
+      await importExportManager.import(getImportReq());
 
       const topics = await apos.doc.db
         .find({ type: 'topic' })
@@ -1018,7 +1039,7 @@ describe('@apostrophecms/import-export', function () {
         };
       };
 
-      await importExportManager.import(req);
+      await importExportManager.import(getImportReq());
 
       const pages = await apos.doc.db
         .find({ type: 'default-page' })
@@ -1046,7 +1067,7 @@ describe('@apostrophecms/import-export', function () {
         };
       };
 
-      await importExportManager.import(req);
+      await importExportManager.import(getImportReq());
 
       const topics = await apos.doc.db
         .find({ type: 'topic' })
@@ -1081,7 +1102,7 @@ describe('@apostrophecms/import-export', function () {
         };
       };
 
-      await importExportManager.import(req);
+      await importExportManager.import(getImportReq());
 
       const pages = await apos.doc.db
         .find({ type: 'default-page' })
@@ -1115,7 +1136,7 @@ describe('@apostrophecms/import-export', function () {
         };
       };
 
-      await importExportManager.import(req);
+      await importExportManager.import(getImportReq());
 
       const topics = await apos.doc.db
         .find({ type: 'topic' })
@@ -1150,7 +1171,7 @@ describe('@apostrophecms/import-export', function () {
         };
       };
 
-      await importExportManager.import(req);
+      await importExportManager.import(getImportReq());
 
       const pages = await apos.doc.db
         .find({ type: 'default-page' })
@@ -1184,14 +1205,14 @@ describe('@apostrophecms/import-export', function () {
         };
       };
 
-      const topic = await apos.topic.insert(req, {
+      const topic = await apos.topic.insert(apos.task.getReq(), {
         ...apos.topic.newInstance(),
         title: 'topic1',
         description: 'description1',
         main: '<p><em>rich</em> <strong>text</strong></p>'
       });
 
-      await importExportManager.import(req);
+      await importExportManager.import(getImportReq());
 
       const topics = await apos.doc.db
         .find({ type: 'topic' })
@@ -1229,13 +1250,13 @@ describe('@apostrophecms/import-export', function () {
         };
       };
 
-      const page = await apos.page.insert(req, '_home', 'lastChild', {
+      const page = await apos.page.insert(apos.task.getReq(), '_home', 'lastChild', {
         ...apos.modules['default-page'].newInstance(),
         title: 'page1',
         main: '<p><em>rich</em> <strong>text</strong></p>'
       });
 
-      await importExportManager.import(req);
+      await importExportManager.import(getImportReq());
 
       const pages = await apos.doc.db
         .find({ type: 'default-page' })
@@ -1272,7 +1293,7 @@ describe('@apostrophecms/import-export', function () {
         };
       };
 
-      const topic = await apos.topic.insert(req, {
+      const topic = await apos.topic.insert(apos.task.getReq(), {
         ...apos.topic.newInstance(),
         title: 'topic1',
         description: 'description1',
@@ -1292,7 +1313,7 @@ describe('@apostrophecms/import-export', function () {
         }
       );
 
-      await importExportManager.import(req);
+      await importExportManager.import(getImportReq());
 
       const topics = await apos.doc.db
         .find({ type: 'topic' })
@@ -1330,7 +1351,7 @@ describe('@apostrophecms/import-export', function () {
         };
       };
 
-      const page = await apos.page.insert(req, '_home', 'lastChild', {
+      const page = await apos.page.insert(apos.task.getReq(), '_home', 'lastChild', {
         ...apos.modules['default-page'].newInstance(),
         title: 'page1',
         main: '<p><em>rich</em> <strong>text</strong></p>'
@@ -1349,7 +1370,7 @@ describe('@apostrophecms/import-export', function () {
         }
       );
 
-      await importExportManager.import(req);
+      await importExportManager.import(getImportReq());
 
       const pages = await apos.doc.db
         .find({ type: 'default-page' })
@@ -1386,7 +1407,7 @@ describe('@apostrophecms/import-export', function () {
         };
       };
 
-      const topic = await apos.topic.insert(req, {
+      const topic = await apos.topic.insert(apos.task.getReq(), {
         ...apos.topic.newInstance(),
         title: 'topic1',
         description: 'description1',
@@ -1406,7 +1427,7 @@ describe('@apostrophecms/import-export', function () {
         }
       );
 
-      await importExportManager.import(req);
+      await importExportManager.import(getImportReq());
 
       const topics = await apos.doc.db
         .find({ type: 'topic' })
@@ -1444,7 +1465,7 @@ describe('@apostrophecms/import-export', function () {
         };
       };
 
-      const page = await apos.page.insert(req, '_home', 'lastChild', {
+      const page = await apos.page.insert(apos.task.getReq(), '_home', 'lastChild', {
         ...apos.modules['default-page'].newInstance(),
         title: 'page1',
         main: '<p><em>rich</em> <strong>text</strong></p>'
@@ -1463,7 +1484,7 @@ describe('@apostrophecms/import-export', function () {
         }
       );
 
-      await importExportManager.import(req);
+      await importExportManager.import(getImportReq());
 
       const pages = await apos.doc.db
         .find({ type: 'default-page' })

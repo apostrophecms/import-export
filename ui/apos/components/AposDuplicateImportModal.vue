@@ -179,13 +179,6 @@ export default {
       return this.checked.length
         ? 'var(--a-white)'
         : 'transparent';
-    },
-    replaceDocIds() {
-      return this.checked.map(
-        aposDocId => this.duplicatedDocs.find(doc => doc.replaceId && doc.aposDocId === aposDocId)
-      )
-        .filter(Boolean)
-        .map(({ aposDocId, replaceId }) => [ aposDocId, replaceId ]);
     }
   },
 
@@ -226,7 +219,7 @@ export default {
       apos.http.post('/api/v1/@apostrophecms/import-export/override-duplicates', {
         body: {
           docIds: this.checked,
-          replaceDocIds: this.replaceDocIds,
+          duplicatedDocs: this.duplicatedDocs,
           importedAttachments: this.importedAttachments,
           exportPathId: this.exportPathId,
           jobId: this.jobId,

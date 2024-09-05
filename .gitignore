@@ -9,5 +9,12 @@ node_modules
 
 # vim swp files
 .*.sw*
-/test/public/uploads
+
+# Dont commit test generated css
+test/public/css/*.css
+test/public/css/master-*.less
+
+# Dont commit test uploads
+/test/data
 /test/public/exports
+/test/public/uploads
