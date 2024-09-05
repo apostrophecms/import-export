@@ -15,5 +15,6 @@ test/public/css/*.css
 test/public/css/master-*.less
 
 # Dont commit test uploads
-test/public/uploads
-test/data
+/test/data
+/test/public/exports
+/test/public/uploads
