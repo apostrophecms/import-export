@@ -341,27 +341,33 @@ export default {
 .apos-export__heading {
   @include type-title;
 
-  line-height: var(--a-line-tall);
-  margin: 0;
-  text-transform: capitalize;
+  & {
+    line-height: var(--a-line-tall);
+    margin: 0;
+    text-transform: capitalize;
+  }
 }
 
 .apos-export__description {
   @include type-base;
 
-  margin-top: 5px;
-  font-size: var(--a-type-large);
-  text-align: left;
-  line-height: var(--a-line-tallest);
+  & {
+    margin-top: 5px;
+    font-size: var(--a-type-large);
+    text-align: left;
+    line-height: var(--a-line-tallest);
+  }
 }
 
 .apos-export__section {
   @include type-base;
 
-  display: flex;
-  flex-direction: column;
-  align-items: baseline;
-  min-width: 100%;
+  & {
+    display: flex;
+    flex-direction: column;
+    align-items: baseline;
+    min-width: 100%;
+  }
 }
 
 .apos-export__section-container {
@@ -371,9 +377,11 @@ export default {
 .apos-export__settings {
   @include type-base;
 
-  margin-top: 20px;
-  color: var(--a-base-3);
-  font-weight: 600;
+  & {
+    margin-top: 20px;
+    color: var(--a-base-3);
+    font-weight: 600;
+  }
 }
 
 .apos-export__settings-row {

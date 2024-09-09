@@ -298,33 +298,39 @@ export default {
 .apos-import-duplicate__heading {
   @include type-title;
 
-  line-height: var(--a-line-tall);
-  margin: 0;
-  text-transform: capitalize;
+  & {
+    line-height: var(--a-line-tall);
+    margin: 0;
+    text-transform: capitalize;
+  }
 }
 
 .apos-import-duplicate__description {
   @include type-base;
 
-  width: calc(100% - 20px);
-  margin-top: 15px;
-  margin-bottom: 20px;
-  padding: 10px;
-  color: var(--a-warning-dark);
-  font-size: var(--a-type-large);
-  text-align: left;
-  line-height: var(--a-line-tallest);
-  background-color: var(--a-warning-fade);
+  & {
+    width: calc(100% - 20px);
+    margin-top: 15px;
+    margin-bottom: 20px;
+    padding: 10px;
+    color: var(--a-warning-dark);
+    font-size: var(--a-type-large);
+    text-align: left;
+    line-height: var(--a-line-tallest);
+    background-color: var(--a-warning-fade);
+  }
 }
 
 .apos-import-duplicate__section {
   @include type-base;
 
-  display: flex;
-  flex-direction: column;
-  align-items: baseline;
-  max-height: 210px;
-  overflow-y: auto;
+  & {
+    display: flex;
+    flex-direction: column;
+    align-items: baseline;
+    max-height: 210px;
+    overflow-y: auto;
+  }
 }
 
 .apos-import-duplicate__section thead {
