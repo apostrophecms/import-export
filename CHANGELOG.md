@@ -1,5 +1,15 @@
 # Changelog
 
+## UNRELEASED
+
+### Fixes
+
+* Fixes SASS warnings.
+
+## Changes
+
+* Update devDependencies.
+
 ## 2.4.0 (2024-09-05)
 
 ### Adds
