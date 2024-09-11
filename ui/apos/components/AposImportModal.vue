@@ -184,22 +184,28 @@ export default {
   &__heading {
     @include type-title;
 
-    line-height: var(--a-line-tall);
-    margin: 0;
+    & {
+      line-height: var(--a-line-tall);
+      margin: 0;
+    }
   }
 
   &__warning {
     @include type-small;
 
-    max-width: 348px;
-    padding: 10px;
+    & {
+      max-width: 348px;
+      padding: 10px;
+    }
   }
 
   &__description {
     @include type-base;
 
-    max-width: 370px;
-    line-height: var(--a-line-tallest);
+    & {
+      max-width: 370px;
+      line-height: var(--a-line-tallest);
+    }
   }
 
   &__file {
