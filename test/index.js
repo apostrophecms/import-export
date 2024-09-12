@@ -58,6 +58,7 @@ describe('@apostrophecms/import-export', function () {
 
   after(async function() {
     await t.destroy(apos);
+    apos = null;
   });
 
   beforeEach(async function() {
@@ -171,21 +172,137 @@ describe('@apostrophecms/import-export', function () {
           aposMode: 'draft'
         },
         {
-          title: 'topic2',
-          aposMode: 'draft'
+          title: 'topic3',
+          aposMode: 'published'
         },
         {
           title: 'topic1',
           aposMode: 'published'
         },
         {
-          title: 'topic3',
-          aposMode: 'published'
+          title: 'topic2',
+          aposMode: 'draft'
         },
         {
           title: 'topic2',
           aposMode: 'published'
         }
+      ],
+      attachmentsLength: 1,
+      attachmentFiles: [ `${attachmentId}-test-image.jpg` ],
+      topicsContainNonProjectedFields: true
+    };
+
+    assert.deepEqual(actual, expected);
+  });
+
+  it('should generate a zip file for pieces with related documents in all modes', async function () {
+    const req = apos.task.getReq();
+    const { _id: attachmentId } = await apos.attachment.db.findOne({ name: 'test-image' });
+    const manager = apos.article;
+
+    // PREPARE
+    // update an article draft removing the topic relation
+    await apos.doc.db.updateOne(
+      {
+        title: 'article1',
+        aposMode: 'draft'
+      },
+      { $set: { topicsIds: [] } }
+    );
+    const articles1 = await manager.find(req, {
+      title: 'article1',
+      aposMode: { $in: [ 'draft', 'published' ] }
+    }).locale(null).toArray();
+    {
+      const draft = articles1.find(({ aposMode }) => aposMode === 'draft');
+      const published = articles1.find(({ aposMode }) => aposMode === 'published');
+      assert.deepEqual(draft._topics, []);
+      assert.equal(published._topics.length, 1);
+    }
+    // remove all other relations
+    await apos.doc.db.updateMany(
+      {
+        title: 'article2'
+      },
+      { $set: { topicsIds: [] } }
+    );
+    const article2 = await manager.find(req.clone({ mode: 'draft' }), {
+      title: 'article2',
+      aposMode: { $in: [ 'draft', 'published' ] }
+    }).locale(null).toArray();
+    {
+      const draft = article2.find(({ aposMode }) => aposMode === 'draft');
+      const published = article2.find(({ aposMode }) => aposMode === 'published');
+      assert.deepEqual(draft._topics, []);
+      assert.deepEqual(published._topics, []);
+    }
+
+    // TEST
+    const articles = await apos.article.find(req).toArray();
+
+    req.body = {
+      _ids: articles.map(({ _id }) => _id),
+      extension: 'gzip',
+      relatedTypes: [ '@apostrophecms/image', 'topic' ],
+      type: req.t(manager.options.pluralLabel)
+    };
+
+    const { url } = await importExportManager.export(req, manager);
+    const fileName = path.basename(url);
+
+    piecesTgzPath = path.join(exportsPath, fileName);
+    const { exportPath } = await gzip.input(piecesTgzPath);
+
+    const {
+      docs, attachments, attachmentFiles
+    } = await getExtractedFiles(exportPath);
+
+    const docsNames = docs.map(({ title, aposMode }) => ({
+      title,
+      aposMode
+    }));
+
+    const topicsContainNonProjectedFields = docs
+      .filter(({ type }) => type === 'topic')
+      .every(({
+        createdAt, titleSortified, aposLocale
+      }) => createdAt && titleSortified && aposLocale);
+
+    const actual = {
+      docsNames,
+      attachmentsLength: attachments.length,
+      attachmentFiles,
+      topicsContainNonProjectedFields
+    };
+
+    const expected = {
+      docsNames: [
+        {
+          title: 'article2',
+          aposMode: 'draft'
+        },
+        {
+          title: 'article1',
+          aposMode: 'draft'
+        },
+        {
+          title: 'article2',
+          aposMode: 'published'
+        },
+        {
+          title: 'article1',
+          aposMode: 'published'
+        },
+        {
+          title: 'topic2',
+          aposMode: 'draft'
+        },
+        {
+          title: 'topic2',
+          aposMode: 'published'
+        }
+
       ],
       attachmentsLength: 1,
       attachmentFiles: [ `${attachmentId}-test-image.jpg` ],
@@ -229,28 +346,28 @@ describe('@apostrophecms/import-export', function () {
     const expected = {
       docsNames: [
         {
-          aposMode: 'draft',
-          title: 'page1'
+          title: 'page1',
+          aposMode: 'draft'
         },
         {
-          aposMode: 'published',
-          title: 'page1'
+          title: 'page1',
+          aposMode: 'published'
         },
         {
-          aposMode: 'draft',
-          title: 'image1'
+          title: 'image1',
+          aposMode: 'draft'
         },
         {
-          aposMode: 'draft',
-          title: 'article2'
+          title: 'image1',
+          aposMode: 'published'
         },
         {
-          aposMode: 'published',
-          title: 'image1'
+          title: 'article2',
+          aposMode: 'published'
         },
         {
-          aposMode: 'published',
-          title: 'article2'
+          title: 'article2',
+          aposMode: 'draft'
         }
       ],
       attachmentsLength: 1,
@@ -337,7 +454,7 @@ describe('@apostrophecms/import-export', function () {
         'article2', 'article1',
         'article2', 'article1',
         'topic1', 'topic3', 'topic2',
-        'topic1', 'topic3', 'topic2'
+        'topic3', 'topic1', 'topic2'
       ],
       attachmentsNames: [ 'test-image' ],
       attachmentFileNames: new Array(apos.attachment.imageSizes.length + 1)
