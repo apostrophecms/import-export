@@ -5,6 +5,8 @@
 ### Fixes
 
 * Fixes SASS warnings.
+* Fixes a bug where related documents were not exported if they were only in one (draft or published) mode.
+* Cleanup timers on instance destroy.
 
 ## Changes
 
