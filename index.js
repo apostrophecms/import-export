@@ -28,6 +28,7 @@ module.exports = {
     };
 
     self.enableBrowserData();
+    self.timeoutIds = {};
   },
   handlers,
   methods,
