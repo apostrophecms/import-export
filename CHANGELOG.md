@@ -6,7 +6,8 @@
 
 * Fixes SASS warnings.
 * Fixes a bug where related documents were not exported if they were only in one (draft or published) mode.
-* Cleanup timers on instance destroy.
+* Fixes a bug where additional crops of an image were not imported properly when the image was already present on the receiving site.
+* Clean up timers on instance destroy.
 
 ## Changes
 
