@@ -1,6 +1,6 @@
 # Changelog
 
-## UNRELEASED
+## 2.4.1 (2024-10-03)
 
 ### Fixes
 
