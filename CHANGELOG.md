@@ -1,5 +1,11 @@
 # Changelog
 
+## UNRELEASED
+
+### Adds
+
+* Adds AI-generated missing translations.
+
 ## 2.4.1 (2024-10-03)
 
 ### Fixes
