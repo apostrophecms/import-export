@@ -173,6 +173,7 @@ export default {
       }
       const formData = new FormData();
       formData.append('file', this.selectedFile);
+      formData.append('importDraftsOnly', this.checked.includes('importDraftsOnly'));
 
       apos.bus.$emit('import-export-import-started');
       apos.http.post(`${this.universalModuleAction}/${this.action}`, {
