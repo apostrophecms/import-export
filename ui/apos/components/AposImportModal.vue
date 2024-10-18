@@ -26,6 +26,20 @@
             @upload-file="uploadImportFile"
             @update="updateImportFile"
           />
+          <AposCheckbox
+            v-model="checked"
+            :choice="{
+              value: 'importDraftsOnly',
+              label: $t('aposImportExport:importDraftsOnly')
+            }"
+            :field="{
+              name: 'importDraftsOnly',
+            }"
+          />
+          <AposIndicator
+            icon="information-outline-icon"
+            tooltip="aposImportExport:importDraftsOnlyTooltip"
+          />
           <AposLabel
             label="aposImportExport:importWarning"
             class="apos-import__warning"
@@ -82,6 +96,10 @@ export default {
   emits: [ 'safe-close' ],
 
   data () {
+    const checked = apos.modules['@apostrophecms/import-export'].importDraftsOnlyDefault === true
+      ? [ 'importDraftsOnly' ]
+      : [];
+
     return {
       modal: {
         active: false,
@@ -89,7 +107,8 @@ export default {
         showModal: false,
         disableHeader: true
       },
-      selectedFile: null
+      selectedFile: null,
+      checked
     };
   },
 
@@ -154,6 +173,7 @@ export default {
       }
       const formData = new FormData();
       formData.append('file', this.selectedFile);
+      formData.append('importDraftsOnly', this.checked.includes('importDraftsOnly'));
 
       apos.bus.$emit('import-export-import-started');
       apos.http.post(`${this.universalModuleAction}/${this.action}`, {
