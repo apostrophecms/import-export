@@ -19,7 +19,8 @@ module.exports = {
       ns: 'aposImportExport',
       browser: true
     },
-    preventUpdateAssets: false
+    preventUpdateAssets: false,
+    importDraftsOnlyDefault: false
   },
   init(self) {
     self.formats = {

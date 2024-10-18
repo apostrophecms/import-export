@@ -18,6 +18,8 @@
   "importCleanFailed": "The cleaning of the imported file on the server failed.",
   "importWithCurrentLocaleHeading": "Different locale detected",
   "importWithCurrentLocaleDescription": "This file was exported from the \"{{ docsLocale }}\" locale. Are you sure you want to import it into the \"{{ currentLocale }}\" locale?",
+  "importDraftsOnly": "Import all documents as drafts",
+  "importDraftsOnlyTooltip": "Content types that do not have separate drafts will be imported normally.",
   "importDuplicateContinue": "Continue Import",
   "importDuplicateDetected": "Duplicates Detected.",
   "importDuplicateMessage": "Check the items you'd like to overwrite during import.",
