@@ -26,25 +26,28 @@
             @upload-file="uploadImportFile"
             @update="updateImportFile"
           />
-          <AposCheckbox
-            v-model="checked"
-            :choice="{
-              value: 'importDraftsOnly',
-              label: $t('aposImportExport:importDraftsOnly')
-            }"
-            :field="{
-              name: 'importDraftsOnly',
-            }"
-          />
-          <AposIndicator
-            icon="information-outline-icon"
-            tooltip="aposImportExport:importDraftsOnlyTooltip"
-          />
           <AposLabel
             label="aposImportExport:importWarning"
             class="apos-import__warning"
             :modifiers="[ 'apos-is-warning', 'apos-is-filled' ]"
           />
+          <div class="apos-import__import-drafts-only-wrapper">
+            <AposCheckbox
+              v-model="checked"
+              class="apos-import__import-drafts-only"
+              :choice="{
+                value: 'importDraftsOnly',
+                label: $t('aposImportExport:importDraftsOnly')
+              }"
+              :field="{
+                name: 'importDraftsOnly',
+              }"
+            />
+            <AposIndicator
+              icon="information-outline-icon"
+              tooltip="aposImportExport:importDraftsOnlyTooltip"
+            />
+          </div>
           <div class="apos-import__separator" />
           <div class="apos-import__btns">
             <AposButton
@@ -217,6 +220,12 @@ export default {
       max-width: 348px;
       padding: 10px;
     }
+  }
+
+  &__import-drafts-only-wrapper {
+    display: flex;
+    margin-top: 10px;
+    gap: 5px;
   }
 
   &__description {
