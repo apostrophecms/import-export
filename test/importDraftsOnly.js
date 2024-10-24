@@ -1,7 +1,7 @@
 const assert = require('assert').strict;
 const t = require('apostrophe/test-lib/util.js');
 const {
-  getAppConfig, insertAdminUser, insertPiecesAndPages, deletePiecesAndPages
+  getAppConfig, insertAdminUser, deletePiecesAndPages
 } = require('./util');
 
 describe('#import - when `importDraftsOnly` option is set to `true`', function () {
@@ -38,7 +38,6 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
     mimeType = gzip.allowedTypes[0];
 
     await insertAdminUser(apos);
-    await insertPiecesAndPages(apos);
   });
 
   this.beforeEach(async function () {
@@ -144,14 +143,16 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
                 aposMode: 'draft',
                 aposLocale: 'en:draft',
                 title: 'topic1 DRAFT',
-                type: 'topic'
+                type: 'topic',
+                lastPublishedAt: '2021-01-01T00:00:00.000Z'
               },
               {
                 _id: '4:en:published',
                 aposMode: 'published',
                 aposLocale: 'en:published',
                 title: 'topic1 PUBLISHED',
-                type: 'topic'
+                type: 'topic',
+                lastPublishedAt: '2021-01-01T00:00:00.000Z'
               }
             ],
             attachmentsInfo: []
@@ -164,7 +165,8 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
               aposMode: 'draft',
               aposLocale: 'en:draft',
               title: 'topic1 PUBLISHED',
-              type: 'topic'
+              type: 'topic',
+              lastPublishedAt: '2021-01-01T00:00:00.000Z'
             }
           ]);
 
@@ -185,6 +187,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         assert.equal(topics[0].aposMode, 'draft');
         assert.equal(topics[0].aposLocale, 'en:draft');
         assert.equal(topics[0].title, 'topic1 PUBLISHED');
+        assert.equal(topics[0].lastPublishedAt, undefined);
       });
 
       it('should import the documents in draft if they do not have a published version to import', async function () {
@@ -196,7 +199,8 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
                 aposMode: 'draft',
                 aposLocale: 'en:draft',
                 title: 'topic1 DRAFT',
-                type: 'topic'
+                type: 'topic',
+                lastPublishedAt: '2021-01-01T00:00:00.000Z'
               }
             ],
             attachmentsInfo: []
@@ -209,7 +213,8 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
               aposMode: 'draft',
               aposLocale: 'en:draft',
               title: 'topic1 DRAFT',
-              type: 'topic'
+              type: 'topic',
+              lastPublishedAt: '2021-01-01T00:00:00.000Z'
             }
           ]);
 
@@ -230,6 +235,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         assert.equal(topics[0].aposMode, 'draft');
         assert.equal(topics[0].aposLocale, 'en:draft');
         assert.equal(topics[0].title, 'topic1 DRAFT');
+        assert.equal(topics[0].lastPublishedAt, undefined);
       });
 
       describe('when importing from a man-made CSV file', function() {
@@ -268,7 +274,8 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
               docs: [
                 {
                   type: 'topic',
-                  title: 'topic1'
+                  title: 'topic1',
+                  lastPublishedAt: '2021-01-01T00:00:00.000Z'
                 }
               ]
             };
@@ -285,6 +292,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
           assert.equal(topics[0].aposMode, 'draft');
           assert.equal(topics[0].aposLocale, 'en:draft');
           assert.equal(topics[0].title, 'topic1');
+          assert.equal(topics[0].lastPublishedAt, undefined);
         });
 
         it('should import a page from a csv file that was not made from the import-export module, as draft only', async function() {
@@ -293,7 +301,8 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
               docs: [
                 {
                   type: 'default-page',
-                  title: 'page1'
+                  title: 'page1',
+                  lastPublishedAt: '2021-01-01T00:00:00.000Z'
                 }
               ]
             };
@@ -310,12 +319,124 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
           assert.equal(pages[0].aposMode, 'draft');
           assert.equal(pages[0].aposLocale, 'en:draft');
           assert.equal(pages[0].title, 'page1');
+          assert.equal(pages[0].lastPublishedAt, undefined);
         });
       });
     });
 
     describe('when updating a imported document', function () {
+      describe('when importing from a man-made CSV file', function() {
+        let csv;
+        let input;
 
+        before(function() {
+          csv = importExportManager.formats.csv;
+        });
+
+        this.beforeEach(async function () {
+          req = apos.task.getReq({
+            locale: 'en',
+            body: {
+              importDraftsOnly: true
+            },
+            files: {
+              file: {
+                path: null,
+                type: csv.allowedTypes[0]
+              }
+            }
+          });
+
+          input = csv.input;
+          await deletePiecesAndPages(apos);
+        });
+
+        this.afterEach(function() {
+          csv.input = input;
+        });
+
+        it('should import a piece from a csv file that was not made from the import-export module, as draft only', async function() {
+          importExportManager.formats.csv.input = async () => {
+            return {
+              docs: [
+                {
+                  type: 'topic',
+                  'title:key': 'topic1',
+                  title: 'topic1 - edited',
+                  lastPublishedAt: '2021-01-01T00:00:00.000Z'
+                }
+              ]
+            };
+          };
+
+          await apos.topic.insert(apos.task.getReq({ mode: 'published' }), {
+            ...apos.topic.newInstance(),
+            title: 'topic1'
+          });
+
+          await importExportManager.import(req);
+
+          const topics = await apos.doc.db
+            .find({ type: 'topic' })
+            .toArray();
+
+          assert.equal(topics.length, 2);
+
+          assert.equal(topics[0]._id.endsWith(':en:draft'), true);
+          assert.equal(topics[0].title, 'topic1 - edited');
+          assert.equal(topics[0].aposMode, 'draft');
+          assert.equal(topics[0].aposLocale, 'en:draft');
+          assert.equal(topics[0].modified, true);
+          assert(topics[0].lastPublishedAt);
+
+          assert.equal(topics[1]._id.endsWith(':en:published'), true);
+          assert.equal(topics[1].title, 'topic1');
+          assert.equal(topics[1].aposMode, 'published');
+          assert.equal(topics[1].aposLocale, 'en:published');
+          assert(topics[1].lastPublishedAt);
+        });
+
+        it('should import a page from a csv file that was not made from the import-export module, as draft only', async function() {
+          importExportManager.formats.csv.input = async () => {
+            return {
+              docs: [
+                {
+                  type: 'default-page',
+                  'title:key': 'page1',
+                  title: 'page1 - edited',
+                  lastPublishedAt: '2021-01-01T00:00:00.000Z'
+                }
+              ]
+            };
+          };
+
+          await apos.page.insert(apos.task.getReq({ mode: 'published' }), '_home', 'lastChild', {
+            ...apos.modules['default-page'].newInstance(),
+            title: 'page1'
+          });
+
+          await importExportManager.import(req);
+
+          const pages = await apos.doc.db
+            .find({ type: 'default-page' })
+            .toArray();
+
+          assert.equal(pages.length, 2);
+
+          assert.equal(pages[0]._id.endsWith(':en:draft'), true);
+          assert.equal(pages[0].title, 'page1 - edited');
+          assert.equal(pages[0].aposMode, 'draft');
+          assert.equal(pages[0].aposLocale, 'en:draft');
+          assert.equal(pages[0].modified, true);
+          assert(pages[0].lastPublishedAt);
+
+          assert.equal(pages[1]._id.endsWith(':en:published'), true);
+          assert.equal(pages[1].title, 'page1');
+          assert.equal(pages[1].aposMode, 'published');
+          assert.equal(pages[1].aposLocale, 'en:published');
+          assert(pages[0].lastPublishedAt);
+        });
+      });
     });
   });
 });
