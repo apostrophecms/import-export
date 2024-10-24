@@ -135,7 +135,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
     });
 
     describe('when inserting a imported document', function () {
-      it.only('should import only the published documents as draft', async function () {
+      it('should import only the published documents as draft', async function () {
         gzip.input = async req => {
           return {
             docs: [
@@ -188,10 +188,129 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
       });
 
       it('should import the documents in draft if they do not have a published version to import', async function () {
+        gzip.input = async req => {
+          return {
+            docs: [
+              {
+                _id: '4:en:draft',
+                aposMode: 'draft',
+                aposLocale: 'en:draft',
+                title: 'topic1 DRAFT',
+                type: 'topic'
+              }
+            ],
+            attachmentsInfo: []
+          };
+        };
+        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs, ...rest }) => {
+          assert.deepEqual(docs, [
+            {
+              _id: '4:en:draft',
+              aposMode: 'draft',
+              aposLocale: 'en:draft',
+              title: 'topic1 DRAFT',
+              type: 'topic'
+            }
+          ]);
 
+          return insertDocs(req, {
+            docs,
+            ...rest
+          });
+        };
+
+        await importExportManager.import(req);
+
+        const topics = await apos.doc.db
+          .find({ type: 'topic' })
+          .toArray();
+
+        assert.equal(topics.length, 1);
+        assert.equal(topics[0]._id, '4:en:draft');
+        assert.equal(topics[0].aposMode, 'draft');
+        assert.equal(topics[0].aposLocale, 'en:draft');
+        assert.equal(topics[0].title, 'topic1 DRAFT');
       });
 
-      describe('#import - man-made CSV file', function() {
+      describe('when importing from a man-made CSV file', function() {
+        let csv;
+        let input;
+
+        before(function() {
+          csv = importExportManager.formats.csv;
+        });
+
+        this.beforeEach(async function () {
+          req = apos.task.getReq({
+            locale: 'en',
+            body: {
+              importDraftsOnly: true
+            },
+            files: {
+              file: {
+                path: null,
+                type: csv.allowedTypes[0]
+              }
+            }
+          });
+
+          input = csv.input;
+          await deletePiecesAndPages(apos);
+        });
+
+        this.afterEach(function() {
+          csv.input = input;
+        });
+
+        it('should import a piece from a csv file that was not made from the import-export module, as draft only', async function() {
+          importExportManager.formats.csv.input = async () => {
+            return {
+              docs: [
+                {
+                  type: 'topic',
+                  title: 'topic1'
+                }
+              ]
+            };
+          };
+
+          await importExportManager.import(req);
+
+          const topics = await apos.doc.db
+            .find({ type: 'topic' })
+            .toArray();
+
+          assert.equal(topics.length, 1);
+          assert.equal(topics[0]._id.endsWith(':en:draft'), true);
+          assert.equal(topics[0].aposMode, 'draft');
+          assert.equal(topics[0].aposLocale, 'en:draft');
+          assert.equal(topics[0].title, 'topic1');
+        });
+
+        it('should import a page from a csv file that was not made from the import-export module, as draft only', async function() {
+          importExportManager.formats.csv.input = async () => {
+            return {
+              docs: [
+                {
+                  type: 'default-page',
+                  title: 'page1'
+                }
+              ]
+            };
+          };
+
+          await importExportManager.import(req);
+
+          const pages = await apos.doc.db
+            .find({ type: 'default-page' })
+            .toArray();
+
+          assert.equal(pages.length, 1);
+          assert.equal(pages[0]._id.endsWith(':en:draft'), true);
+          assert.equal(pages[0].aposMode, 'draft');
+          assert.equal(pages[0].aposLocale, 'en:draft');
+          assert.equal(pages[0].title, 'page1');
+        });
       });
     });
 
