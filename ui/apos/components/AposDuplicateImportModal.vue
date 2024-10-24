@@ -113,6 +113,10 @@ export default {
       type: String,
       required: true
     },
+    importDraftsOnly: {
+      type: Boolean,
+      required: true
+    },
     overrideLocale: {
       type: Boolean,
       required: true
@@ -223,6 +227,7 @@ export default {
           importedAttachments: this.importedAttachments,
           exportPathId: this.exportPathId,
           jobId: this.jobId,
+          importDraftsOnly: this.importDraftsOnly,
           overrideLocale: this.overrideLocale,
           formatLabel: this.formatLabel
         }

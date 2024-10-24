@@ -6,6 +6,8 @@ const {
 } = require('./util');
 
 describe('#overrideDuplicates - overriding locales integration tests', function() {
+  this.timeout(t.timeout);
+
   let req;
   let input;
   let rewriteDocsWithCurrentLocale;

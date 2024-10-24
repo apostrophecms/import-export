@@ -6,6 +6,8 @@ const {
 } = require('./util');
 
 describe('#import - overriding locales integration tests', function() {
+  this.timeout(t.timeout);
+
   let req;
   let notify;
   let input;
