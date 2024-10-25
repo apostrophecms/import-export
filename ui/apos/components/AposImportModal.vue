@@ -224,9 +224,9 @@ export default {
 
   &__import-drafts-only-wrapper {
     display: flex;
+    align-items: center;
     margin-top: 10px;
     gap: 5px;
-    align-items: center;
   }
 
   &__description {
