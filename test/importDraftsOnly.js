@@ -252,7 +252,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
             locale: 'en',
             body: {
               importDraftsOnly: true,
-              formatLabel: 'gzip'
+              formatLabel: 'CSV'
             },
             files: {
               file: {
@@ -327,25 +327,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
     });
 
     describe('when updating a imported document', function () {
-      let checkDuplicates;
-
-      this.beforeEach(async function () {
-        checkDuplicates = apos.modules['@apostrophecms/import-export'].checkDuplicates;
-      });
-
-      this.afterEach(function () {
-        apos.modules['@apostrophecms/import-export'].checkDuplicates = checkDuplicates;
-      });
-
-      // TODO:
-      it.skip('should import only the published documents as draft', async function () {
-        apos.modules['@apostrophecms/import-export'].checkDuplicates = async () => {
-          return {
-            duplicatedDocs: [ '4' ],
-            duplicatedIds: new Set([ { aposDocId: 4 } ])
-          };
-        };
-
+      it('should import only the published documents as draft', async function () {
         gzip.input = async req => {
           return {
             docs: [
@@ -355,8 +337,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
                 aposMode: 'draft',
                 aposLocale: 'en:draft',
                 title: 'topic1 DRAFT',
-                type: 'topic',
-                lastPublishedAt: '2021-01-01T00:00:00.000Z'
+                type: 'topic'
               },
               {
                 _id: '4:en:published',
@@ -364,8 +345,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
                 aposMode: 'published',
                 aposLocale: 'en:published',
                 title: 'topic1 PUBLISHED',
-                type: 'topic',
-                lastPublishedAt: '2021-01-01T00:00:00.000Z'
+                type: 'topic'
               }
             ],
             attachmentsInfo: []
@@ -375,22 +355,42 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         await apos.topic.insert(apos.task.getReq({ mode: 'draft' }), {
           ...apos.topic.newInstance(),
           _id: '4:en:draft',
-          title: 'topic1 CURRENT DRAFT'
+          title: 'topic1 EXISTING DRAFT'
         });
 
         await apos.topic.insert(apos.task.getReq({ mode: 'published' }), {
           ...apos.topic.newInstance(),
           _id: '4:en:published',
-          title: 'topic1 CURRENT PUBLISHED'
+          title: 'topic1 EXISTING PUBLISHED'
         });
 
-        await importExportManager.import(req);
+        const {
+          duplicatedDocs,
+          importedAttachments,
+          exportPathId,
+          jobId,
+          notificationId,
+          formatLabel
+        } = await importExportManager.import(req);
+
+        const _req = req.clone({
+          body: {
+            ...req.body,
+            docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
+            duplicatedDocs,
+            importedAttachments,
+            exportPathId,
+            jobId,
+            notificationId,
+            formatLabel
+          }
+        });
+
+        await importExportManager.overrideDuplicates(_req);
 
         const topics = await apos.doc.db
           .find({ type: 'topic' })
           .toArray();
-
-        console.dir(topics, { depth: 9 });
 
         assert.equal(topics.length, 2);
 
@@ -398,7 +398,12 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         assert.equal(topics[0].aposMode, 'draft');
         assert.equal(topics[0].aposLocale, 'en:draft');
         assert.equal(topics[0].title, 'topic1 PUBLISHED');
-        assert(topics[0].lastPublishedAt);
+        assert.equal(topics[0].modified, true);
+
+        assert.equal(topics[1]._id, '4:en:published');
+        assert.equal(topics[1].aposMode, 'published');
+        assert.equal(topics[1].aposLocale, 'en:published');
+        assert.equal(topics[1].title, 'topic1 EXISTING PUBLISHED');
       });
 
       describe('when importing from a man-made CSV file', function() {
@@ -414,7 +419,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
             locale: 'en',
             body: {
               importDraftsOnly: true,
-              formatLabel: 'gzip'
+              formatLabel: 'CSV'
             },
             files: {
               file: {
@@ -511,7 +516,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
           assert.equal(pages[1].title, 'page1');
           assert.equal(pages[1].aposMode, 'published');
           assert.equal(pages[1].aposLocale, 'en:published');
-          assert(pages[0].lastPublishedAt);
+          assert(pages[1].lastPublishedAt);
         });
       });
     });
