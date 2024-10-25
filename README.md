@@ -148,6 +148,14 @@ If multiple locales are set up, the user will be prompted to choose between canc
 
 ![Screenshot highlighting the confirm modal letting the user choose between aborting on continuing the import when the docs locale is different from the site one.](https://static.apostrophecms.com/apostrophecms/import-export/images/different-locale-modal.png)
 
+## Importing as drafts only
+
+The import modal includes a checkbox labeled "_Import all documents as drafts_" that, when selected, imports the published version of documents in draft status only. This feature allows users to review and make modifications to imported documents before they are published.
+
+By default, this checkbox can be set to selected by enabling the `importDraftsOnlyDefault: true` option in this module.
+
+If a document in the import file has no published version, it will still be imported. Content types that do not have separate drafts will be imported normally.
+
 ## Updating existing pieces using CSV format
 
 You can also update existing pieces via this module.
