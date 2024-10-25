@@ -226,6 +226,7 @@ export default {
     display: flex;
     margin-top: 10px;
     gap: 5px;
+    align-items: center;
   }
 
   &__description {
