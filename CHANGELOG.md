@@ -1,11 +1,16 @@
 # Changelog
 
+## UNRELEASED
+
+### Adds
+
+* Adds a checkbox to the import modal that, when selected, imports published versions of documents from an export file **as drafts**. If a document doesn’t have a published version, it will still be imported. Setting the `importDraftsOnlyDefault: true` option selects this checkbox by default.
+
 ## 2.4.2 (2024-10-31)
 
 ### Adds
 
 * Adds AI-generated missing translations.
-* Adds a checkbox to the import modal that, when selected, imports published versions of documents from an export file **as drafts**. If a document doesn’t have a published version, it will still be imported. Setting the `importDraftsOnlyDefault: true` option selects this checkbox by default.
 
 ## 2.4.1 (2024-10-03)
 
