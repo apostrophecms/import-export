@@ -35,6 +35,7 @@ export default () => {
 
         await apos.http.post(`${moduleAction}/import-export-import`, {
           body: {
+            importDraftsOnly: event.importDraftsOnly,
             overrideLocale: true,
             exportPathId: event.exportPathId,
             formatLabel: event.formatLabel

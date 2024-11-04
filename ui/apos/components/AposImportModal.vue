@@ -31,6 +31,23 @@
             class="apos-import__warning"
             :modifiers="[ 'apos-is-warning', 'apos-is-filled' ]"
           />
+          <div class="apos-import__import-drafts-only-wrapper">
+            <AposCheckbox
+              v-model="checked"
+              class="apos-import__import-drafts-only"
+              :choice="{
+                value: 'importDraftsOnly',
+                label: $t('aposImportExport:importDraftsOnly')
+              }"
+              :field="{
+                name: 'importDraftsOnly',
+              }"
+            />
+            <AposIndicator
+              icon="information-outline-icon"
+              tooltip="aposImportExport:importDraftsOnlyTooltip"
+            />
+          </div>
           <div class="apos-import__separator" />
           <div class="apos-import__btns">
             <AposButton
@@ -82,6 +99,10 @@ export default {
   emits: [ 'safe-close' ],
 
   data () {
+    const checked = apos.modules['@apostrophecms/import-export'].importDraftsOnlyDefault === true
+      ? [ 'importDraftsOnly' ]
+      : [];
+
     return {
       modal: {
         active: false,
@@ -89,7 +110,8 @@ export default {
         showModal: false,
         disableHeader: true
       },
-      selectedFile: null
+      selectedFile: null,
+      checked
     };
   },
 
@@ -154,6 +176,7 @@ export default {
       }
       const formData = new FormData();
       formData.append('file', this.selectedFile);
+      formData.append('importDraftsOnly', this.checked.includes('importDraftsOnly'));
 
       apos.bus.$emit('import-export-import-started');
       apos.http.post(`${this.universalModuleAction}/${this.action}`, {
@@ -197,6 +220,13 @@ export default {
       max-width: 348px;
       padding: 10px;
     }
+  }
+
+  &__import-drafts-only-wrapper {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    gap: 5px;
   }
 
   &__description {
