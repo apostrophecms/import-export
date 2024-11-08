@@ -1,6 +1,6 @@
 # Changelog
 
-## UNRELEASED
+## 2.5.0 (2024-11-08)
 
 ### Adds
 
