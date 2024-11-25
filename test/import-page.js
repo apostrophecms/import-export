@@ -42,7 +42,19 @@ const server = {
           }
         },
         'custom-page': {
-          extend: '@apostrophecms/page-type'
+          extend: '@apostrophecms/page-type',
+          fields: {
+            add: {
+              main: {
+                type: 'area',
+                widgets: {
+                  '@apostrophecms/rich-text': {
+                    insert: [ 'image' ]
+                  }
+                }
+              }
+            }
+          }
         },
         'test-page': {
           extend: '@apostrophecms/page-type'
@@ -109,6 +121,17 @@ describe('@apostrophecms/import-export:import-page', function () {
         slug: '/level-1-page-3'
       }
     );
+    const attachment = apos.attachment.insert(req, {
+      name: 'test-image.jpg',
+      path: `${apos.rootDir}/public/test-image.jpg`
+    });
+
+    const inlineImage = await apos.image.insert(req, {
+      ...apos.image.newInstance(),
+      title: 'inline-image',
+      attachment
+    });
+
     const level2Page1 = await apos.page.insert(
       req,
       level1Page1._id,
@@ -116,7 +139,23 @@ describe('@apostrophecms/import-export:import-page', function () {
       {
         title: 'Level 2 Page 1',
         type: 'test-page',
-        slug: '/level-1-page-1/level-2-page-1'
+        slug: '/level-1-page-1/level-2-page-1',
+        main: {
+          items: [
+            {
+              type: '@apostrophecms/rich-text',
+              content: `
+                <p>
+                  <a href="#apostrophe-permalink-${level1Page3.aposDocId}?updateTitle=1">Test Link</a>
+                </p>
+                <figure>
+                  <img src="/api/v1/@apostrophecms/image/${inlineImage.aposDocId}/src" alt="alt text" />
+                  <figcaption></figcaption>
+                </figure>
+              `
+            }
+          ]
+        }
       }
     );
     const level3Page1 = await apos.page.insert(
@@ -254,7 +293,10 @@ describe('@apostrophecms/import-export:import-page', function () {
     const homePublished = await apos.page.find(apos.task.getReq({ mode: 'published' }), { slug: '/' }).toObject();
 
     const actual = {
-      docs: importedDocs
+      docs: importedDocs.map(doc => {
+        const { main, ...rest } = doc;
+        return rest;
+      })
     };
     const expected = {
       docs: [
@@ -418,6 +460,8 @@ describe('@apostrophecms/import-export:import-page', function () {
     };
 
     assert.deepEqual(actual, expected);
+    console.log('-->', actual.docs.length);
+    console.log('-->', actual.docs.map(doc => doc.type));
   });
 
   it('should import pages from same tarball twice without issues', async function () {
@@ -505,7 +549,10 @@ describe('@apostrophecms/import-export:import-page', function () {
     const homePublished = await apos.page.find(apos.task.getReq({ mode: 'published' }), { slug: '/' }).toObject();
 
     const actual = {
-      docs: importedDocs
+      docs: importedDocs.map(doc => {
+        const { main, ...rest } = doc;
+        return rest;
+      })
     };
     const expected = {
       docs: [
@@ -669,6 +716,15 @@ describe('@apostrophecms/import-export:import-page', function () {
     };
 
     assert.deepEqual(actual, expected);
+    const importedLevel2Page1 = importedDocs.find(({ title }) => title === 'Level 2 Page 1');
+    console.log('>>>', importedLevel2Page1.main.items[0].content);
+    const importedLevel1Page3 = importedDocs.find(({ title }) => title === 'Level 1 Page 3');
+    assert(importedLevel1Page3);
+    const inlineImage = importedDocs.find(({ title }) => title === 'inline-image');
+    assert(inlineImage);
+    assert(importedLevel1Page3);
+    assert(importedLevel2Page1.main.items[0].content.includes(inlineImage.aposDocId));
+    assert(importedLevel2Page1.main.items[0].content.includes(importedLevel1Page3.aposDocId));
   });
 
   it('should import pages with existing parkedId and children', async function () {
