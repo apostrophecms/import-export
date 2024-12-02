@@ -1,5 +1,12 @@
 # Changelog
 
+## UNRELEASED
+
+### Adds
+
+* Pages linked a page via the "Internal Page" option in the rich text editor are now candidates to be exported as related documents.
+* Images embedded inline in rich text widgets via the `insert: [ 'image' ]` option are now candidates to be exported as related documents.
+
 ## 2.5.0 (2024-11-08)
 
 ### Adds
