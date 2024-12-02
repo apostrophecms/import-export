@@ -935,8 +935,10 @@ describe('@apostrophecms/import-export', function () {
       relatedTypesTopics
     };
     const expected = {
-      relatedTypesArticles: [ 'topic', '@apostrophecms/image', '@apostrophecms/image-tag' ],
-      relatedTypesTopics: [ 'topic' ]
+      // @apostrophecms/any-page-type is a candidate because of rich text widgets, which are
+      // allowed to contain Internal Page links that are candidates to be related documents
+      relatedTypesArticles: [ 'topic', '@apostrophecms/any-page-type', '@apostrophecms/image', '@apostrophecms/image-tag' ],
+      relatedTypesTopics: [ '@apostrophecms/any-page-type', 'topic' ]
     };
 
     assert.deepEqual(actual, expected);

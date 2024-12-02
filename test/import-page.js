@@ -184,10 +184,6 @@ describe('@apostrophecms/import-export:import-page', function () {
       }
     );
 
-    const level1Page4Found = await apos.page.find(req, {
-      title: 'Level 1 Page 4'
-    }).toObject();
-
     const level2Page1 = await apos.page.insert(
       req,
       level1Page1._id,
