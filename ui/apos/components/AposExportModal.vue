@@ -287,7 +287,12 @@ export default {
     },
     getRelatedTypeLabel(moduleName) {
       const moduleOptions = apos.modules[moduleName];
-      return this.$t(moduleOptions.label);
+      if (moduleOptions.label) {
+        return this.$t(moduleOptions.label);
+      } else {
+        // Often not set for page types etc.
+        return moduleName;
+      }
     },
     onFormatChange(formatName) {
       this.formatName = this.formats.find(format => format.name === formatName).name;

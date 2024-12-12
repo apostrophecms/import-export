@@ -935,10 +935,31 @@ describe('@apostrophecms/import-export', function () {
       relatedTypesTopics
     };
     const expected = {
-      // @apostrophecms/any-page-type is a candidate because of rich text widgets, which are
-      // allowed to contain Internal Page links that are candidates to be related documents
-      relatedTypesArticles: [ 'topic', '@apostrophecms/any-page-type', '@apostrophecms/image', '@apostrophecms/image-tag' ],
-      relatedTypesTopics: [ '@apostrophecms/any-page-type', 'topic' ]
+      // All page types are in play because rich text internal page links are in play.
+      // Articles are in play because a page type has a relationship to them, so: see above
+      // (remember this is quite recursive)
+      relatedTypesArticles: [
+        'topic',
+        '@apostrophecms/home-page',
+        '@apostrophecms/archive-page',
+        '@apostrophecms/search',
+        'home-page',
+        'default-page',
+        '@apostrophecms/image',
+        '@apostrophecms/image-tag',
+        'article'
+      ],
+      relatedTypesTopics: [
+        '@apostrophecms/home-page',
+        '@apostrophecms/archive-page',
+        '@apostrophecms/search',
+        'home-page',
+        'default-page',
+        '@apostrophecms/image',
+        '@apostrophecms/image-tag',
+        'article',
+        'topic'
+      ]
     };
 
     assert.deepEqual(actual, expected);
