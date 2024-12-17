@@ -743,7 +743,7 @@ describe('@apostrophecms/import-export:import-page', function () {
     assert.deepEqual(actual, expected);
   });
 
-  it.only('should import related documents referenced by rich text', async function() {
+  it('should import related documents referenced by rich text', async function() {
     const req = apos.task.getReq({ mode: 'draft' });
 
     const manager = apos.page;
