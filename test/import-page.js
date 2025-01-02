@@ -37,12 +37,33 @@ const server = {
               {
                 name: 'custom-page',
                 label: 'Custom Page'
+              },
+              {
+                name: 'rich-text-page',
+                label: 'Rich Text Page'
               }
             ]
           }
         },
         'custom-page': {
           extend: '@apostrophecms/page-type'
+        },
+        'rich-text-page': {
+          extend: '@apostrophecms/page-type',
+          fields: {
+            add: {
+              main: {
+                type: 'area',
+                options: {
+                  widgets: {
+                    '@apostrophecms/rich-text': {
+                      insert: [ 'image' ]
+                    }
+                  }
+                }
+              }
+            }
+          }
         },
         'test-page': {
           extend: '@apostrophecms/page-type'
@@ -61,6 +82,15 @@ const server = {
   },
   stop: async (apos) => {
     await t.destroy(apos);
+  },
+  cleanup: async (apos) => {
+    await apos.doc.db.deleteMany({ type: '@apostrophecms/archive-page' });
+    await apos.doc.db.deleteMany({ type: '@apostrophecms/home-page' });
+    await apos.doc.db.deleteMany({ type: '@apostrophecms/image' });
+    await apos.doc.db.deleteMany({ type: '@apostrophecms/image-tag' });
+    await apos.doc.db.deleteMany({ type: 'custom-page' });
+    await apos.doc.db.deleteMany({ type: 'test-page' });
+    await apos.doc.db.deleteMany({ type: 'rich-text-page' });
   }
 };
 
@@ -109,6 +139,51 @@ describe('@apostrophecms/import-export:import-page', function () {
         slug: '/level-1-page-3'
       }
     );
+    const attachment = apos.attachment.insert(req, {
+      name: 'test-image.jpg',
+      path: `${apos.rootDir}/public/test-image.jpg`
+    });
+
+    const inlineImage = await apos.image.insert(req, {
+      ...apos.image.newInstance(),
+      title: 'inline-image',
+      attachment
+    });
+
+    const richTextRaw = {
+      type: '@apostrophecms/rich-text',
+      content: `
+        <p>
+          <a href="#apostrophe-permalink-${level1Page3.aposDocId}?updateTitle=1">Test Link</a>
+        </p>
+        <figure>
+          <img src="/api/v1/@apostrophecms/image/${inlineImage.aposDocId}/src" alt="alt text" />
+          <figcaption></figcaption>
+        </figure>
+      `
+    };
+
+    const richTextWidget = await apos.modules['@apostrophecms/rich-text-widget'].sanitize(req, richTextRaw, {
+      insert: [ 'image' ]
+    });
+
+    const level1Page4 = await apos.page.insert(
+      req,
+      '_home',
+      'lastChild',
+      {
+        title: 'Level 1 Page 4',
+        type: 'rich-text-page',
+        slug: '/level-1-page-4',
+        main: {
+          metaType: 'area',
+          items: [
+            richTextWidget
+          ]
+        }
+      }
+    );
+
     const level2Page1 = await apos.page.insert(
       req,
       level1Page1._id,
@@ -163,6 +238,7 @@ describe('@apostrophecms/import-export:import-page', function () {
     await apos.page.publish(req, level1Page1);
     await apos.page.publish(req, level1Page2);
     await apos.page.publish(req, level1Page3);
+    await apos.page.publish(req, level1Page4);
     await apos.page.publish(req, level2Page1);
     await apos.page.publish(req, level3Page1);
     await apos.page.publish(req, level4Page1);
@@ -219,13 +295,7 @@ describe('@apostrophecms/import-export:import-page', function () {
     const importFilePath = path.join(tempPath, fileName);
     await fs.copyFile(exportFilePath, importFilePath);
 
-    // cleanup
-    await apos.doc.db.deleteMany({ type: '@apostrophecms/archive-page' });
-    await apos.doc.db.deleteMany({ type: '@apostrophecms/home-page' });
-    await apos.doc.db.deleteMany({ type: '@apostrophecms/image' });
-    await apos.doc.db.deleteMany({ type: '@apostrophecms/image-tag' });
-    await apos.doc.db.deleteMany({ type: 'custom-page' });
-    await apos.doc.db.deleteMany({ type: 'test-page' });
+    await server.cleanup(apos);
     await server.stop(apos);
     apos = await server.start();
 
@@ -250,11 +320,15 @@ describe('@apostrophecms/import-export:import-page', function () {
         aposMode: 1
       })
       .toArray();
+
     const homeDraft = await apos.page.find(apos.task.getReq({ mode: 'draft' }), { slug: '/' }).toObject();
     const homePublished = await apos.page.find(apos.task.getReq({ mode: 'published' }), { slug: '/' }).toObject();
 
     const actual = {
-      docs: importedDocs
+      docs: importedDocs.map(doc => {
+        const { main, ...rest } = doc;
+        return rest;
+      })
     };
     const expected = {
       docs: [
@@ -460,13 +534,7 @@ describe('@apostrophecms/import-export:import-page', function () {
     await fs.copyFile(exportFilePath, importFilePath);
     await fs.copyFile(exportFilePath, importFilePathDuplicate);
 
-    // cleanup
-    await apos.doc.db.deleteMany({ type: '@apostrophecms/archive-page' });
-    await apos.doc.db.deleteMany({ type: '@apostrophecms/home-page' });
-    await apos.doc.db.deleteMany({ type: '@apostrophecms/image' });
-    await apos.doc.db.deleteMany({ type: '@apostrophecms/image-tag' });
-    await apos.doc.db.deleteMany({ type: 'custom-page' });
-    await apos.doc.db.deleteMany({ type: 'test-page' });
+    await server.cleanup(apos);
     await server.stop(apos);
     apos = await server.start();
 
@@ -501,11 +569,15 @@ describe('@apostrophecms/import-export:import-page', function () {
         aposMode: 1
       })
       .toArray();
+
     const homeDraft = await apos.page.find(apos.task.getReq({ mode: 'draft' }), { slug: '/' }).toObject();
     const homePublished = await apos.page.find(apos.task.getReq({ mode: 'published' }), { slug: '/' }).toObject();
 
     const actual = {
-      docs: importedDocs
+      docs: importedDocs.map(doc => {
+        const { main, ...rest } = doc;
+        return rest;
+      })
     };
     const expected = {
       docs: [
@@ -669,6 +741,80 @@ describe('@apostrophecms/import-export:import-page', function () {
     };
 
     assert.deepEqual(actual, expected);
+  });
+
+  it('should import related documents referenced by rich text', async function() {
+    const req = apos.task.getReq({ mode: 'draft' });
+
+    const manager = apos.page;
+    const ids = await manager
+      .find(
+        req,
+        {
+          title: 'Level 1 Page 4'
+        },
+        {
+          project: {
+            _id: 1
+          }
+        }
+      )
+      .toArray();
+
+    // export
+    const exportReq = apos.task.getReq({
+      body: {
+        _ids: ids.map(({ _id }) => _id),
+        extension: 'gzip',
+        // Because @apostrophecms/any-page-type is what is allowed by default by the rich text editor link widget,
+        // and will show up accordingly as a related type choice. An explicit page type here won't match
+        relatedTypes: [ '@apostrophecms/image', 'test-page' ],
+        type: req.t('apostrophe:pages')
+      }
+    });
+    const { url } = await apos.modules['@apostrophecms/import-export'].export(exportReq, manager);
+    const fileName = path.basename(url);
+    const exportFilePath = path.join(exportsPath, fileName);
+    const importFilePath = path.join(tempPath, fileName);
+    await fs.copyFile(exportFilePath, importFilePath);
+
+    await server.cleanup(apos);
+    await server.stop(apos);
+    apos = await server.start();
+
+    // import
+    const mimeType = apos.modules['@apostrophecms/import-export'].formats.gzip.allowedTypes.at(0);
+    const importReq = apos.task.getReq({
+      body: {},
+      files: {
+        file: {
+          path: importFilePath,
+          type: mimeType
+        }
+      }
+    });
+    await apos.modules['@apostrophecms/import-export'].import(importReq);
+
+    const importedDocs = await apos.doc.db
+      .find({ type: /rich-text-page|@apostrophecms\/image|test-page/ })
+      .sort({
+        type: 1,
+        title: 1,
+        aposMode: 1
+      })
+      .toArray();
+    const importedLevel1Page4 = importedDocs.find(({ title }) => title === 'Level 1 Page 4');
+    assert(importedLevel1Page4);
+    assert.strictEqual(importedLevel1Page4.type, 'rich-text-page');
+    const content = importedLevel1Page4.main?.items?.[0]?.content;
+    assert(content.includes('<figure'));
+    assert(content.includes('<a '));
+    const inlineImage = importedDocs.find(({ title }) => title === 'inline-image');
+    assert(inlineImage);
+    assert(content.includes(inlineImage.aposDocId));
+    const importedLevel1Page3 = importedDocs.find(({ title }) => title === 'Level 1 Page 3');
+    assert(importedLevel1Page3);
+    assert(content.includes(importedLevel1Page3.aposDocId));
   });
 
   it('should import pages with existing parkedId and children', async function () {
