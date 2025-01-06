@@ -210,9 +210,7 @@ export default {
       }));
     },
     checkedTypesComputed() {
-      return this.moduleName === '@apostrophecms/page' && !this.type
-        ? [ ...new Set(this.checkedTypes) ]
-        : [ this.type ];
+      return this.checkedTypes || [ this.type ];
     }
   },
 
