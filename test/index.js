@@ -941,7 +941,6 @@ describe('@apostrophecms/import-export', function () {
       relatedTypesArticles: [
         'topic',
         '@apostrophecms/home-page',
-        '@apostrophecms/search',
         'home-page',
         'default-page',
         '@apostrophecms/image',
@@ -950,7 +949,6 @@ describe('@apostrophecms/import-export', function () {
       ],
       relatedTypesTopics: [
         '@apostrophecms/home-page',
-        '@apostrophecms/search',
         'home-page',
         'default-page',
         '@apostrophecms/image',
