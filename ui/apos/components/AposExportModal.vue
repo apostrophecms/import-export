@@ -151,7 +151,7 @@ export default {
     },
     checkedTypes: {
       type: Array,
-      default: () => []
+      default: null
     },
     doc: {
       type: Object,
@@ -164,6 +164,10 @@ export default {
     messages: {
       type: Object,
       default: () => ({})
+    },
+    moduleLabels: {
+      type: Object,
+      default: null
     }
   },
 
@@ -190,10 +194,10 @@ export default {
 
   computed: {
     moduleLabel() {
-      const moduleOptions = apos.modules[this.moduleName];
+      const labels = this.moduleLabels || apos.modules[this.moduleName];
       const label = this.count > 1
-        ? moduleOptions.pluralLabel
-        : moduleOptions.label;
+        ? labels.pluralLabel
+        : labels.label;
 
       return this.$t(label).toLowerCase();
     },
