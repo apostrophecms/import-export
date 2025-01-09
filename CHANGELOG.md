@@ -6,6 +6,11 @@
 
 * Pages linked a page via the "Internal Page" option in the rich text editor are now candidates to be exported as related documents.
 * Images embedded inline in rich text widgets via the `insert: [ 'image' ]` option are now candidates to be exported as related documents.
+* Uses `moduleLabels` prop when available.
+
+### Fixes
+
+* Fixes Export modal related types slide animation. Uses `checkedTypes` when passed from parent component.
 
 ## 2.5.0 (2024-11-08)
 
