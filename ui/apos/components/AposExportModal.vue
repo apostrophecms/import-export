@@ -65,8 +65,8 @@
           </div>
 
           <transition
-            name="fade"
-            :duration="200"
+            name="slide"
+            duration="200"
           >
             <div
               v-show="!relatedDocumentsDisabled"
@@ -137,7 +137,7 @@
 <script>
 const CONTAINER_ITEM_HEIGHT = 24;
 const CONTAINER_DESCRIPTION_HEIGHT = 95;
-const CONTAINER_MINIMUM_HEIGHT = 120;
+const CONTAINER_MINIMUM_HEIGHT = 117;
 
 export default {
   props: {
@@ -151,7 +151,7 @@ export default {
     },
     checkedTypes: {
       type: Array,
-      default: () => []
+      default: null
     },
     doc: {
       type: Object,
@@ -164,6 +164,10 @@ export default {
     messages: {
       type: Object,
       default: () => ({})
+    },
+    moduleLabels: {
+      type: Object,
+      default: null
     }
   },
 
@@ -190,10 +194,10 @@ export default {
 
   computed: {
     moduleLabel() {
-      const moduleOptions = apos.modules[this.moduleName];
+      const labels = this.moduleLabels || apos.modules[this.moduleName];
       const label = this.count > 1
-        ? moduleOptions.pluralLabel
-        : moduleOptions.label;
+        ? labels.pluralLabel
+        : labels.label;
 
       return this.$t(label).toLowerCase();
     },
@@ -210,9 +214,7 @@ export default {
       }));
     },
     checkedTypesComputed() {
-      return this.moduleName === '@apostrophecms/page' && !this.type
-        ? [ ...new Set(this.checkedTypes) ]
-        : [ this.type ];
+      return this.checkedTypes || [ this.type ];
     }
   },
 
@@ -242,9 +244,11 @@ export default {
         }
       });
       this.checkedRelatedTypes = this.relatedTypes;
-      const height = this.checkedRelatedTypes.length
+      const height = this.relatedTypes.length
         ? this.checkedRelatedTypes.length * CONTAINER_ITEM_HEIGHT + CONTAINER_DESCRIPTION_HEIGHT
         : CONTAINER_MINIMUM_HEIGHT;
+
+      await this.$nextTick();
       this.$refs.container.style.setProperty('--container-height', `${height}px`);
     },
     async runExport() {
@@ -448,25 +452,15 @@ export default {
   width: 100%;
 }
 
-.fade-enter-active {
-  .apos-export__section-container {
-    animation: expand .3;
-  }
+.apos-export__section-container {
+  height: var(--container-height);
+  transition: height 200ms linear;
 }
 
-.fade-leave-active {
+.slide-enter-from, .slide-leave-to {
   .apos-export__section-container {
-    animation: expand .3 reverse;
-  }
-}
-
-@keyframes expand {
-  0% {
     height: 0;
   }
-
-  100% {
-    height: var(--container-height);
-  }
 }
+
 </style>
