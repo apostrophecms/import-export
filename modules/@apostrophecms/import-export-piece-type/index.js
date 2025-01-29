@@ -52,9 +52,10 @@ module.exports = {
       post: {
         ...self.options.importExport?.import !== false && {
           importExportImport: [
-            multiparty(),
+            self.apos.http.bigUploadMiddleware(),
             async (req) => {
-              return self.apos.modules['@apostrophecms/import-export'].import(req, self.__meta.name);
+              return self.apos.modules['@apostrophecms/import-export']
+                .import(req, self.__meta.name);
             }
           ]
         },

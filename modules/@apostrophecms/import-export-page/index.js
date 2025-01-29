@@ -52,9 +52,10 @@ module.exports = {
       post: {
         ...self.options.importExport?.import !== false && {
           importExportImport: [
-            multiparty(),
+            self.apos.http.bigUploadMiddleware(),
             async (req) => {
-              return self.apos.modules['@apostrophecms/import-export'].import(req, self.__meta.name);
+              return self.apos.modules['@apostrophecms/import-export']
+                .import(req, self.__meta.name);
             }
           ]
         },
@@ -63,7 +64,8 @@ module.exports = {
             // Add the page label to req.body for notifications.
             req.body.type = req.t('apostrophe:page');
 
-            return self.apos.modules['@apostrophecms/import-export'].export(req, self);
+            return self.apos.modules['@apostrophecms/import-export']
+              .export(req, self);
           }
         },
         importExportExportBatch(req) {

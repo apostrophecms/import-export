@@ -72,6 +72,8 @@
 </template>
 
 <script>
+import bigUpload from 'apostrophe/lib/big-upload-client.js';
+
 export default {
   props: {
     // The Manager context menu items send moduleAction
@@ -167,20 +169,22 @@ export default {
     },
     async runImport() {
       if (!this.universalModuleAction) {
-        console.error('AposImportModal: No module action found');
         apos.notify('aposImportExport:importFailed', {
           type: 'danger',
           dismiss: true
         });
         return;
       }
-      const formData = new FormData();
-      formData.append('file', this.selectedFile);
-      formData.append('importDraftsOnly', this.checked.includes('importDraftsOnly'));
-
       apos.bus.$emit('import-export-import-started');
-      apos.http.post(`${this.universalModuleAction}/${this.action}`, {
-        body: formData
+      console.log('this.selectedFile', this.selectedFile);
+      console.log('type: ', this.selectedFile.type);
+      bigUpload(`${this.universalModuleAction}/${this.action}`, {
+        files: {
+          file: this.selectedFile
+        },
+        body: {
+          importDraftsOnly: this.checked.includes('importDraftsOnly')
+        }
       }).catch(() => {
         apos.notify('aposImportExport:importFailed', {
           type: 'danger',
