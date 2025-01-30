@@ -72,7 +72,7 @@
 </template>
 
 <script>
-import bigUpload from 'apostrophe/lib/big-upload-client.js';
+import bigUpload from 'Modules/@apostrophecms/http/big-upload-client.js';
 
 export default {
   props: {
@@ -176,8 +176,6 @@ export default {
         return;
       }
       apos.bus.$emit('import-export-import-started');
-      console.log('this.selectedFile', this.selectedFile);
-      console.log('type: ', this.selectedFile.type);
       bigUpload(`${this.universalModuleAction}/${this.action}`, {
         files: {
           file: this.selectedFile
@@ -186,10 +184,6 @@ export default {
           importDraftsOnly: this.checked.includes('importDraftsOnly')
         }
       }).catch(() => {
-        apos.notify('aposImportExport:importFailed', {
-          type: 'danger',
-          dismiss: true
-        });
         apos.bus.$emit('import-export-import-ended');
       });
 
