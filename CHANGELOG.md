@@ -1,5 +1,12 @@
 # Changelog
 
+## UNRELEASED
+
+### Adds
+
+* Adds a method to sort all exported documents, makes sure that parent pages come always first.
+* Plugs the new big-upload client and middlewares to the import to allow big file uploads sent in chunks. 
+
 ## 2.6.0 (2025-01-27)
 
 ### Adds
