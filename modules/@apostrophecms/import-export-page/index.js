@@ -1,5 +1,3 @@
-const multiparty = require('connect-multiparty');
-
 module.exports = {
   improve: '@apostrophecms/page',
 
