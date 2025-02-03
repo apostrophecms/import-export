@@ -33,5 +33,6 @@
   "or": "oder",
   "title": "Titel",
   "type": "Typ",
-  "typeUnknown": "Typ \"{{ type }}\" ist ungültig."
+  "typeUnknown": "Typ \"{{ type }}\" ist ungültig.",
+  "unsupportedFileType": "Der Dateityp {{ type }} wird nicht unterstützt."
 }

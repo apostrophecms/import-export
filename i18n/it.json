@@ -33,5 +33,6 @@
   "or": "o",
   "title": "Titolo",
   "type": "Tipo",
-  "typeUnknown": "Tipo \"{{ type }}\" non valido."
+  "typeUnknown": "Tipo \"{{ type }}\" non valido.",
+  "unsupportedFileType": "Il tipo di file {{tipo }} non è supportato."
 }

@@ -33,5 +33,6 @@
   "or": "alebo",
   "title": "Názov",
   "type": "Typ",
-  "typeUnknown": "Typ \"{{ type }}\" nie je platný."
+  "typeUnknown": "Typ \"{{ type }}\" nie je platný.",
+  "unsupportedFileType": "Typ súboru {{ type }} nie je podporovaný."
 }
