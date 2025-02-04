@@ -5,7 +5,7 @@
 ### Adds
 
 * Adds a method to sort all exported documents, makes sure that parent pages come always first.
-* Plugs the new big-upload client and middlewares to the import to allow big file uploads sent in chunks. 
+* Uses the new big-upload feature of apostrophe to allow very large export files to be imported.
 
 ## 2.6.0 (2025-01-27)
 
