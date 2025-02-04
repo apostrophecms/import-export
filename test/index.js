@@ -156,6 +156,18 @@ describe('@apostrophecms/import-export', function () {
           aposMode: 'draft'
         },
         {
+          title: 'topic1',
+          aposMode: 'draft'
+        },
+        {
+          title: 'topic3',
+          aposMode: 'draft'
+        },
+        {
+          title: 'topic2',
+          aposMode: 'draft'
+        },
+        {
           title: 'article2',
           aposMode: 'published'
         },
@@ -164,24 +176,12 @@ describe('@apostrophecms/import-export', function () {
           aposMode: 'published'
         },
         {
-          title: 'topic1',
-          aposMode: 'draft'
-        },
-        {
-          title: 'topic3',
-          aposMode: 'draft'
-        },
-        {
           title: 'topic3',
           aposMode: 'published'
         },
         {
           title: 'topic1',
           aposMode: 'published'
-        },
-        {
-          title: 'topic2',
-          aposMode: 'draft'
         },
         {
           title: 'topic2',
@@ -287,6 +287,10 @@ describe('@apostrophecms/import-export', function () {
           aposMode: 'draft'
         },
         {
+          title: 'topic2',
+          aposMode: 'draft'
+        },
+        {
           title: 'article2',
           aposMode: 'published'
         },
@@ -296,13 +300,8 @@ describe('@apostrophecms/import-export', function () {
         },
         {
           title: 'topic2',
-          aposMode: 'draft'
-        },
-        {
-          title: 'topic2',
           aposMode: 'published'
         }
-
       ],
       attachmentsLength: 1,
       attachmentFiles: [ `${attachmentId}-test-image.jpg` ],
@@ -350,24 +349,24 @@ describe('@apostrophecms/import-export', function () {
           aposMode: 'draft'
         },
         {
+          title: 'image1',
+          aposMode: 'draft'
+        },
+        {
+          title: 'article2',
+          aposMode: 'draft'
+        },
+        {
           title: 'page1',
           aposMode: 'published'
         },
         {
           title: 'image1',
-          aposMode: 'draft'
-        },
-        {
-          title: 'image1',
           aposMode: 'published'
         },
         {
           title: 'article2',
           aposMode: 'published'
-        },
-        {
-          title: 'article2',
-          aposMode: 'draft'
         }
       ],
       attachmentsLength: 1,
@@ -935,8 +934,27 @@ describe('@apostrophecms/import-export', function () {
       relatedTypesTopics
     };
     const expected = {
-      relatedTypesArticles: [ 'topic', '@apostrophecms/image', '@apostrophecms/image-tag' ],
-      relatedTypesTopics: [ 'topic' ]
+      // All page types are in play because rich text internal page links are in play.
+      // Articles are in play because a page type has a relationship to them, so: see above
+      // (remember this is quite recursive)
+      relatedTypesArticles: [
+        'topic',
+        '@apostrophecms/home-page',
+        'home-page',
+        'default-page',
+        '@apostrophecms/image',
+        '@apostrophecms/image-tag',
+        'article'
+      ],
+      relatedTypesTopics: [
+        '@apostrophecms/home-page',
+        'home-page',
+        'default-page',
+        '@apostrophecms/image',
+        '@apostrophecms/image-tag',
+        'article',
+        'topic'
+      ]
     };
 
     assert.deepEqual(actual, expected);
@@ -1622,5 +1640,154 @@ describe('@apostrophecms/import-export', function () {
       assert.equal(pages[1].aposMode, 'published');
       assert.equal(pages[1].main.items[0].content, '<p><em>rich</em> <strong>text</strong> - edited</p>');
     });
+
+    it('should sort all exported documents', async function() {
+      const docs = [
+        {
+          title: 'doc1',
+          aposMode: 'draft'
+        },
+
+        {
+          title: 'sub2',
+          aposMode: 'published',
+          level: 2,
+          rank: 1,
+          slug: '/'
+        },
+        {
+          title: 'sub2 bis',
+          aposMode: 'published',
+          level: 2,
+          rank: 2,
+          slug: '/'
+        },
+
+        {
+          title: 'sub2 bis',
+          aposMode: 'draft',
+          level: 2,
+          rank: 2,
+          slug: '/'
+        },
+
+        {
+          title: 'sub2',
+          aposMode: 'draft',
+          level: 2,
+          rank: 1,
+          slug: '/'
+        },
+        {
+          title: 'doc1',
+          aposMode: 'published'
+        },
+        {
+          title: 'sub sub1 bis',
+          aposMode: 'draft',
+          level: 3,
+          rank: 2,
+          slug: '/'
+        },
+        {
+          title: 'doc3',
+          aposMode: 'draft'
+        },
+        {
+          title: 'sub sub1',
+          aposMode: 'draft',
+          level: 3,
+          rank: 1,
+          slug: '/'
+        },
+        {
+          title: 'sub sub1',
+          aposMode: 'published',
+          level: 3,
+          rank: 1,
+          slug: '/'
+        },
+        {
+          title: 'doc3',
+          aposMode: 'published'
+        },
+        {
+          title: 'sub sub1 bis',
+          aposMode: 'published',
+          level: 3,
+          rank: 2,
+          slug: '/'
+        },
+        {
+          title: 'doc2',
+          aposMode: 'published'
+        },
+        {
+          title: 'doc2',
+          aposMode: 'draft'
+        },
+        {
+          title: 'sub1',
+          aposMode: 'published',
+          level: 2,
+          rank: 1,
+          slug: '/'
+        },
+        {
+          title: 'parent2',
+          aposMode: 'published',
+          level: 1,
+          rank: 2,
+          slug: '/'
+        },
+        {
+          title: 'sub1',
+          aposMode: 'draft',
+          level: 2,
+          rank: 1,
+          slug: '/'
+        },
+        {
+          title: 'parent1',
+          aposMode: 'published',
+          level: 1,
+          rank: 1,
+          slug: '/'
+        },
+        {
+          title: 'parent1',
+          aposMode: 'draft',
+          level: 1,
+          rank: 1,
+          slug: '/'
+        },
+
+        {
+          title: 'parent2',
+          aposMode: 'draft',
+          level: 1,
+          rank: 2,
+          slug: '/'
+        }
+      ];
+      importExportManager.sortDocs(docs);
+
+      const actual = docs.map(({ title, aposMode }) => `${title}:${aposMode}`);
+      const expected = [
+        'parent1:draft', 'parent2:draft',
+        'sub2:draft', 'sub1:draft',
+        'sub2 bis:draft', 'sub sub1:draft',
+        'sub sub1 bis:draft', 'doc1:draft',
+        'doc3:draft', 'doc2:draft',
+        'parent1:published', 'parent2:published',
+        'sub2:published', 'sub1:published',
+        'sub2 bis:published', 'sub sub1:published',
+        'sub sub1 bis:published', 'doc1:published',
+        'doc3:published', 'doc2:published'
+      ];
+
+      assert.deepEqual(actual, expected);
+    });
+
   });
 });
