@@ -73,6 +73,8 @@
 
 <script>
 import bigUpload from 'Modules/@apostrophecms/http/big-upload-client.js';
+import { useNotificationStore } from 'Modules/@apostrophecms/ui/stores/notification.js';
+import { mapActions } from 'pinia';
 
 export default {
   props: {
@@ -153,6 +155,7 @@ export default {
   },
 
   methods: {
+    ...mapActions(useNotificationStore, [ 'updateClientNotif', 'dismiss' ]),
     ready() {
       this.$refs.cancelButton.$el.querySelector('button').focus();
     },
@@ -167,6 +170,21 @@ export default {
     cancel () {
       this.modal.showModal = false;
     },
+    progress(notifId) {
+      return (processed, total) => {
+        if (processed === total) {
+          return this.dismiss(notifId);
+        }
+
+        this.updateClientNotif(notifId, {
+          progress: {
+            processed,
+            total,
+            percentage: !total ? 0 : (processed / total * 100).toFixed(2)
+          }
+        });
+      };
+    },
     async runImport() {
       if (!this.universalModuleAction) {
         console.error('AposImportModal: No module action found');
@@ -177,13 +195,25 @@ export default {
         return;
       }
       apos.bus.$emit('import-export-import-started');
+
+      const notifId = await apos.notify('Uploading...', {
+        type: 'progress',
+        clientOnly: true,
+        progress: {
+          total: 1,
+          processed: 0,
+          percentage: 0
+        }
+      });
+
       bigUpload(`${this.universalModuleAction}/${this.action}`, {
         files: {
           file: this.selectedFile
         },
         body: {
           importDraftsOnly: this.checked.includes('importDraftsOnly')
-        }
+        },
+        progress: this.progress(notifId)
       }).catch(() => {
         apos.bus.$emit('import-export-import-ended');
       });
