@@ -1,5 +1,11 @@
 # Changelog
 
+## UNRELEASED
+
+### Changes
+
+* Hide the `importDraftsOnly` checkbox for autopublished documents. 
+
 ## 2.6.0 (2025-01-27)
 
 ### Adds
