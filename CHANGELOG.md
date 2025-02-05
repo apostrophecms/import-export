@@ -1,5 +1,12 @@
 # Changelog
 
+## UNRELEASED
+
+### Adds
+
+* Adds a method to sort all exported documents, makes sure that parent pages come always first.
+* Uses the new big-upload feature of apostrophe to allow very large export files to be imported.
+
 ## 2.6.0 (2025-01-27)
 
 ### Adds
