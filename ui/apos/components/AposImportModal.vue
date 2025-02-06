@@ -75,6 +75,8 @@
 </template>
 
 <script>
+import bigUpload from 'Modules/@apostrophecms/http/big-upload-client.js';
+
 export default {
   props: {
     // The Manager context menu items send moduleAction
@@ -180,18 +182,15 @@ export default {
         });
         return;
       }
-      const formData = new FormData();
-      formData.append('file', this.selectedFile);
-      formData.append('importDraftsOnly', this.checked.includes('importDraftsOnly'));
-
       apos.bus.$emit('import-export-import-started');
-      apos.http.post(`${this.universalModuleAction}/${this.action}`, {
-        body: formData
+      bigUpload(`${this.universalModuleAction}/${this.action}`, {
+        files: {
+          file: this.selectedFile
+        },
+        body: {
+          importDraftsOnly: this.checked.includes('importDraftsOnly')
+        }
       }).catch(() => {
-        apos.notify('aposImportExport:importFailed', {
-          type: 'danger',
-          dismiss: true
-        });
         apos.bus.$emit('import-export-import-ended');
       });
 

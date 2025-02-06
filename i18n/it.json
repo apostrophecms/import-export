@@ -16,8 +16,6 @@
   "exporting": "Esportazione {{ type }}...",
   "import": "Importa {{ type }}",
   "importCleanFailed": "La pulizia del file importato sul server è fallita.",
-  "importWithCurrentLocaleHeading": "Locale diverso rilevato",
-  "importWithCurrentLocaleDescription": "Questo file è stato esportato dalla locale \"{{ docsLocale }}\". Sei sicuro di volerlo importare nella locale \"{{ currentLocale }}\"?",
   "importDuplicateContinue": "Continua importazione",
   "importDuplicateDetected": "Duplicati rilevati.",
   "importDuplicateMessage": "Controlla gli elementi che desideri sovrascrivere durante l'importazione.",
@@ -26,12 +24,15 @@
   "importFileError": "L'importazione del file {{ format }} è fallita",
   "importModalDescription": "L'importazione di contenuti richiede un file {{ formats }}. Consulta la nostra <a href=\"https://github.com/apostrophecms/import-export\" target=\"_blank\">documentazione ufficiale</a>.",
   "importSucceed": "Importazione riuscita!",
+  "importWarning": "Importare un file di esportazione di Apostrophe su un sito web incompatibile potrebbe non comportarsi come previsto.",
+  "importWithCurrentLocaleDescription": "Questo file è stato esportato dalla locale \"{{ docsLocale }}\". Sei sicuro di volerlo importare nella locale \"{{ currentLocale }}\"?",
+  "importWithCurrentLocaleHeading": "Locale diverso rilevato",
   "imported": "Importato",
   "importing": "Importazione {{ type }}...",
-  "importWarning": "Importare un file di esportazione di Apostrophe su un sito web incompatibile potrebbe non comportarsi come previsto.",
   "lastEdited": "Ultima modifica",
   "or": "o",
   "title": "Titolo",
   "type": "Tipo",
-  "typeUnknown": "Tipo \"{{ type }}\" non valido."
+  "typeUnknown": "Tipo \"{{ type }}\" non valido.",
+  "unsupportedFileType": "Il tipo di file {{tipo }} non è supportato."
 }
