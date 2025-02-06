@@ -6,6 +6,7 @@
 
 * Adds a method to sort all exported documents, makes sure that parent pages come always first.
 * Uses the new big-upload feature of apostrophe to allow very large export files to be imported.
+* Handles progress notification when uploading document (before running the actual import).
 
 ## 2.6.0 (2025-01-27)
 
