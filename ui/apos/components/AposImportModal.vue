@@ -155,7 +155,7 @@ export default {
   },
 
   methods: {
-    ...mapActions(useNotificationStore, [ 'updateClientNotif', 'dismiss' ]),
+    ...mapActions(useNotificationStore, [ 'updateProcess', 'dismiss' ]),
     ready() {
       this.$refs.cancelButton.$el.querySelector('button').focus();
     },
@@ -176,18 +176,11 @@ export default {
           return this.dismiss(notifId);
         }
 
-        this.updateClientNotif(notifId, {
-          progress: {
-            processed,
-            total,
-            percentage: !total ? 0 : (processed / total * 100).toFixed(2)
-          }
-        });
+        this.updateProcess(notifId, processed, total);
       };
     },
     async runImport() {
       if (!this.universalModuleAction) {
-        console.error('AposImportModal: No module action found');
         apos.notify('aposImportExport:importFailed', {
           type: 'danger',
           dismiss: true
@@ -196,13 +189,11 @@ export default {
       }
       apos.bus.$emit('import-export-import-started');
 
-      const notifId = await apos.notify('Uploading...', {
+      const notifId = await apos.notify('apostrophe:uploading', {
         type: 'progress',
-        clientOnly: true,
-        progress: {
-          total: 1,
-          processed: 0,
-          percentage: 0
+        icon: 'cloud-upload-icon',
+        interpolate: {
+          name: this.selectedFile.name
         }
       });
 
