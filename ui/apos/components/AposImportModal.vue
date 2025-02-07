@@ -170,7 +170,7 @@ export default {
     cancel () {
       this.modal.showModal = false;
     },
-    progress(notifId) {
+    instantiateProcess(notifId) {
       return (processed, total) => {
         if (processed === total) {
           return this.dismiss(notifId);
@@ -181,6 +181,7 @@ export default {
     },
     async runImport() {
       if (!this.universalModuleAction) {
+        console.error('AposImportModal: No module action found');
         apos.notify('aposImportExport:importFailed', {
           type: 'danger',
           dismiss: true
@@ -204,7 +205,7 @@ export default {
         body: {
           importDraftsOnly: this.checked.includes('importDraftsOnly')
         },
-        progress: this.progress(notifId)
+        progress: this.instantiateProcess(notifId)
       }).catch(() => {
         apos.bus.$emit('import-export-import-ended');
       });
