@@ -170,7 +170,7 @@ export default {
     cancel () {
       this.modal.showModal = false;
     },
-    instantiateProcess(notifId) {
+    startProcess(notifId) {
       return (processed, total) => {
         if (processed === total) {
           return this.dismiss(notifId);
@@ -205,7 +205,7 @@ export default {
         body: {
           importDraftsOnly: this.checked.includes('importDraftsOnly')
         },
-        progress: this.instantiateProcess(notifId)
+        progress: this.startProcess(notifId)
       }).catch(() => {
         apos.bus.$emit('import-export-import-ended');
       });
