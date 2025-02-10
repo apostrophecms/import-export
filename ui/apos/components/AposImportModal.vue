@@ -31,7 +31,10 @@
             class="apos-import__warning"
             :modifiers="[ 'apos-is-warning', 'apos-is-filled' ]"
           />
-          <div class="apos-import__import-drafts-only-wrapper">
+          <div
+            v-if="showImportDraftsOnlyOption"
+            class="apos-import__import-drafts-only-wrapper"
+          >
             <AposCheckbox
               v-model="checked"
               class="apos-import__import-drafts-only"
@@ -126,6 +129,9 @@ export default {
       // Use the module label, fallback to the plural label (which is most
       // likely empty).
       return this.$t(apos.modules[this.moduleName]?.label ?? this.labels.plural);
+    },
+    showImportDraftsOnlyOption() {
+      return apos.modules[this.moduleName]?.autopublish !== true;
     },
     formats() {
       return apos.modules['@apostrophecms/import-export'].formats;

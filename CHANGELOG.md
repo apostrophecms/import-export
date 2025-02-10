@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+### Changes
+
+* Hide the `importDraftsOnly` checkbox for autopublished documents. 
+
 ### Adds
 
 * Adds a method to sort all exported documents, makes sure that parent pages come always first.
