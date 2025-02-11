@@ -12,12 +12,16 @@
       <AposModalBody>
         <template #bodyMain>
           <h2 class="apos-import__heading">
-            {{ $t('aposImportExport:import', { type: moduleLabel }) }}
+            {{ $t("aposImportExport:import", { type: moduleLabel }) }}
           </h2>
           <!-- eslint-disable vue/no-v-html -->
           <p
             class="apos-import__description"
-            v-html="$t('aposImportExport:importModalDescription', { formats: formatsLabel })"
+            v-html="
+              $t('aposImportExport:importModalDescription', {
+                formats: formatsLabel,
+              })
+            "
           />
           <!-- eslint-enable vue/no-v-html -->
           <AposFile
@@ -29,7 +33,7 @@
           <AposLabel
             label="aposImportExport:importWarning"
             class="apos-import__warning"
-            :modifiers="[ 'apos-is-warning', 'apos-is-filled' ]"
+            :modifiers="['apos-is-warning', 'apos-is-filled']"
           />
           <div class="apos-import__import-drafts-only-wrapper">
             <AposCheckbox
@@ -37,7 +41,7 @@
               class="apos-import__import-drafts-only"
               :choice="{
                 value: 'importDraftsOnly',
-                label: $t('aposImportExport:importDraftsOnly')
+                label: $t('aposImportExport:importDraftsOnly'),
               }"
               :field="{
                 name: 'importDraftsOnly',
@@ -102,10 +106,12 @@ export default {
   },
   emits: [ 'safe-close' ],
 
-  data () {
-    const checked = apos.modules['@apostrophecms/import-export'].importDraftsOnlyDefault === true
-      ? [ 'importDraftsOnly' ]
-      : [];
+  data() {
+    const checked =
+      apos.modules['@apostrophecms/import-export'].importDraftsOnlyDefault ===
+      true
+        ? [ 'importDraftsOnly' ]
+        : [];
 
     return {
       modal: {
@@ -127,20 +133,20 @@ export default {
       }
       // Use the module label, fallback to the plural label (which is most
       // likely empty).
-      return this.$t(apos.modules[this.moduleName]?.label ?? this.labels.plural);
+      return this.$t(
+        apos.modules[this.moduleName]?.label ?? this.labels.plural
+      );
     },
     formats() {
       return apos.modules['@apostrophecms/import-export'].formats;
     },
     formatsLabel() {
       return this.formats
-        .map(format => format.label)
+        .map((format) => format.label)
         .join(` ${this.$t('aposImportExport:or')} `);
     },
     formatsExtension() {
-      return this.formats
-        .map(format => format.allowedExtension)
-        .join(',');
+      return this.formats.map((format) => format.allowedExtension).join(',');
     },
     universalModuleAction() {
       if (this.moduleAction) {
@@ -159,15 +165,15 @@ export default {
     ready() {
       this.$refs.cancelButton.$el.querySelector('button').focus();
     },
-    uploadImportFile (file) {
+    uploadImportFile(file) {
       if (file) {
         this.selectedFile = file;
       }
     },
-    updateImportFile () {
+    updateImportFile() {
       this.selectedFile = null;
     },
-    cancel () {
+    cancel() {
       this.modal.showModal = false;
     },
     startProcess(notifId) {
@@ -178,6 +184,21 @@ export default {
 
         this.updateProcess(notifId, processed, total);
       };
+    },
+    async upload(notifId) {
+      try {
+        await bigUpload(`${this.universalModuleAction}/${this.action}`, {
+          files: {
+            file: this.selectedFile
+          },
+          body: {
+            importDraftsOnly: this.checked.includes('importDraftsOnly')
+          },
+          progress: this.startProcess(notifId)
+        });
+      } catch (e) {
+        apos.bus.$emit('import-export-import-ended');
+      }
     },
     async runImport() {
       if (!this.universalModuleAction) {
@@ -198,17 +219,8 @@ export default {
         }
       });
 
-      bigUpload(`${this.universalModuleAction}/${this.action}`, {
-        files: {
-          file: this.selectedFile
-        },
-        body: {
-          importDraftsOnly: this.checked.includes('importDraftsOnly')
-        },
-        progress: this.startProcess(notifId)
-      }).catch(() => {
-        apos.bus.$emit('import-export-import-ended');
-      });
+      // Do not await this (upload being processed while modal is closed)
+      this.upload(notifId);
 
       this.modal.showModal = false;
     }
@@ -216,7 +228,7 @@ export default {
 };
 </script>
 
-<style scoped lang='scss'>
+<style scoped lang="scss">
 .apos-import {
   z-index: $z-index-modal;
   position: fixed;
@@ -312,5 +324,4 @@ export default {
 :deep(.apos-modal__body) {
   padding: 30px 20px;
 }
-
 </style>
