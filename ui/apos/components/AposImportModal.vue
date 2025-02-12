@@ -12,14 +12,14 @@
       <AposModalBody>
         <template #bodyMain>
           <h2 class="apos-import__heading">
-            {{ $t("aposImportExport:import", { type: moduleLabel }) }}
+            {{ $t('aposImportExport:import', { type: moduleLabel }) }}
           </h2>
           <!-- eslint-disable vue/no-v-html -->
           <p
             class="apos-import__description"
             v-html="
               $t('aposImportExport:importModalDescription', {
-                formats: formatsLabel,
+                formats: formatsLabel
               })
             "
           />
@@ -41,7 +41,7 @@
               class="apos-import__import-drafts-only"
               :choice="{
                 value: 'importDraftsOnly',
-                label: $t('aposImportExport:importDraftsOnly'),
+                label: $t('aposImportExport:importDraftsOnly')
               }"
               :field="{
                 name: 'importDraftsOnly',
@@ -108,8 +108,7 @@ export default {
 
   data() {
     const checked =
-      apos.modules['@apostrophecms/import-export'].importDraftsOnlyDefault ===
-      true
+      apos.modules['@apostrophecms/import-export'].importDraftsOnlyDefault === true
         ? [ 'importDraftsOnly' ]
         : [];
 
