@@ -17,7 +17,11 @@
           <!-- eslint-disable vue/no-v-html -->
           <p
             class="apos-import__description"
-            v-html="$t('aposImportExport:importModalDescription', { formats: formatsLabel })"
+            v-html="
+              $t('aposImportExport:importModalDescription', {
+                formats: formatsLabel
+              })
+            "
           />
           <!-- eslint-enable vue/no-v-html -->
           <AposFile
@@ -29,7 +33,7 @@
           <AposLabel
             label="aposImportExport:importWarning"
             class="apos-import__warning"
-            :modifiers="[ 'apos-is-warning', 'apos-is-filled' ]"
+            :modifiers="['apos-is-warning', 'apos-is-filled']"
           />
           <div
             v-if="showImportDraftsOnlyOption"
@@ -76,6 +80,8 @@
 
 <script>
 import bigUpload from 'Modules/@apostrophecms/http/big-upload-client.js';
+import { useNotificationStore } from 'Modules/@apostrophecms/ui/stores/notification.js';
+import { mapActions } from 'pinia';
 
 export default {
   props: {
@@ -103,10 +109,11 @@ export default {
   },
   emits: [ 'safe-close' ],
 
-  data () {
-    const checked = apos.modules['@apostrophecms/import-export'].importDraftsOnlyDefault === true
-      ? [ 'importDraftsOnly' ]
-      : [];
+  data() {
+    const checked =
+      apos.modules['@apostrophecms/import-export'].importDraftsOnlyDefault === true
+        ? [ 'importDraftsOnly' ]
+        : [];
 
     return {
       modal: {
@@ -128,7 +135,9 @@ export default {
       }
       // Use the module label, fallback to the plural label (which is most
       // likely empty).
-      return this.$t(apos.modules[this.moduleName]?.label ?? this.labels.plural);
+      return this.$t(
+        apos.modules[this.moduleName]?.label ?? this.labels.plural
+      );
     },
     showImportDraftsOnlyOption() {
       return apos.modules[this.moduleName]?.autopublish !== true;
@@ -138,13 +147,11 @@ export default {
     },
     formatsLabel() {
       return this.formats
-        .map(format => format.label)
+        .map((format) => format.label)
         .join(` ${this.$t('aposImportExport:or')} `);
     },
     formatsExtension() {
-      return this.formats
-        .map(format => format.allowedExtension)
-        .join(',');
+      return this.formats.map((format) => format.allowedExtension).join(',');
     },
     universalModuleAction() {
       if (this.moduleAction) {
@@ -159,19 +166,44 @@ export default {
   },
 
   methods: {
+    ...mapActions(useNotificationStore, [ 'updateProcess', 'dismiss' ]),
     ready() {
       this.$refs.cancelButton.$el.querySelector('button').focus();
     },
-    uploadImportFile (file) {
+    uploadImportFile(file) {
       if (file) {
         this.selectedFile = file;
       }
     },
-    updateImportFile () {
+    updateImportFile() {
       this.selectedFile = null;
     },
-    cancel () {
+    cancel() {
       this.modal.showModal = false;
+    },
+    startProcess(notifId) {
+      return (processed, total) => {
+        if (processed === total) {
+          return this.dismiss(notifId);
+        }
+
+        this.updateProcess(notifId, processed, total);
+      };
+    },
+    async upload(notifId) {
+      try {
+        await bigUpload(`${this.universalModuleAction}/${this.action}`, {
+          files: {
+            file: this.selectedFile
+          },
+          body: {
+            importDraftsOnly: this.checked.includes('importDraftsOnly')
+          },
+          progress: this.startProcess(notifId)
+        });
+      } catch (e) {
+        apos.bus.$emit('import-export-import-ended');
+      }
     },
     async runImport() {
       if (!this.universalModuleAction) {
@@ -183,16 +215,17 @@ export default {
         return;
       }
       apos.bus.$emit('import-export-import-started');
-      bigUpload(`${this.universalModuleAction}/${this.action}`, {
-        files: {
-          file: this.selectedFile
-        },
-        body: {
-          importDraftsOnly: this.checked.includes('importDraftsOnly')
+
+      const notifId = await apos.notify('apostrophe:uploading', {
+        type: 'progress',
+        icon: 'cloud-upload-icon',
+        interpolate: {
+          name: this.selectedFile.name
         }
-      }).catch(() => {
-        apos.bus.$emit('import-export-import-ended');
       });
+
+      // Do not await this (upload being processed while modal is closed)
+      this.upload(notifId);
 
       this.modal.showModal = false;
     }
@@ -200,7 +233,7 @@ export default {
 };
 </script>
 
-<style scoped lang='scss'>
+<style scoped lang="scss">
 .apos-import {
   z-index: $z-index-modal;
   position: fixed;
@@ -296,5 +329,4 @@ export default {
 :deep(.apos-modal__body) {
   padding: 30px 20px;
 }
-
 </style>
