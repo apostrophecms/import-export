@@ -218,6 +218,7 @@ export default {
 
       const notifId = await apos.notify('apostrophe:uploading', {
         type: 'progress',
+        clientOnly: true,
         icon: 'cloud-upload-icon',
         interpolate: {
           name: this.selectedFile.name
