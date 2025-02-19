@@ -1,6 +1,6 @@
 {
   "name": "@apostrophecms/import-export",
-  "version": "2.6.0",
+  "version": "3.0.0",
   "description": "Import Export Documents for ApostropheCMS",
   "main": "index.js",
   "scripts": {

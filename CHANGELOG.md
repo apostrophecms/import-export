@@ -1,9 +1,10 @@
 # Changelog
 
-## UNRELEASED
+## 3.0.0 (2025-02-19)
 
 ### Changes
 
+* **Major version change:** 3.0.0 because this release is compatible only with ApostropheCMS 4.x. If you have not upgraded to ApostropheCMS 4.x, [you should do so.](https://docs.apostrophecms.org/guide/migration/upgrading-3-to-4.html#how-to-upgrade-your-project). For your ApostropheCMS 4.x project, make sure you change the dependency in `package.json` to `^3.0.0` to get this version.
 * Hide the `importDraftsOnly` checkbox for autopublished documents. 
 
 ### Adds
