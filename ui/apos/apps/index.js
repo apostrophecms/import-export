@@ -13,7 +13,6 @@ export default () => {
   });
 
   function openUrl(event) {
-    console.log('openUrl', event);
     if (event.url) {
       window.open(event.url, '_blank');
     }
@@ -25,7 +24,6 @@ export default () => {
 
   function removeBeforeUnloadListenerAndReport(event) {
     window.removeEventListener('beforeunload', warningImport);
-    console.log('removeBeforeUnloadListenerAndReport', event);
     showReportModal(event);
   }
 
@@ -55,8 +53,6 @@ export default () => {
         typeLabel: typeLabel(log.type)
       };
     });
-
-    console.log('showReportModal', items);
 
     await apos.report(
       {
@@ -150,7 +146,6 @@ export default () => {
   }
 
   async function handleDuplicates(event) {
-    console.log('handleDuplicates', event);
     if (event.duplicatedDocs.length) {
       await apos.modal.execute('AposDuplicateImportModal', event);
     }
