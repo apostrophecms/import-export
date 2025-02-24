@@ -61,9 +61,15 @@ export default () => {
         items,
         headers: [
           {
+            name: '_id',
+            label: '_id',
+            visibility: 'export'
+          },
+          {
             name: 'aposDocId',
             label: '_id',
-            format: 'last:5'
+            format: 'last:5',
+            visibility: 'table'
           },
           {
             name: 'typeLabel',
