@@ -46,11 +46,13 @@ export default () => {
         .find(
           (locale) => locale.name === log.aposLocale?.split(':')[0]
         )?.label || (log.aposLocale ? 'n/a' : '-');
+      const mode = log._id.split(':')[2];
       return {
         ...log,
         localeLabel: locale,
         title: log.title || '-',
-        typeLabel: typeLabel(log.type)
+        typeLabel: typeLabel(log.type),
+        aposModeLabel: mode ?? '-'
       };
     });
 
@@ -69,6 +71,11 @@ export default () => {
             name: 'aposDocId',
             label: '_id',
             format: 'last:5',
+            visibility: 'table'
+          },
+          {
+            name: 'aposModeLabel',
+            label: 'Mode',
             visibility: 'table'
           },
           {
@@ -97,11 +104,6 @@ export default () => {
             name: 'detail',
             label: 'apostrophe:details',
             width: '20%'
-          },
-          {
-            name: '_url',
-            label: 'URL',
-            visibility: 'export'
           }
         ]
       },
