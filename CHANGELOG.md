@@ -1,5 +1,11 @@
 # Changelog
 
+## UNRELEASED
+
+### Fixes
+
+* Better english wording when import succeeds.
+
 ## 3.0.0 (2025-02-19)
 
 ### Changes
