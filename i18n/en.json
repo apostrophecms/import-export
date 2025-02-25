@@ -1,6 +1,6 @@
 {
   "dayjsTitleDateFormat": "MMM D, YYYY, hh:mm:ss A",
-  "errorCantImportExportType": "Can't import/export type \"{{ type }}\"",
+  "errorCantImportType": "Can't import type \"{{ type }}\"",
   "errorInsertingDocument": "Inserting/updating failed with message: {{ message }}",
   "export": "Export {{ type }}",
   "exportAttachmentError": "Some attachments could not be added to the {{ format }} file",
@@ -34,6 +34,7 @@
   "imported": "Imported",
   "importing": "Importing {{ type }}...",
   "lastEdited": "Last edited",
+  "mode": "Mode",
   "or": "or",
   "title": "Title",
   "type": "Type",

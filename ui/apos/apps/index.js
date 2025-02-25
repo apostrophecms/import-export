@@ -75,7 +75,7 @@ export default () => {
           },
           {
             name: 'aposModeLabel',
-            label: 'Mode',
+            label: 'aposImportExport:mode',
             visibility: 'table'
           },
           {
