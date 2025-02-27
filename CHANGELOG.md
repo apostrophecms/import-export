@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+### Adds
+
+* Add error reporting UI (modal) for failed imports.
+
 ### Fixes
 
 * Better english wording when import succeeds.

@@ -219,7 +219,8 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
       const enDuplicates = await importExportManager.checkDuplicates(req, {
         reporting,
         docs: enDocs,
-        failedIds
+        failedIds,
+        failedLog: {}
       });
 
       const frDocs = enDocs.map((doc) => {
@@ -232,7 +233,8 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
       const frDuplicates = await importExportManager.checkDuplicates(frReq, {
         reporting,
         docs: frDocs,
-        failedIds
+        failedIds,
+        failedLog: {}
       });
 
       const actual = {

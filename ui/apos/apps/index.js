@@ -6,7 +6,7 @@ export default () => {
       ready = true;
       apos.bus.$on('import-export-export-download', openUrl);
       apos.bus.$on('import-export-import-started', addBeforeUnloadListener);
-      apos.bus.$on('import-export-import-ended', removeBeforeUnloadListener);
+      apos.bus.$on('import-export-import-ended', removeBeforeUnloadListenerAndReport);
       apos.bus.$on('import-export-import-locale-differs', handleDifferentLocale);
       apos.bus.$on('import-export-import-duplicates', handleDuplicates);
     }
@@ -22,8 +22,96 @@ export default () => {
     window.addEventListener('beforeunload', warningImport);
   }
 
-  function removeBeforeUnloadListener() {
+  function removeBeforeUnloadListenerAndReport(event) {
     window.removeEventListener('beforeunload', warningImport);
+    showReportModal(event);
+  }
+
+  async function showReportModal(event) {
+    if (!event?.failedLog?.length) {
+      return;
+    }
+
+    const locales = Object.entries(window.apos.i18n.locales).map(
+      ([ locale, options ]) => {
+        return {
+          name: locale,
+          label: options.label || locale
+        };
+      }
+    );
+
+    const items = event.failedLog.map((log) => {
+      const locale = locales
+        .find(
+          (locale) => locale.name === log.aposLocale?.split(':')[0]
+        )?.label || (log.aposLocale ? 'n/a' : '-');
+      const mode = log._id.split(':')[2];
+      return {
+        ...log,
+        localeLabel: locale,
+        title: log.title || '-',
+        typeLabel: typeLabel(log.type),
+        aposModeLabel: mode ?? '-'
+      };
+    });
+
+    await apos.report(
+      {
+        heading: 'aposImportExport:importFailedForSome',
+        footerMessageDanger: 'aposImportExport:importFailedForSome',
+        items,
+        headers: [
+          {
+            name: '_id',
+            label: '_id',
+            visibility: 'export'
+          },
+          {
+            name: 'aposDocId',
+            label: '_id',
+            format: 'last:5',
+            visibility: 'table'
+          },
+          {
+            name: 'aposModeLabel',
+            label: 'aposImportExport:mode',
+            visibility: 'table'
+          },
+          {
+            name: 'typeLabel',
+            label: 'apostrophe:type',
+            sortable: true,
+            translate: true
+          },
+          {
+            name: 'type',
+            label: 'type',
+            visibility: 'export'
+          },
+          {
+            name: 'localeLabel',
+            label: 'apostrophe:locale',
+            sortable: true
+          },
+          {
+            name: 'title',
+            label: 'apostrophe:title',
+            width: '20%',
+            sortable: true
+          },
+          {
+            name: 'detail',
+            label: 'apostrophe:details',
+            width: '20%'
+          }
+        ]
+      },
+      {
+        // We don't need the `log.type` property for now (it's our doc.type).
+        mode: 'all'
+      }
+    );
   }
 
   async function handleDifferentLocale(event) {
@@ -74,5 +162,14 @@ export default () => {
   function warningImport(event) {
     event.preventDefault();
     event.returnValue = '';
+  }
+
+  // Convert doc.type into a human readable label.
+  function typeLabel(name) {
+    const module = apos.modules[name] || {};
+    if (module.action === '@apostrophecms/page') {
+      return 'apostrophe:page';
+    }
+    return module.label || name;
   }
 };
