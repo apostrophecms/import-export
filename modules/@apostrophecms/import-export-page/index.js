@@ -74,7 +74,11 @@ module.exports = {
           return self.apos.modules['@apostrophecms/job'].run(
             req,
             (req, reporting) => self.apos.modules['@apostrophecms/import-export']
-              .export(req, self, reporting)
+              .export(req, self, reporting),
+            {
+              action: 'export',
+              docTypes: []
+            }
           );
         }
       }
