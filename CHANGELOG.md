@@ -9,6 +9,7 @@
 ### Fixes
 
 * Better english wording when import succeeds.
+* Adds missing information to export and import batch operation jobs.
 
 ## 3.0.0 (2025-02-19)
 
