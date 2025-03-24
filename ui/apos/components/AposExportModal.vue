@@ -41,7 +41,8 @@
               />
             </div>
 
-            <!-- TODO: Next iteration should support inclusion of page children while exporting -->
+            <!-- TODO: Next iteration should support inclusion of page
+                        children while exporting -->
             <!-- <div -->
             <!--   v-if="moduleName === '@apostrophecms/page'" -->
             <!--   class="apos-export__settings-row" -->
@@ -244,8 +245,12 @@ export default {
         }
       });
       this.checkedRelatedTypes = this.relatedTypes;
+      const computeHeight = (length) => length *
+        CONTAINER_ITEM_HEIGHT +
+        CONTAINER_DESCRIPTION_HEIGHT;
+
       const height = this.relatedTypes.length
-        ? this.checkedRelatedTypes.length * CONTAINER_ITEM_HEIGHT + CONTAINER_DESCRIPTION_HEIGHT
+        ? computeHeight(this.relatedTypes.length)
         : CONTAINER_MINIMUM_HEIGHT;
 
       await this.$nextTick();

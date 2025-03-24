@@ -766,8 +766,9 @@ describe('@apostrophecms/import-export:import-page', function () {
       body: {
         _ids: ids.map(({ _id }) => _id),
         extension: 'gzip',
-        // Because @apostrophecms/any-page-type is what is allowed by default by the rich text editor link widget,
-        // and will show up accordingly as a related type choice. An explicit page type here won't match
+        // Because @apostrophecms/any-page-type is what is allowed by default by
+        // the rich text editor link widget, and will show up accordingly as a related
+        // type choice. An explicit page type here won't match
         relatedTypes: [ '@apostrophecms/image', 'test-page' ],
         type: req.t('apostrophe:pages')
       }
