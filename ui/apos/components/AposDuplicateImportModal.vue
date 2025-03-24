@@ -117,6 +117,10 @@ export default {
       type: Boolean,
       required: true
     },
+    translate: {
+      type: Boolean,
+      required: true
+    },
     overrideLocale: {
       type: Boolean,
       required: true
@@ -228,6 +232,7 @@ export default {
           exportPathId: this.exportPathId,
           jobId: this.jobId,
           importDraftsOnly: this.importDraftsOnly,
+          translate: this.translate,
           overrideLocale: this.overrideLocale,
           formatLabel: this.formatLabel
         }

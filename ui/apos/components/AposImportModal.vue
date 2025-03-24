@@ -37,7 +37,7 @@
           />
           <div
             v-if="showImportDraftsOnlyOption"
-            class="apos-import__import-drafts-only-wrapper"
+            class="apos-import__checkbox-wrapper"
           >
             <AposCheckbox
               v-model="checked"
@@ -53,6 +53,26 @@
             <AposIndicator
               icon="information-outline-icon"
               tooltip="aposImportExport:importDraftsOnlyTooltip"
+            />
+          </div>
+          <div
+            v-if="showTranslateOption"
+            class="apos-import__checkbox-wrapper"
+          >
+            <AposCheckbox
+              v-model="checked"
+              class="apos-import__import-drafts-only"
+              :choice="{
+                value: 'translate',
+                label: $t('aposImportExport:importTranslate')
+              }"
+              :field="{
+                name: 'translate',
+              }"
+            />
+            <AposIndicator
+              icon="information-outline-icon"
+              tooltip="aposImportExport:importTranslateTooltip"
             />
           </div>
           <div class="apos-import__separator" />
@@ -142,6 +162,9 @@ export default {
     showImportDraftsOnlyOption() {
       return apos.modules[this.moduleName]?.autopublish !== true;
     },
+    showTranslateOption() {
+      return apos.modules['@apostrophecms/translation'].enabled === true;
+    },
     formats() {
       return apos.modules['@apostrophecms/import-export'].formats;
     },
@@ -197,7 +220,8 @@ export default {
             file: this.selectedFile
           },
           body: {
-            importDraftsOnly: this.checked.includes('importDraftsOnly')
+            importDraftsOnly: this.checked.includes('importDraftsOnly'),
+            translate: this.checked.includes('translate')
           },
           progress: this.startProcess(notifId)
         });
@@ -261,7 +285,7 @@ export default {
     }
   }
 
-  &__import-drafts-only-wrapper {
+  &__checkbox-wrapper {
     display: flex;
     align-items: center;
     margin-top: 10px;

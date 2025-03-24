@@ -1,5 +1,11 @@
 # Changelog
 
+## UNRELEASED
+
+### Adds
+
+* Adds support for translating content while importing via the Automatic Translation module (when available).
+
 ## 3.1.0 (2025-03-19)
 
 ### Adds
