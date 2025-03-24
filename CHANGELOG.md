@@ -2,7 +2,7 @@
 
 ## UNRELEASED
 
-### Changes
+### Fixes
 
 * Fix "include related documents" modal height.
 
