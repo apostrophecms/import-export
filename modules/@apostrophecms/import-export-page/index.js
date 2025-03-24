@@ -77,6 +77,7 @@ module.exports = {
               .export(req, self, reporting),
             {
               action: 'export',
+              ids: req.body._ids,
               docTypes: []
             }
           );
