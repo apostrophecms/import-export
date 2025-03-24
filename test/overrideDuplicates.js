@@ -2,7 +2,11 @@ const assert = require('assert').strict;
 const t = require('apostrophe/test-lib/util.js');
 const path = require('path');
 const {
-  getAppConfig, insertAdminUser, insertPiecesAndPages, deletePiecesAndPages, deleteAttachments
+  getAppConfig,
+  insertAdminUser,
+  insertPiecesAndPages,
+  deletePiecesAndPages,
+  deleteAttachments
 } = require('./util');
 
 describe('#overrideDuplicates - overriding locales integration tests', function() {
@@ -210,7 +214,9 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
       });
       const [ nonLocalized ] = await apos.doc.db.find({ title: 'nonLocalized1' }).toArray();
       const enArticles = await apos.article.find(req).toArray();
-      const parkedPages = await apos.page.find(req, { parkedId: { $exists: true } }).toArray();
+      const parkedPages = await apos.page
+        .find(req, { parkedId: { $exists: true } })
+        .toArray();
       const singleton = await apos.global.findGlobal(req);
 
       const failedIds = [];
