@@ -453,7 +453,6 @@ export default {
 }
 
 .apos-export__section-container {
-  height: var(--container-height);
   transition: height 200ms linear;
 }
 
