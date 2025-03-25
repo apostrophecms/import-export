@@ -148,6 +148,12 @@ If multiple locales are set up, the user will be prompted to choose between canc
 
 ![Screenshot highlighting the confirm modal letting the user choose between aborting on continuing the import when the docs locale is different from the site one.](https://static.apostrophecms.com/apostrophecms/import-export/images/different-locale-modal.png)
 
+### Automatic translation
+
+If the `@apostrophecms-pro/automatic-translation` module is installed, the import modal will offer a "Translate" checkbox. When selected, the module will automatically translate the imported documents to the current site's locale using the configured translation service.
+
+When the "Translate" checkbox is selected, the confirm modal letting the user choose between aborting on continuing the import when the docs locale is different from the site, will be suppressed and the import will proceed without any further user interaction.
+
 ## Importing as drafts only
 
 The import modal includes a checkbox labeled "_Import all documents as drafts_" that, when selected, imports the published version of documents in draft status only. This feature allows users to review and make modifications to imported documents before they are published.
