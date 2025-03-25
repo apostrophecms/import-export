@@ -440,7 +440,7 @@ export default {
 
   &.slide-enter-active,
   &.slide-leave-active {
-    transition: all 200ms linear;
+    transition: max-height 200ms linear;
   }
 
   &.slide-enter-from,
