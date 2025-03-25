@@ -385,10 +385,11 @@ export default {
 }
 
 .apos-export__settings-row--column {
+  overflow: hidden;
   flex-direction: column;
   gap: 20px;
   align-items: baseline;
-  height: calc(100% - 60px); // IMPORTANT: 60px is the sum of the margin-bottom, the gap and the margin-top of .apos-export__settings
+  height: auto;
   margin-bottom: 20px;
 }
 
@@ -435,7 +436,7 @@ export default {
 
 .apos-export__section--related-documents {
   overflow: hidden;
-  height: 315px;
+  max-height: 315px;
 
   &.slide-enter-active,
   &.slide-leave-active {
@@ -444,7 +445,7 @@ export default {
 
   &.slide-enter-from,
   &.slide-leave-to {
-    height: 0;
+    max-height: 0;
   }
 }
 </style>
