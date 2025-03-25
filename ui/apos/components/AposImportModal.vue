@@ -68,6 +68,7 @@
               }"
               :field="{
                 name: 'translate',
+                readOnly: translationOptionDisabled
               }"
             />
             <AposIndicator
@@ -165,6 +166,9 @@ export default {
     showTranslateOption() {
       return apos.modules['@apostrophecms/translation'].enabled === true;
     },
+    translationOptionDisabled() {
+      return this.fileExtension !== 'gz';
+    },
     formats() {
       return apos.modules['@apostrophecms/import-export'].formats;
     },
@@ -181,6 +185,12 @@ export default {
         return this.moduleAction;
       }
       return apos.modules[this.moduleName]?.action;
+    },
+    fileExtension() {
+      if (!this.selectedFile) {
+        return '';
+      }
+      return this.selectedFile.name.split('.').pop();
     }
   },
 
