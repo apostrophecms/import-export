@@ -70,7 +70,7 @@
           >
             <div
               v-show="!relatedDocumentsDisabled"
-              class="apos-export__section apos-export__section--related-documents"
+              class="apos-export__section apos-export__section__related-documents"
             >
               <div class="apos-export__settings">
                 {{ $t('aposImportExport:exportModalIncludeRelatedSettings') }}
@@ -362,6 +362,21 @@ export default {
     align-items: baseline;
     min-width: 100%;
   }
+
+  &__related-documents {
+    overflow: hidden;
+    max-height: 315px;
+
+    &.slide-enter-active,
+    &.slide-leave-active {
+      transition: max-height 200ms linear;
+    }
+
+    &.slide-enter-from,
+    &.slide-leave-to {
+      max-height: 0;
+    }
+  }
 }
 
 .apos-export__settings {
@@ -432,20 +447,5 @@ export default {
   max-height: 210px;
   overflow-y: overlay;
   width: 100%;
-}
-
-.apos-export__section--related-documents {
-  overflow: hidden;
-  max-height: 315px;
-
-  &.slide-enter-active,
-  &.slide-leave-active {
-    transition: max-height 200ms linear;
-  }
-
-  &.slide-enter-from,
-  &.slide-leave-to {
-    max-height: 0;
-  }
 }
 </style>
