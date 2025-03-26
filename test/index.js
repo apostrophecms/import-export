@@ -1930,6 +1930,136 @@ describe('@apostrophecms/import-export', function () {
 
       assert.deepEqual(actual, expected);
     });
+
+    it('should import and translate duplicated docs', async function () {
+      const req = apos.task.getReq();
+      const page1 = await apos.page.find(req, { title: 'page1' }).toObject();
+
+      req.body = {
+        _ids: [ page1._id ],
+        extension: 'gzip',
+        relatedTypes: [ 'article' ],
+        type: page1.type
+      };
+
+      const { url } = await importExportManager.export(req, apos.page);
+      const fileName = path.basename(url);
+      const exportFilePath = path.join(exportsPath, fileName);
+      const importFilePath = path.join(tempPath, fileName);
+      await fs.copyFile(exportFilePath, importFilePath);
+
+      req.body = {
+        translate: true
+      };
+      req.files = {
+        file: {
+          path: importFilePath,
+          type: mimeType
+        }
+      };
+
+      const {
+        duplicatedDocs,
+        importedAttachments,
+        exportPathId,
+        jobId,
+        notificationId,
+        formatLabel
+      } = await importExportManager.import(req);
+
+      // Copy the existing docs to the fr locale
+      const frReq = req.clone({
+        locale: 'fr'
+      });
+      for (const doc of duplicatedDocs) {
+        const manager = doc.type === 'default-page' ? apos.page : apos.article;
+        const orig = await manager.find(req, {
+          aposDocId: doc.aposDocId
+        }).toObject();
+        const localized = await manager.localize(req, orig, 'fr');
+        await manager.publish(frReq, localized);
+      }
+
+      delete req.files;
+      req.locale = 'fr';
+      req.body = {
+        docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
+        duplicatedDocs,
+        importedAttachments,
+        exportPathId,
+        jobId,
+        notificationId,
+        formatLabel,
+        translate: true,
+        overrideLocale: true
+      };
+
+      await importExportManager.overrideDuplicates(req);
+
+      const updatedDocs = await apos.doc.db
+        .find({
+          aposDocId: { $in: duplicatedDocs.map(({ aposDocId }) => aposDocId) },
+          aposMode: { $ne: 'previous' },
+          aposLocale: { $in: [ 'fr:draft', 'fr:published' ] }
+        })
+        .sort({
+          type: 1,
+          aposLocale: 1
+        })
+        .toArray();
+      const actualDocs = updatedDocs.map(doc => {
+        return {
+          title: doc.title,
+          type: doc.type,
+          aposLocale: doc.aposLocale,
+          modified: doc.modified ?? false
+        };
+      });
+      const job = await apos.modules['@apostrophecms/job'].db.findOne({ _id: jobId });
+
+      const actual = {
+        docs: actualDocs,
+        job: {
+          good: job.good,
+          total: job.total
+        }
+      };
+
+      const expected = {
+        docs: [
+          {
+            title: 'article2-en-fr-translated',
+            type: 'article',
+            aposLocale: 'fr:draft',
+            modified: true
+          },
+          {
+            title: 'article2',
+            type: 'article',
+            aposLocale: 'fr:published',
+            modified: false
+          },
+          {
+            title: 'page1-en-fr-translated',
+            type: 'default-page',
+            aposLocale: 'fr:draft',
+            modified: true
+          },
+          {
+            title: 'page1',
+            type: 'default-page',
+            aposLocale: 'fr:published',
+            modified: false
+          }
+        ],
+        job: {
+          good: 4,
+          total: 4
+        }
+      };
+
+      assert.deepEqual(actual, expected);
+    });
   });
 
   describe('#import - translations autopublish', function () {
