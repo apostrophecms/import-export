@@ -362,26 +362,33 @@ export default {
     align-items: baseline;
     min-width: 100%;
   }
+}
 
-  &__related-documents {
-    overflow: hidden;
-    max-height: 315px;
+.apos-export__section__related-documents {
+  overflow: hidden;
+  max-height: 315px;
 
-    &.slide-enter-active,
-    &.slide-leave-active {
-      transition: max-height 200ms linear;
+  &.slide-enter-active,
+  &.slide-leave-active {
+    transition: max-height 200ms linear;
 
-      // style-lint-disable-next-line
-      .apos-export__related-list {
-        overflow: hidden;
-      }
-    }
-
-    &.slide-enter-from,
-    &.slide-leave-to {
-      max-height: 0;
+    // Hide scrollbar during transition,
+    // otherwise it will always be visible during the animation
+    .apos-export__related-list {
+      overflow: hidden;
     }
   }
+
+  &.slide-enter-from,
+  &.slide-leave-to {
+    max-height: 0;
+  }
+}
+
+.apos-export__related-list {
+  max-height: 210px;
+  overflow-y: overlay;
+  width: 100%;
 }
 
 .apos-export__settings {
@@ -446,11 +453,5 @@ export default {
 
 .apos-export__btn :deep(.apos-button__label) {
   text-transform: capitalize;
-}
-
-.apos-export__related-list {
-  max-height: 210px;
-  overflow-y: overlay;
-  width: 100%;
 }
 </style>
