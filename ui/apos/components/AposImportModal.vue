@@ -44,6 +44,7 @@
               :field="{
                 name: 'importDraftsOnly',
               }"
+              data-apos-test="draftsOnlyCheckbox"
             />
             <AposIndicator
               icon="information-outline-icon"
@@ -65,6 +66,7 @@
                 name: 'translate',
                 readOnly: translationOptionDisabled
               }"
+              data-apos-test="translateCheckbox"
             />
             <AposIndicator
               icon="information-outline-icon"
