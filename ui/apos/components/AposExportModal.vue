@@ -370,6 +370,11 @@ export default {
     &.slide-enter-active,
     &.slide-leave-active {
       transition: max-height 200ms linear;
+
+      // style-lint-disable-next-line
+      .apos-export__related-list {
+        overflow: hidden;
+      }
     }
 
     &.slide-enter-from,
