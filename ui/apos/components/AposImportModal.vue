@@ -30,21 +30,16 @@
             @upload-file="uploadImportFile"
             @update="updateImportFile"
           />
-          <AposLabel
-            label="aposImportExport:importWarning"
-            class="apos-import__warning"
-            :modifiers="['apos-is-warning', 'apos-is-filled']"
-          />
           <div
             v-if="showImportDraftsOnlyOption"
             class="apos-import__checkbox-wrapper"
           >
             <AposCheckbox
               v-model="checked"
-              class="apos-import__import-drafts-only"
+              class="apos-import__import-checkbox"
               :choice="{
                 value: 'importDraftsOnly',
-                label: $t('aposImportExport:importDraftsOnly')
+                label: 'aposImportExport:importDraftsOnly'
               }"
               :field="{
                 name: 'importDraftsOnly',
@@ -61,10 +56,10 @@
           >
             <AposCheckbox
               v-model="checked"
-              class="apos-import__import-drafts-only"
+              class="apos-import__import-checkbox"
               :choice="{
                 value: 'translate',
-                label: $t('aposImportExport:importTranslate')
+                label: 'aposImportExport:importTranslate'
               }"
               :field="{
                 name: 'translate',
@@ -74,6 +69,13 @@
             <AposIndicator
               icon="information-outline-icon"
               tooltip="aposImportExport:importTranslateTooltip"
+            />
+          </div>
+          <div class="apos-import__warning-wrapper">
+            <AposLabel
+              label="aposImportExport:importWarning"
+              class="apos-import__warning"
+              :modifiers="['apos-is-warning', 'apos-is-filled']"
             />
           </div>
           <div class="apos-import__separator" />
@@ -299,6 +301,14 @@ export default {
     display: flex;
     align-items: center;
     margin-top: 10px;
+    gap: 5px;
+  }
+
+  &__warning-wrapper {
+    display: flex;
+    align-items: center;
+    margin-top: 30px;
+    margin-bottom: 10px;
     gap: 5px;
   }
 
