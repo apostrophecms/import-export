@@ -16,7 +16,7 @@ module.exports = {
   insertAdminUser
 };
 
-function getAppConfig(modules = {}) {
+function getAppConfig(modules = {}, options = {}) {
   return {
     '@apostrophecms/express': {
       options: {
@@ -62,7 +62,7 @@ function getAppConfig(modules = {}) {
       extend: '@apostrophecms/piece-type',
       options: {
         alias: 'article',
-        autopublish: true
+        autopublish: options.autopublish ?? true
       },
       fields: {
         add: {

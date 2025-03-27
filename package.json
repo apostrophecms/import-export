@@ -18,6 +18,7 @@
   "author": "Apostrophe Technologies",
   "license": "UNLICENSED",
   "devDependencies": {
+    "@apostrophecms-pro/automatic-translation": "github:apostrophecms/automatic-translation",
     "apostrophe": "github:apostrophecms/apostrophe",
     "eslint": "^8.44.0",
     "eslint-config-apostrophe": "^4.2.0",

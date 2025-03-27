@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+### Adds
+
+* Adds support for translating content while importing via the Automatic Translation module (when available).
+
 ### Fixes
 
 * Fix "include related documents" modal height.

@@ -28,6 +28,8 @@
   "importFileError": "The {{ type }} file import failed",
   "importModalDescription": "Importing content requires a {{ formats }} file. See our <a href=\"https://github.com/apostrophecms/import-export\" target=\"_blank\">official documentation</a>.",
   "importSucceed": "Import Succeeded!",
+  "importTranslate": "Translate text content with AI",
+  "importTranslateTooltip": "Translate the text content with AI while importing. Only available with .gz import files.",
   "importWarning": "Importing an Apostrophe export file on an incompatible website may not behave as expected.",
   "importWithCurrentLocaleDescription": "This file was exported from the \"{{ docsLocale }}\" locale. Are you sure you want to import it into the \"{{ currentLocale }}\" locale?",
   "importWithCurrentLocaleHeading": "Different locale detected",

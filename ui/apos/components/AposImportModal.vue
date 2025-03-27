@@ -30,29 +30,54 @@
             @upload-file="uploadImportFile"
             @update="updateImportFile"
           />
-          <AposLabel
-            label="aposImportExport:importWarning"
-            class="apos-import__warning"
-            :modifiers="['apos-is-warning', 'apos-is-filled']"
-          />
           <div
             v-if="showImportDraftsOnlyOption"
-            class="apos-import__import-drafts-only-wrapper"
+            class="apos-import__checkbox-wrapper"
           >
             <AposCheckbox
               v-model="checked"
-              class="apos-import__import-drafts-only"
+              class="apos-import__import-checkbox"
               :choice="{
                 value: 'importDraftsOnly',
-                label: $t('aposImportExport:importDraftsOnly')
+                label: 'aposImportExport:importDraftsOnly'
               }"
               :field="{
                 name: 'importDraftsOnly',
               }"
+              data-apos-test="draftsOnlyCheckbox"
             />
             <AposIndicator
               icon="information-outline-icon"
               tooltip="aposImportExport:importDraftsOnlyTooltip"
+            />
+          </div>
+          <div
+            v-if="showTranslateOption"
+            class="apos-import__checkbox-wrapper"
+          >
+            <AposCheckbox
+              v-model="checked"
+              class="apos-import__import-checkbox"
+              :choice="{
+                value: 'translate',
+                label: 'aposImportExport:importTranslate'
+              }"
+              :field="{
+                name: 'translate',
+                readOnly: translationOptionDisabled
+              }"
+              data-apos-test="translateCheckbox"
+            />
+            <AposIndicator
+              icon="information-outline-icon"
+              tooltip="aposImportExport:importTranslateTooltip"
+            />
+          </div>
+          <div class="apos-import__warning-wrapper">
+            <AposLabel
+              label="aposImportExport:importWarning"
+              class="apos-import__warning"
+              :modifiers="['apos-is-warning', 'apos-is-filled']"
             />
           </div>
           <div class="apos-import__separator" />
@@ -142,6 +167,12 @@ export default {
     showImportDraftsOnlyOption() {
       return apos.modules[this.moduleName]?.autopublish !== true;
     },
+    showTranslateOption() {
+      return apos.modules['@apostrophecms/translation'].enabled === true;
+    },
+    translationOptionDisabled() {
+      return this.fileExtension !== 'gz';
+    },
     formats() {
       return apos.modules['@apostrophecms/import-export'].formats;
     },
@@ -158,6 +189,12 @@ export default {
         return this.moduleAction;
       }
       return apos.modules[this.moduleName]?.action;
+    },
+    fileExtension() {
+      if (!this.selectedFile) {
+        return '';
+      }
+      return this.selectedFile.name.split('.').pop();
     }
   },
 
@@ -197,7 +234,8 @@ export default {
             file: this.selectedFile
           },
           body: {
-            importDraftsOnly: this.checked.includes('importDraftsOnly')
+            importDraftsOnly: this.checked.includes('importDraftsOnly'),
+            translate: this.checked.includes('translate')
           },
           progress: this.startProcess(notifId)
         });
@@ -261,10 +299,18 @@ export default {
     }
   }
 
-  &__import-drafts-only-wrapper {
+  &__checkbox-wrapper {
     display: flex;
     align-items: center;
     margin-top: 10px;
+    gap: 5px;
+  }
+
+  &__warning-wrapper {
+    display: flex;
+    align-items: center;
+    margin-top: 30px;
+    margin-bottom: 10px;
     gap: 5px;
   }
 
