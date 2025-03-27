@@ -445,14 +445,4 @@ export default {
 .apos-import-duplicate__btn :deep(.apos-button__label) {
   text-transform: capitalize;
 }
-
-@keyframes expand {
-  0% {
-    height: 0;
-  }
-
-  100% {
-    height: var(--container-height);
-  }
-}
 </style>
