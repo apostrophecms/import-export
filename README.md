@@ -1,3 +1,7 @@
+
+> ⚠️ The examples below use **ESM (ECMAScript Modules)** syntax (`import`, `export`).  
+> ApostropheCMS still supports **CommonJS (CJS)**, but we recommend using ESM for all new projects.  
+> **Important:** Don’t mix ESM and CJS in the same project. Choose one and stick to it.
 <div align="center">
   <img src="https://raw.githubusercontent.com/apostrophecms/apostrophe/main/logo.svg" alt="ApostropheCMS logo" width="80" height="80">
 
@@ -109,7 +113,7 @@ Users who have both 'create' and 'edit' permissions for a document type can expo
 You can disable the export and/or the import for any page- or piece-type using the `importExport` option. This option takes an object with `import` and `export` keys that take both can take boolean values.
 
 ```javascript
-module.exports = {
+export default {
   extend: '@apostrophecms/piece-type',
   options: {
     importExport: {
@@ -127,7 +131,7 @@ Disabling a document type from being imported will remove the import item from t
 The `export` key can also take an object with an `expiration` property. The value of this property sets how long the export file will persist before being deleted. The default is 600000ms (10 min.), but can be extended if it is anticipated that the download will be delayed for some reason.
 
 ```javascript
-module.exports = {
+export default {
   extend: '@apostrophecms/piece-type',
   options: {
     importExport: {
@@ -200,7 +204,7 @@ Add your format under `lib/formats/<format_name>.js` and export it in l`ib/forma
 
 ```js
 // lib/formats/ods.js
-module.exports = {
+export default {
   label: 'ODS',
   extension: '.ods',
   allowedExtension: '.ods',
@@ -223,9 +227,9 @@ module.exports = {
 
 ```js
 // lib/formats/index.js
-const ods = require('./ods');
+import ods from "./ods";
 
-module.exports = {
+export default {
   // ...
   ods
 };
@@ -239,7 +243,7 @@ If you want to add a format that includes attachment files such as an archive, y
 
 ```js
 // lib/formats/zip.js
-module.exports = {
+export default {
   label: 'ZIP',
   extension: '.zip',
   allowedExtension: '.zip',
@@ -347,7 +351,7 @@ const formats: {
   }
 };
 
-module.exports = {
+export default {
   improve: '@apostrophecms/import-export',
   init(self) {
     self.registerFormats(formats);
