@@ -1,7 +1,3 @@
-
-> ⚠️ The examples below use **ESM (ECMAScript Modules)** syntax (`import`, `export`).  
-> ApostropheCMS still supports **CommonJS (CJS)**, but we recommend using ESM for all new projects.  
-> **Important:** Don’t mix ESM and CJS in the same project. Choose one and stick to it.
 <div align="center">
   <img src="https://raw.githubusercontent.com/apostrophecms/apostrophe/main/logo.svg" alt="ApostropheCMS logo" width="80" height="80">
 
@@ -22,6 +18,10 @@
 This module enables import and export of pages and pieces, with or without related
 documents such as files, images and other related types.
 
+> ⚠️ The examples below use **ESM (ECMAScript Modules)** syntax (`import`, `export`).  
+> ApostropheCMS still supports **CommonJS (CJS)**, but we recommend using ESM for all new projects.  
+> **Important:** Don’t mix ESM and CJS in the same project. Choose one and stick to it.
+
 ## Installation
 
 To install the module, use the command line to run this command in an Apostrophe project's root directory:
@@ -35,7 +35,10 @@ npm install @apostrophecms/import-export
 Configure the module in the `app.js` file:
 
 ```javascript
-require('apostrophe')({
+import apostrophe from 'apostrophe';
+
+apostrophe ({
+  root: import.meta,
   shortName: 'my-project',
   modules: {
     '@apostrophecms/import-export': {}
