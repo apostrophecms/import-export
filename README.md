@@ -20,7 +20,7 @@ documents such as files, images and other related types.
 
 > ⚠️ The examples below use **ESM (ECMAScript Modules)** syntax (`import`, `export`).  
 > ApostropheCMS still supports **CommonJS (CJS)**, but we recommend using ESM for all new projects.  
-> **Important:** Don’t mix ESM and CJS in the same project. Choose one and stick to it.
+> **Important:** Don’t mix ESM and CJS in the same project.
 
 ## Installation
 
