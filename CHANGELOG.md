@@ -1,5 +1,15 @@
 # Changelog
 
+## UNRELEASED
+
+### Adds
+
+* Adds support for translating content while importing via the Automatic Translation module (when available).
+
+### Fixes
+
+* Fix "include related documents" modal height.
+
 ## 3.1.0 (2025-03-19)
 
 ### Adds
@@ -9,6 +19,7 @@
 ### Fixes
 
 * Better english wording when import succeeds.
+* Adds missing information to export and import batch operation jobs.
 
 ## 3.0.0 (2025-02-19)
 

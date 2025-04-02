@@ -186,7 +186,8 @@ describe('#import - overriding locales integration tests', function() {
             aposMode: 'draft',
             aposLocale: 'en:draft',
             title: 'topic1',
-            type: 'topic'
+            type: 'topic',
+            __originalLocale: 'fr'
           }
         ]);
 
@@ -417,7 +418,8 @@ describe('#import - overriding locales integration tests', function() {
             aposMode: 'draft',
             aposLocale: 'en:draft',
             title: 'topic1',
-            type: 'topic'
+            type: 'topic',
+            __originalLocale: 'fr'
           }
         ]);
 

@@ -115,7 +115,11 @@ export default () => {
   }
 
   async function handleDifferentLocale(event) {
-    const continueImport = await apos.modal.execute('AposModalConfirm', event);
+    // Do not ask for confirmation if the editor already
+    // opted-in for translation.
+    const continueImport = event.translate
+      ? true
+      : await apos.modal.execute('AposModalConfirm', event);
 
     if (continueImport) {
       try {
@@ -124,6 +128,7 @@ export default () => {
         await apos.http.post(`${moduleAction}/import-export-import`, {
           body: {
             importDraftsOnly: event.importDraftsOnly,
+            translate: event.translate,
             overrideLocale: true,
             exportPathId: event.exportPathId,
             formatLabel: event.formatLabel

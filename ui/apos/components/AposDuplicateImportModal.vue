@@ -117,6 +117,10 @@ export default {
       type: Boolean,
       required: true
     },
+    translate: {
+      type: Boolean,
+      required: true
+    },
     overrideLocale: {
       type: Boolean,
       required: true
@@ -228,6 +232,7 @@ export default {
           exportPathId: this.exportPathId,
           jobId: this.jobId,
           importDraftsOnly: this.importDraftsOnly,
+          translate: this.translate,
           overrideLocale: this.overrideLocale,
           formatLabel: this.formatLabel
         }
@@ -439,15 +444,5 @@ export default {
 
 .apos-import-duplicate__btn :deep(.apos-button__label) {
   text-transform: capitalize;
-}
-
-@keyframes expand {
-  0% {
-    height: 0;
-  }
-
-  100% {
-    height: var(--container-height);
-  }
 }
 </style>

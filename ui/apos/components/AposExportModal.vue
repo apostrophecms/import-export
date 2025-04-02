@@ -71,42 +71,37 @@
           >
             <div
               v-show="!relatedDocumentsDisabled"
-              class="apos-export__section"
+              class="apos-export__section apos-export__section__related-documents"
             >
-              <div
-                ref="container"
-                class="apos-export__section-container"
-              >
-                <div class="apos-export__settings">
-                  {{ $t('aposImportExport:exportModalIncludeRelatedSettings') }}
+              <div class="apos-export__settings">
+                {{ $t('aposImportExport:exportModalIncludeRelatedSettings') }}
+              </div>
+              <div class="apos-export__separator" />
+              <div class="apos-export__settings-row apos-export__settings-row--column">
+                <div class="apos-export__related-description">
+                  {{ $t('aposImportExport:exportModalRelatedDocumentDescription') }}
                 </div>
-                <div class="apos-export__separator" />
-                <div class="apos-export__settings-row apos-export__settings-row--column">
-                  <div class="apos-export__related-description">
-                    {{ $t('aposImportExport:exportModalRelatedDocumentDescription') }}
-                  </div>
-                  <div
-                    v-if="relatedTypes && relatedTypes.length"
-                    class="apos-export__related-list"
-                  >
-                    <AposCheckbox
-                      v-for="relatedType in relatedTypes"
-                      :key="relatedType"
-                      v-model="checkedRelatedTypes"
-                      tabindex="-1"
-                      :choice="{
-                        value: relatedType,
-                        label: getRelatedTypeLabel(relatedType)
-                      }"
-                      :field="{
-                        label: getRelatedTypeLabel(relatedType),
-                        name: relatedType
-                      }"
-                    />
-                  </div>
-                  <div v-else>
-                    {{ $t('aposImportExport:exportModalNoRelatedTypes') }}
-                  </div>
+                <div
+                  v-if="relatedTypes && relatedTypes.length"
+                  class="apos-export__related-list"
+                >
+                  <AposCheckbox
+                    v-for="relatedType in relatedTypes"
+                    :key="relatedType"
+                    v-model="checkedRelatedTypes"
+                    tabindex="-1"
+                    :choice="{
+                      value: relatedType,
+                      label: getRelatedTypeLabel(relatedType)
+                    }"
+                    :field="{
+                      label: getRelatedTypeLabel(relatedType),
+                      name: relatedType
+                    }"
+                  />
+                </div>
+                <div v-else>
+                  {{ $t('aposImportExport:exportModalNoRelatedTypes') }}
                 </div>
               </div>
             </div>
@@ -136,10 +131,6 @@
 </template>
 
 <script>
-const CONTAINER_ITEM_HEIGHT = 24;
-const CONTAINER_DESCRIPTION_HEIGHT = 95;
-const CONTAINER_MINIMUM_HEIGHT = 117;
-
 export default {
   props: {
     moduleName: {
@@ -245,16 +236,6 @@ export default {
         }
       });
       this.checkedRelatedTypes = this.relatedTypes;
-      const computeHeight = (length) => length *
-        CONTAINER_ITEM_HEIGHT +
-        CONTAINER_DESCRIPTION_HEIGHT;
-
-      const height = this.relatedTypes.length
-        ? computeHeight(this.relatedTypes.length)
-        : CONTAINER_MINIMUM_HEIGHT;
-
-      await this.$nextTick();
-      this.$refs.container.style.setProperty('--container-height', `${height}px`);
     },
     async runExport() {
       const relatedTypes = this.relatedDocumentsDisabled
@@ -384,8 +365,31 @@ export default {
   }
 }
 
-.apos-export__section-container {
+.apos-export__section__related-documents {
   overflow: hidden;
+  max-height: 315px;
+
+  &.slide-enter-active,
+  &.slide-leave-active {
+    transition: max-height 200ms linear;
+
+    // Hide scrollbar during transition,
+    // otherwise it will always be visible during the animation
+    .apos-export__related-list {
+      overflow: hidden;
+    }
+  }
+
+  &.slide-enter-from,
+  &.slide-leave-to {
+    max-height: 0;
+  }
+}
+
+.apos-export__related-list {
+  max-height: 210px;
+  overflow-y: overlay;
+  width: 100%;
 }
 
 .apos-export__settings {
@@ -409,6 +413,7 @@ export default {
 }
 
 .apos-export__settings-row--column {
+  overflow: hidden;
   flex-direction: column;
   gap: 20px;
   align-items: baseline;
@@ -450,22 +455,4 @@ export default {
 .apos-export__btn :deep(.apos-button__label) {
   text-transform: capitalize;
 }
-
-.apos-export__related-list {
-  max-height: 210px;
-  overflow-y: overlay;
-  width: 100%;
-}
-
-.apos-export__section-container {
-  height: var(--container-height);
-  transition: height 200ms linear;
-}
-
-.slide-enter-from, .slide-leave-to {
-  .apos-export__section-container {
-    height: 0;
-  }
-}
-
 </style>
