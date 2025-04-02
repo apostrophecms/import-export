@@ -7,6 +7,7 @@ const {
 describe('#import - when `importDraftsOnly` option is set to `true`', function () {
   this.timeout(t.timeout);
 
+  let apos;
   let req;
   let input;
   let insertDocs;

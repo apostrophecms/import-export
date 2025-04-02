@@ -12,6 +12,7 @@ const {
 describe('#import - overriding locales integration tests', function() {
   this.timeout(t.timeout);
 
+  let apos;
   let req;
   let notify;
   let input;
