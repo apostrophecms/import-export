@@ -2,12 +2,17 @@ const assert = require('assert').strict;
 const t = require('apostrophe/test-lib/util.js');
 const path = require('path');
 const {
-  getAppConfig, insertAdminUser, insertPiecesAndPages, deletePiecesAndPages, deleteAttachments
+  getAppConfig,
+  insertAdminUser,
+  insertPiecesAndPages,
+  deletePiecesAndPages,
+  deleteAttachments
 } = require('./util');
 
 describe('#import - overriding locales integration tests', function() {
   this.timeout(t.timeout);
 
+  let apos;
   let req;
   let notify;
   let input;

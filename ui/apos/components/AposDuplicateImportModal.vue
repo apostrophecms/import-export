@@ -403,10 +403,10 @@ export default {
   }
 
   .apos-button svg {
-    // We need to hide the checkbox-blank-icon svg (wish there were a "blank" svg in the material icons)
-    // because it is visible inside the input.
-    // Just changing the color to transparent is not enough as a glitch briefly appears.
-    // Hiding it solves it all.
+    // We need to hide the checkbox-blank-icon svg
+    // (wish there were a "blank" svg in the material icons)
+    // because it is visible inside the input. Just changing the color to transparent
+    // is not enough as a glitch briefly appears. Hiding it solves it all.
     visibility: hidden;
   }
 }

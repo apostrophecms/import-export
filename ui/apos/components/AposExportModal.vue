@@ -41,7 +41,8 @@
               />
             </div>
 
-            <!-- TODO: Next iteration should support inclusion of page children while exporting -->
+            <!-- TODO: Next iteration should support inclusion of page
+                        children while exporting -->
             <!-- <div -->
             <!--   v-if="moduleName === '@apostrophecms/page'" -->
             <!--   class="apos-export__settings-row" -->

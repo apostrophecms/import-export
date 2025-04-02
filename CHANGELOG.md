@@ -10,6 +10,10 @@
 
 * Fix "include related documents" modal height.
 
+### Changes
+
+* Bumbs `eslint-config-apostrophe` to `5`, fixes errors, removes unused dependencies.
+
 ## 3.1.0 (2025-03-19)
 
 ### Adds

@@ -245,7 +245,6 @@ export default {
     },
     async runImport() {
       if (!this.universalModuleAction) {
-        console.error('AposImportModal: No module action found');
         apos.notify('aposImportExport:importFailed', {
           type: 'danger',
           dismiss: true

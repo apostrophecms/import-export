@@ -926,8 +926,10 @@ describe('@apostrophecms/import-export', function () {
 
   it('should get related types of a given doc type', async function() {
     const req = apos.task.getReq();
-    const relatedTypesArticles = importExportManager.getRelatedTypes(req, apos.article.schema);
-    const relatedTypesTopics = importExportManager.getRelatedTypes(req, apos.topic.schema);
+    const relatedTypesArticles = importExportManager
+      .getRelatedTypes(req, apos.article.schema);
+    const relatedTypesTopics = importExportManager
+      .getRelatedTypes(req, apos.topic.schema);
 
     const actual = {
       relatedTypesArticles,
@@ -935,8 +937,8 @@ describe('@apostrophecms/import-export', function () {
     };
     const expected = {
       // All page types are in play because rich text internal page links are in play.
-      // Articles are in play because a page type has a relationship to them, so: see above
-      // (remember this is quite recursive)
+      // Articles are in play because a page type has a relationship to them, so:
+      // see above (remember this is quite recursive)
       relatedTypesArticles: [
         'topic',
         '@apostrophecms/home-page',
