@@ -13,6 +13,7 @@
 ### Changes
 
 * Bumbs `eslint-config-apostrophe` to `5`, fixes errors, removes unused dependencies.
+* Exports attachments by default, without treating them like related documents.
 
 ## 3.1.0 (2025-03-19)
 
