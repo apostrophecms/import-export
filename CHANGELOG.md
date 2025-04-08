@@ -9,6 +9,7 @@
 ### Fixes
 
 * Fix "include related documents" modal height.
+* Fixes `moduleLabel` computed.
 
 ### Changes
 
