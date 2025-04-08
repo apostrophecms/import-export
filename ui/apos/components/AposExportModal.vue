@@ -188,8 +188,8 @@ export default {
     moduleLabel() {
       const labels = this.moduleLabels || apos.modules[this.moduleName];
       const label = this.count > 1
-        ? labels.pluralLabel
-        : labels.label;
+        ? labels.plural || labels.pluralLabel
+        : labels.singular || labels.label;
 
       return this.$t(label).toLowerCase();
     },
