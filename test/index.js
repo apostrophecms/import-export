@@ -71,7 +71,7 @@ describe('@apostrophecms/import-export', function () {
     await cleanData([ tempPath, exportsPath ]);
   });
 
-  it('should generate a zip file for pieces without related documents', async function () {
+  it('should generate a zip file for pieces without related documents but with attachments', async function () {
     const req = apos.task.getReq();
     const articles = await apos.article.find(req).toArray();
     const manager = apos.article;
@@ -97,8 +97,10 @@ describe('@apostrophecms/import-export', function () {
     };
     const expected = {
       docsLength: 4,
-      attachmentsLength: 0,
-      attachmentFiles: []
+      attachmentsLength: 1,
+      attachmentFiles: [
+        `${attachments[0]._id}-test-image.jpg`
+      ]
     };
 
     assert.deepEqual(actual, expected);
