@@ -5,6 +5,7 @@
 ### Adds
 
 * Adds support for translating content while importing via the Automatic Translation module (when available).
+* Allow page position to be adapted when importing based on slug hierarchy.
 
 ### Fixes
 

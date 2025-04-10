@@ -4,6 +4,145 @@ const fs = require('fs/promises');
 const t = require('apostrophe/test-lib/util.js');
 const { getAppConfig } = require('./util/index.js');
 
+async function createPages(apos) {
+  const req = apos.task.getReq({ mode: 'draft' });
+  const level1Page1 = await apos.page.insert(
+    req,
+    '_home',
+    'lastChild',
+    {
+      title: 'Level 1 Page 1',
+      type: 'test-page',
+      slug: '/level-1-page-1'
+    }
+  );
+  const level1Page2 = await apos.page.insert(
+    req,
+    '_home',
+    'lastChild',
+    {
+      title: 'Level 1 Page 2',
+      type: 'test-page',
+      slug: '/level-1-page-2'
+    }
+  );
+  const level1Page3 = await apos.page.insert(
+    req,
+    '_home',
+    'lastChild',
+    {
+      title: 'Level 1 Page 3',
+      type: 'test-page',
+      slug: '/level-1-page-3'
+    }
+  );
+  const attachment = apos.attachment.insert(req, {
+    name: 'test-image.jpg',
+    path: `${apos.rootDir}/public/test-image.jpg`
+  });
+
+  const inlineImage = await apos.image.insert(req, {
+    ...apos.image.newInstance(),
+    title: 'inline-image',
+    attachment
+  });
+
+  const richTextRaw = {
+    type: '@apostrophecms/rich-text',
+    content: `
+        <p>
+          <a href="#apostrophe-permalink-${level1Page3.aposDocId}?updateTitle=1">Test Link</a>
+        </p>
+        <figure>
+          <img src="/api/v1/@apostrophecms/image/${inlineImage.aposDocId}/src" alt="alt text" />
+          <figcaption></figcaption>
+        </figure>
+      `
+  };
+
+  const richTextWidget = await apos.modules['@apostrophecms/rich-text-widget'].sanitize(req, richTextRaw, {
+    insert: [ 'image' ]
+  });
+
+  const level1Page4 = await apos.page.insert(
+    req,
+    '_home',
+    'lastChild',
+    {
+      title: 'Level 1 Page 4',
+      type: 'rich-text-page',
+      slug: '/level-1-page-4',
+      main: {
+        metaType: 'area',
+        items: [
+          richTextWidget
+        ]
+      }
+    }
+  );
+
+  const level2Page1 = await apos.page.insert(
+    req,
+    level1Page1._id,
+    'lastChild',
+    {
+      title: 'Level 2 Page 1',
+      type: 'test-page',
+      slug: '/level-1-page-1/level-2-page-1'
+    }
+  );
+  const level3Page1 = await apos.page.insert(
+    req,
+    level2Page1._id,
+    'lastChild',
+    {
+      title: 'Level 3 Page 1',
+      type: 'test-page',
+      slug: '/level-1-page-1/level-2-page-1/level-3-page-1'
+    }
+  );
+  const level4Page1 = await apos.page.insert(
+    req,
+    level3Page1._id,
+    'lastChild',
+    {
+      title: 'Level 4 Page 1',
+      type: 'test-page',
+      slug: '/level-1-page-1/level-2-page-1/level-3-page-1/level-4-page-1'
+    }
+  );
+  const level5Page1 = await apos.page.insert(
+    req,
+    level4Page1._id,
+    'lastChild',
+    {
+      title: 'Level 5 Page 1',
+      type: 'test-page',
+      slug: '/level-1-page-1/level-2-page-1/level-3-page-1/level-4-page-1/level-5-page-1'
+    }
+  );
+  const level5Page2 = await apos.page.insert(
+    req,
+    level4Page1._id,
+    'lastChild',
+    {
+      title: 'Level 5 Page 2',
+      type: 'test-page',
+      slug: '/level-1-page-1/level-2-page-1/level-3-page-1/level-4-page-1/level-5-page-2'
+    }
+  );
+
+  await apos.page.publish(req, level1Page1);
+  await apos.page.publish(req, level1Page2);
+  await apos.page.publish(req, level1Page3);
+  await apos.page.publish(req, level1Page4);
+  await apos.page.publish(req, level2Page1);
+  await apos.page.publish(req, level3Page1);
+  await apos.page.publish(req, level4Page1);
+  await apos.page.publish(req, level5Page1);
+  await apos.page.publish(req, level5Page2);
+}
+
 const server = {
   start: () => {
     const appConfig = getAppConfig();
@@ -106,144 +245,8 @@ describe('@apostrophecms/import-export:import-page', function () {
     exportsPath = path.join(apos.rootDir, 'public/uploads/exports');
     tempPath = path.join(apos.rootDir, 'data/temp/uploadfs');
 
-    const req = apos.task.getReq({ mode: 'draft' });
-
+    await createPages(apos);
     // TODO: add rich text with link to pages and images with tags
-    const level1Page1 = await apos.page.insert(
-      req,
-      '_home',
-      'lastChild',
-      {
-        title: 'Level 1 Page 1',
-        type: 'test-page',
-        slug: '/level-1-page-1'
-      }
-    );
-    const level1Page2 = await apos.page.insert(
-      req,
-      '_home',
-      'lastChild',
-      {
-        title: 'Level 1 Page 2',
-        type: 'test-page',
-        slug: '/level-1-page-2'
-      }
-    );
-    const level1Page3 = await apos.page.insert(
-      req,
-      '_home',
-      'lastChild',
-      {
-        title: 'Level 1 Page 3',
-        type: 'test-page',
-        slug: '/level-1-page-3'
-      }
-    );
-    const attachment = apos.attachment.insert(req, {
-      name: 'test-image.jpg',
-      path: `${apos.rootDir}/public/test-image.jpg`
-    });
-
-    const inlineImage = await apos.image.insert(req, {
-      ...apos.image.newInstance(),
-      title: 'inline-image',
-      attachment
-    });
-
-    const richTextRaw = {
-      type: '@apostrophecms/rich-text',
-      content: `
-        <p>
-          <a href="#apostrophe-permalink-${level1Page3.aposDocId}?updateTitle=1">Test Link</a>
-        </p>
-        <figure>
-          <img src="/api/v1/@apostrophecms/image/${inlineImage.aposDocId}/src" alt="alt text" />
-          <figcaption></figcaption>
-        </figure>
-      `
-    };
-
-    const richTextWidget = await apos.modules['@apostrophecms/rich-text-widget'].sanitize(req, richTextRaw, {
-      insert: [ 'image' ]
-    });
-
-    const level1Page4 = await apos.page.insert(
-      req,
-      '_home',
-      'lastChild',
-      {
-        title: 'Level 1 Page 4',
-        type: 'rich-text-page',
-        slug: '/level-1-page-4',
-        main: {
-          metaType: 'area',
-          items: [
-            richTextWidget
-          ]
-        }
-      }
-    );
-
-    const level2Page1 = await apos.page.insert(
-      req,
-      level1Page1._id,
-      'lastChild',
-      {
-        title: 'Level 2 Page 1',
-        type: 'test-page',
-        slug: '/level-1-page-1/level-2-page-1'
-      }
-    );
-    const level3Page1 = await apos.page.insert(
-      req,
-      level2Page1._id,
-      'lastChild',
-      {
-        title: 'Level 3 Page 1',
-        type: 'test-page',
-        slug: '/level-1-page-1/level-2-page-1/level-3-page-1'
-      }
-    );
-    const level4Page1 = await apos.page.insert(
-      req,
-      level3Page1._id,
-      'lastChild',
-      {
-        title: 'Level 4 Page 1',
-        type: 'test-page',
-        slug: '/level-1-page-1/level-2-page-1/level-3-page-1/level-4-page-1'
-      }
-    );
-    const level5Page1 = await apos.page.insert(
-      req,
-      level4Page1._id,
-      'lastChild',
-      {
-        title: 'Level 5 Page 1',
-        type: 'test-page',
-        slug: '/level-1-page-1/level-2-page-1/level-3-page-1/level-4-page-1/level-5-page-1'
-      }
-    );
-    const level5Page2 = await apos.page.insert(
-      req,
-      level4Page1._id,
-      'lastChild',
-      {
-        title: 'Level 5 Page 2',
-        type: 'test-page',
-        slug: '/level-1-page-1/level-2-page-1/level-3-page-1/level-4-page-1/level-5-page-2'
-      }
-    );
-
-    await apos.page.publish(req, level1Page1);
-    await apos.page.publish(req, level1Page2);
-    await apos.page.publish(req, level1Page3);
-    await apos.page.publish(req, level1Page4);
-    await apos.page.publish(req, level2Page1);
-    await apos.page.publish(req, level3Page1);
-    await apos.page.publish(req, level4Page1);
-    await apos.page.publish(req, level5Page1);
-    await apos.page.publish(req, level5Page2);
   });
 
   afterEach(async function() {
@@ -1151,5 +1154,176 @@ describe('@apostrophecms/import-export:import-page', function () {
     };
 
     assert.deepEqual(actual, expected);
+  });
+
+  it('should import a child page in the correct position by slug (level 2)', async function () {
+    // export a child
+    const req = apos.task.getReq({ mode: 'draft' });
+
+    const manager = apos.page;
+    const ids = await manager
+      .find(
+        req,
+        {
+          title: 'Level 2 Page 1'
+        },
+        {
+          project: {
+            _id: 1
+          }
+        }
+      )
+      .toArray();
+    const exportReq = apos.task.getReq({
+      body: {
+        _ids: ids.map(({ _id }) => _id),
+        extension: 'gzip',
+        relatedTypes: [ '@apostrophecms/home-page', '@apostrophecms/image', '@apostrophecms/image-tag', 'test-page' ],
+        type: req.t('apostrophe:pages')
+      }
+    });
+    const { url } = await apos.modules['@apostrophecms/import-export'].export(exportReq, manager);
+    const fileName = path.basename(url);
+    const exportFilePath = path.join(exportsPath, fileName);
+    const importFilePath = path.join(tempPath, fileName);
+    await fs.copyFile(exportFilePath, importFilePath);
+
+    // Reset the database
+    await server.cleanup(apos);
+    await server.stop(apos);
+    apos = await server.start();
+
+    // Create the pages again
+    await createPages(apos);
+    const reqDraft = apos.task.getReq({ mode: 'draft' });
+    const parent = await apos.page
+      .find(reqDraft, { slug: '/level-1-page-1' })
+      .toObject();
+    assert(parent);
+
+    // Remove the child that we want to import
+    await apos.doc.db.deleteMany(
+      {
+        slug: '/level-1-page-1/level-2-page-1'
+      });
+    const existingChild = await apos.page
+      .find(reqDraft, { slug: '/level-1-page-1/level-2-page-1' })
+      .toObject();
+
+    assert.equal(existingChild, undefined);
+
+    // import the page
+    const mimeType = apos.modules['@apostrophecms/import-export']
+      .formats.gzip.allowedTypes.at(0);
+    const importReq = apos.task.getReq({
+      body: {},
+      files: {
+        file: {
+          path: importFilePath,
+          type: mimeType
+        }
+      }
+    });
+    await apos.modules['@apostrophecms/import-export'].import(importReq);
+
+    // find the imported page
+    const child = await apos.page
+      .find(reqDraft, {
+        slug: '/level-1-page-1/level-2-page-1',
+        aposMode: 'draft'
+      })
+      .toObject();
+
+    assert(child);
+
+    const actual = child.path;
+    const expected = `${parent.path}/${child.aposDocId}`;
+    assert.equal(actual, expected, 'Child path is incorrect');
+  });
+
+  it('should import a child page in the correct position by slug (level 4)', async function () {
+    // export a child
+    const req = apos.task.getReq({ mode: 'draft' });
+
+    const manager = apos.page;
+    const ids = await manager
+      .find(
+        req,
+        {
+          title: 'Level 4 Page 1'
+        },
+        {
+          project: {
+            _id: 1
+          }
+        }
+      )
+      .toArray();
+    const exportReq = apos.task.getReq({
+      body: {
+        _ids: ids.map(({ _id }) => _id),
+        extension: 'gzip',
+        relatedTypes: [ '@apostrophecms/home-page', '@apostrophecms/image', '@apostrophecms/image-tag', 'test-page' ],
+        type: req.t('apostrophe:pages')
+      }
+    });
+    const { url } = await apos.modules['@apostrophecms/import-export'].export(exportReq, manager);
+    const fileName = path.basename(url);
+    const exportFilePath = path.join(exportsPath, fileName);
+    const importFilePath = path.join(tempPath, fileName);
+    await fs.copyFile(exportFilePath, importFilePath);
+
+    // Reset the database
+    await server.cleanup(apos);
+    await server.stop(apos);
+    apos = await server.start();
+
+    // Create the pages again
+    await createPages(apos);
+    const reqDraft = apos.task.getReq({ mode: 'draft' });
+    const parent = await apos.page
+      .find(reqDraft, { slug: '/level-1-page-1/level-2-page-1/level-3-page-1' })
+      .toObject();
+    assert(parent);
+
+    // Remove the child that we want to import
+    await apos.doc.db.deleteMany(
+      {
+        slug: '/level-1-page-1/level-2-page-1/level-3-page-1/level-4-page-1'
+      });
+    const existingChild = await apos.page
+      .find(reqDraft, {
+        slug: '/level-1-page-1/level-2-page-1/level-3-page-1/level-4-page-1'
+      })
+      .toObject();
+    assert.equal(existingChild, undefined);
+
+    // import the page
+    const mimeType = apos.modules['@apostrophecms/import-export']
+      .formats.gzip.allowedTypes.at(0);
+    const importReq = apos.task.getReq({
+      body: {},
+      files: {
+        file: {
+          path: importFilePath,
+          type: mimeType
+        }
+      }
+    });
+    await apos.modules['@apostrophecms/import-export'].import(importReq);
+
+    // find the imported page
+    const child = await apos.page
+      .find(reqDraft, {
+        slug: '/level-1-page-1/level-2-page-1/level-3-page-1/level-4-page-1',
+        aposMode: 'draft'
+      })
+      .toObject();
+
+    assert(child);
+
+    const actual = child.path;
+    const expected = `${parent.path}/${child.aposDocId}`;
+    assert.equal(actual, expected, 'Child path is incorrect');
   });
 });
