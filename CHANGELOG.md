@@ -10,6 +10,7 @@
 
 * Fix "include related documents" modal height.
 * Fixes `moduleLabel` computed.
+* Fixes missing call to `recomputeAllDocReferences` when duplicated have been overridden.
 
 ### Changes
 
