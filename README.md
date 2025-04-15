@@ -41,9 +41,9 @@ require('apostrophe')({
 ## Exporting Files
 
 ### Pages
-![Screenshot highlighting the export menu item in the context menu of a page in the manager.](https://static.apostrophecms.com/apostrophecms/import-export/images/page-export.png)
+![Screenshot highlighting the export menu item in the context menu of the bulk operations in the manager.](https://static.apostrophecms.com/apostrophecms/import-export/images/bulk-export.png)
 
-Pages can currently only be exported singly. Support for exporting multiple pages at once is planned for a future release. When exporting a page it will retain its publication status upon import. A page that is published when exported will be published on import, while draft pages will remain in draft status. In order to export a page, you use the context menu to the right of each page in the manager.
+Pages can be exported by either selecting "Export" from the context menu for an individual page, or by selecting multiple pages and then selecting "Export" from the bulk operations context menu. When exporting a page it will retain its publication status upon import. A page that is published when exported will be published on import unless you select the option to only import as a draft document. Draft pages will remain in draft status.
 
 Exporting the parent page in a set of nested documents will **not** export the child pages. Each child page must be exported separately. To maintain the page order, import the file for the parent document first, and then the files for the child documents.
 
@@ -86,13 +86,13 @@ Clicking export will bring up the same dialog box that appears when exporting pa
 ![Screenshot of the utilities context menu for importing in the page manager](https://static.apostrophecms.com/apostrophecms/import-export/images/page-import.png)
 Any export file, no matter the content, can be imported using the utility context menu located at the top of the content managers, typically located to the left of the button to add new content of that type. This includes the page manager, any piece manager, or the document template manager if installed.
 
-![Screenshot of the file upload modal for importing files](https://static.apostrophecms.com/apostrophecms/import-export/images/import-file-modal.png)
+![Screenshot of the file upload modal for importing files](https://static.apostrophecms.com/apostrophecms/import-export/images/page-import-with-translation.png)
 
-Clicking on the "Import" menu item will bring up a dialog box to select the export file you wish to import. You can only select one file at a time and the selection of an additional file will replace the first. After you select the exported file and click on the import button, a progress bar will be shown and a success or failure notification when the file has been fully imported.
+Clicking on the "Import" menu item will bring up a dialog box to select the export file you wish to import. You can only select one file at a time and the selection of an additional file will replace the first. At this stage, you can select to import any published pages as [drafts](#importing-as-drafts-only). If you have the optional [`@apostrophecms-pro/automatic-translation` extension](https://apostrophecms.com/extensions/automatic-translation) installed and configured you can elect to translate the content into the language of the locale where you are performing the import. After you select the exported file and click on the import button, a progress bar will be shown and a success or failure notification when the file has been fully imported.
 
 If the file you select has documents that already exist in your project, you'll get a notification and list of the documents that would be over-written. From that list you can choose documents you don't want imported. Note, if you have any documents that were previously published and then archived, they will trigger a duplicate overwrite warning.
 
-When importing a page, piece(s), or template(s) that was exported from one locale while currently in another locale will not change the locale of the document. For example, if a page with an English locale is exported and then that file is selected for import while in the French locale, the page will still be imported into the English locale.
+When importing a page, piece(s), or template(s) that was exported from one locale while currently in another locale, and you do not have the automatic translation module or have not elected to translate content, you will get a notification asking if you want to proceed.
 
 When importing several files that comprise a set of nested pages, importing the file with the parental file before importing the child files will preserve the page order in the tree. If a file for a child document is imported before or independently of the parent document, then it will be added as a child of the homepage.
 
@@ -109,7 +109,7 @@ Users who have both 'create' and 'edit' permissions for a document type can expo
 You can disable the export and/or the import for any page- or piece-type using the `importExport` option. This option takes an object with `import` and `export` keys that take both can take boolean values.
 
 ```javascript
-module.exports = {
+export default {
   extend: '@apostrophecms/piece-type',
   options: {
     importExport: {
@@ -127,7 +127,7 @@ Disabling a document type from being imported will remove the import item from t
 The `export` key can also take an object with an `expiration` property. The value of this property sets how long the export file will persist before being deleted. The default is 600000ms (10 min.), but can be extended if it is anticipated that the download will be delayed for some reason.
 
 ```javascript
-module.exports = {
+export default {
   extend: '@apostrophecms/piece-type',
   options: {
     importExport: {
@@ -142,9 +142,9 @@ module.exports = {
 
 ## Importing documents from another locale
 
-Exported documents maintain their locale settings. If the locale during import differs from the export locale, and only one locale is configured in the `@apostrophecms/i18n` module, the documents will be automatically rewritten to align with the new import locale.
+Regardless of the original locale, imported documents are imported into the current locale. You will be prompted to confirm if the locale is different and you do not have, or are not opting to use, the automatic translation module.
 	
-If multiple locales are set up, the user will be prompted to choose between canceling the import or proceeding with it.
+If multiple locales are set up, the user will be prompted to choose between canceling the import or proceeding with it, unless the user has elected to translate the content.
 
 ![Screenshot highlighting the confirm modal letting the user choose between aborting on continuing the import when the docs locale is different from the site one.](https://static.apostrophecms.com/apostrophecms/import-export/images/different-locale-modal.png)
 
