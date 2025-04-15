@@ -41,9 +41,9 @@ require('apostrophe')({
 ## Exporting Files
 
 ### Pages
-![Screenshot highlighting the export menu item in the context menu of a page in the manager.](https://static.apostrophecms.com/apostrophecms/import-export/images/page-export.png)
+![Screenshot highlighting the export menu item in the context menu of the bulk operations in the manager.](https://static.apostrophecms.com/apostrophecms/import-export/images/bulk-export.png)
 
-Pages can currently only be exported singly. Support for exporting multiple pages at once is planned for a future release. When exporting a page it will retain its publication status upon import. A page that is published when exported will be published on import unless you select the option to only import as a draft document. Draft pages will remain in draft status. In order to export a page, you use the context menu to the right of each page in the manager.
+Pages can be exported by either selecting "Export" from the context menu for an individual page, or by selecting multiple pages and then selecting "Export" from the bulk operations context menu. When exporting a page it will retain its publication status upon import. A page that is published when exported will be published on import unless you select the option to only import as a draft document. Draft pages will remain in draft status.
 
 Exporting the parent page in a set of nested documents will **not** export the child pages. Each child page must be exported separately. To maintain the page order, import the file for the parent document first, and then the files for the child documents.
 
@@ -142,7 +142,7 @@ export default {
 
 ## Importing documents from another locale
 
-Exported documents maintain their locale settings. If the locale during import differs from the export locale, and only one locale is configured in the `@apostrophecms/i18n` module, the document path will be automatically rewritten to align with the new import locale.
+Regardless of the original locale, imported documents are imported into the current locale. You will be prompted to confirm if the locale is different and you do not have, or are not opting to use, the automatic translation module.
 	
 If multiple locales are set up, the user will be prompted to choose between canceling the import or proceeding with it, unless the user has elected to translate the content.
 
