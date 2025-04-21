@@ -1,5 +1,11 @@
 # Changelog
 
+## UNRELEASED
+
+### Fixes
+
+* Fixes the missing failed imports report modal when cancelling the import during override duplicates phase.
+
 ## 3.2.0 (2025-04-16)
 
 ### Adds
