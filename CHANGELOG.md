@@ -6,6 +6,7 @@
 
 * Fixes the missing failed imports report modal when cancelling the import during override duplicates phase.
 * Compatible with `apostrophe` version 4.17.0 and up. Do not use 4.16.0, which was briefly incompatible with this module.
+This version correctly handles inserts of documents before their related images in the context of the latest `apostrophe` release.
 
 ## 3.2.0 (2025-04-16)
 
