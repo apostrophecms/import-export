@@ -5,6 +5,7 @@
 ### Fixes
 
 * Fixes the missing failed imports report modal when cancelling the import during override duplicates phase.
+* Correctly handles inserts of documents before their related images in the context of the latest `apostrophe` release.
 
 ## 3.2.0 (2025-04-16)
 
