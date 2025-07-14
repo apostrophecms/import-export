@@ -943,19 +943,19 @@ describe('@apostrophecms/import-export', function () {
       // see above (remember this is quite recursive)
       relatedTypesArticles: [
         'topic',
+        '@apostrophecms/image',
+        '@apostrophecms/image-tag',
         '@apostrophecms/home-page',
         'home-page',
         'default-page',
-        '@apostrophecms/image',
-        '@apostrophecms/image-tag',
         'article'
       ],
       relatedTypesTopics: [
+        '@apostrophecms/image',
+        '@apostrophecms/image-tag',
         '@apostrophecms/home-page',
         'home-page',
         'default-page',
-        '@apostrophecms/image',
-        '@apostrophecms/image-tag',
         'article',
         'topic'
       ]
