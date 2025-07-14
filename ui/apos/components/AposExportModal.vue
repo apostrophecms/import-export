@@ -89,8 +89,10 @@
                     label: 'aposImportExport:exportModalToggleAllRelated',
                     indeterminate: toggleAllIndeterminate
                   }"
+                  :field="{
+                    name: 'all'
+                  }"
                   :model-value="toggleAllChecked"
-                  :field="{}"
                   @updated="toggleAllRelatedTypes"
                 />
                 <div class="apos-export__separator" />
@@ -305,35 +307,20 @@ export default {
       this.formatName = this.formats.find(format => format.name === formatName).name;
     },
     toggleAllRelatedTypes() {
-      console.log('toggleAllRelatedTypes called', this.checkedRelatedTypes);
       // From PRO-7989:
       // If a partial selection is made when Toggle All clicked, deselect All
       // If no items selected when Toggle All clicked, select all
       // If all items selected when Toggle All clicked, deselect all
-
-      if (this.checkedRelatedTypes.length) {
-        this.checkedRelatedTypes = [];
-        this.toggleAllIndeterminate = false;
-        return;
-      }
-
-      this.checkedRelatedTypes = this.relatedTypes;
+      this.toggleAllChecked = !this.checkedRelatedTypes.length;
+      this.toggleAllIndeterminate = false;
+      this.checkedRelatedTypes = !this.checkedRelatedTypes.length
+        ? this.relatedTypes
+        : [];
     },
     toggleRelatedType() {
-      console.log('toggleRelatedType called', this.checkedRelatedTypes);
-      if (this.checkedRelatedTypes.length === this.relatedTypes.length) {
-        this.toggleAllChecked = true;
-        this.toggleAllIndeterminate = false;
-        return;
-      }
-
-      if (this.checkedRelatedTypes.length) {
-        this.toggleAllIndeterminate = true;
-        return;
-      }
-
-      this.toggleAllChecked = false;
-      this.toggleAllIndeterminate = false;
+      this.toggleAllChecked = !!this.checkedRelatedTypes.length;
+      this.toggleAllIndeterminate =
+        this.checkedRelatedTypes.length !== this.relatedTypes.length;
     }
   }
 };
@@ -463,10 +450,14 @@ export default {
 .apos-export__settings-row--column {
   overflow: hidden;
   flex-direction: column;
-  gap: 20px;
+  gap: 0;
   align-items: baseline;
   height: auto;
   margin-bottom: 20px;
+}
+
+.apos-export__related-description {
+  margin-bottom: 10px;
 }
 
 .apos-export__separator {
