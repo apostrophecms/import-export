@@ -1,5 +1,11 @@
 # Changelog
 
+## UNRELEASED
+
+### Adds
+
+* Toggle to select and deselect all document types in the export modal.
+
 ## 3.2.1 (2025-05-14)
 
 ### Fixes
