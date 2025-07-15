@@ -84,6 +84,7 @@
 
                 <AposCheckbox
                   tabindex="-1"
+                  data-apos-test="toggleAllRelated"
                   :choice="{
                     value: 'all',
                     label: 'aposImportExport:exportModalToggleAllRelated',
