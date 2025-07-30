@@ -934,29 +934,29 @@ describe('@apostrophecms/import-export', function () {
       .getRelatedTypes(req, apos.topic.schema);
 
     const actual = {
-      relatedTypesArticles,
-      relatedTypesTopics
+      relatedTypesArticles: relatedTypesArticles.toSorted(),
+      relatedTypesTopics: relatedTypesTopics.toSorted()
     };
     const expected = {
       // All page types are in play because rich text internal page links are in play.
       // Articles are in play because a page type has a relationship to them, so:
       // see above (remember this is quite recursive)
       relatedTypesArticles: [
-        'topic',
+        '@apostrophecms/home-page',
         '@apostrophecms/image',
         '@apostrophecms/image-tag',
-        '@apostrophecms/home-page',
-        'home-page',
+        'article',
         'default-page',
-        'article'
+        'home-page',
+        'topic'
       ],
       relatedTypesTopics: [
+        '@apostrophecms/home-page',
         '@apostrophecms/image',
         '@apostrophecms/image-tag',
-        '@apostrophecms/home-page',
-        'home-page',
-        'default-page',
         'article',
+        'default-page',
+        'home-page',
         'topic'
       ]
     };
