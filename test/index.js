@@ -934,8 +934,8 @@ describe('@apostrophecms/import-export', function () {
       .getRelatedTypes(req, apos.topic.schema);
 
     const actual = {
-      relatedTypesArticles: relatedTypesArticles.toSorted(),
-      relatedTypesTopics: relatedTypesTopics.toSorted()
+      relatedTypesArticles: relatedTypesArticles.sort(),
+      relatedTypesTopics: relatedTypesTopics.sort()
     };
     const expected = {
       // All page types are in play because rich text internal page links are in play.
