@@ -4,7 +4,7 @@
 
 ### Adds
 
-* Toggle to select and deselect all document types in the export modal.
+* Adds a checkbox to select and deselect all related document types in the export modal.
 
 ## 3.2.1 (2025-05-14)
 
