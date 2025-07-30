@@ -14,6 +14,7 @@
   "exportModalNoRelatedTypes": "No Related Types",
   "exportModalRelatedDocumentDescription": "Include the following document types where applicable",
   "exportModalSettingsLabel": "Export Settings",
+  "exportModalToggleAllRelated": "Toggle all",
   "exported": "Exported {{ count }} {{ type }}",
   "exporting": "Exporting {{ type }}...",
   "import": "Import {{ type }}",

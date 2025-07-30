@@ -81,6 +81,23 @@
                 <div class="apos-export__related-description">
                   {{ $t('aposImportExport:exportModalRelatedDocumentDescription') }}
                 </div>
+
+                <AposCheckbox
+                  tabindex="-1"
+                  data-apos-test="toggleAllRelated"
+                  :choice="{
+                    value: 'all',
+                    label: 'aposImportExport:exportModalToggleAllRelated',
+                    indeterminate: toggleAllIndeterminate
+                  }"
+                  :field="{
+                    name: 'all'
+                  }"
+                  :model-value="toggleAllChecked"
+                  @updated="toggleAllRelatedTypes"
+                />
+                <div class="apos-export__separator" />
+
                 <div
                   v-if="relatedTypes && relatedTypes.length"
                   class="apos-export__related-list"
@@ -98,6 +115,7 @@
                       label: getRelatedTypeLabel(relatedType),
                       name: relatedType
                     }"
+                    @updated="toggleRelatedType"
                   />
                 </div>
                 <div v-else>
@@ -180,7 +198,9 @@ export default {
       checkedRelatedTypes: [],
       type: this.moduleName,
       formatName: apos.modules['@apostrophecms/import-export'].formats[0].name,
-      selectedDocIds: []
+      selectedDocIds: [],
+      toggleAllChecked: true,
+      toggleAllIndeterminate: false
     };
   },
 
@@ -286,6 +306,22 @@ export default {
     },
     onFormatChange(formatName) {
       this.formatName = this.formats.find(format => format.name === formatName).name;
+    },
+    toggleAllRelatedTypes() {
+      // From PRO-7989:
+      // If a partial selection is made when Toggle All clicked, deselect All
+      // If no items selected when Toggle All clicked, select all
+      // If all items selected when Toggle All clicked, deselect all
+      this.toggleAllChecked = !this.checkedRelatedTypes.length;
+      this.toggleAllIndeterminate = false;
+      this.checkedRelatedTypes = !this.checkedRelatedTypes.length
+        ? this.relatedTypes
+        : [];
+    },
+    toggleRelatedType() {
+      this.toggleAllChecked = !!this.checkedRelatedTypes.length;
+      this.toggleAllIndeterminate =
+        this.checkedRelatedTypes.length !== this.relatedTypes.length;
     }
   }
 };
@@ -415,10 +451,14 @@ export default {
 .apos-export__settings-row--column {
   overflow: hidden;
   flex-direction: column;
-  gap: 20px;
+  gap: 0;
   align-items: baseline;
   height: auto;
   margin-bottom: 20px;
+}
+
+.apos-export__related-description {
+  margin-bottom: 10px;
 }
 
 .apos-export__separator {
