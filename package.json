@@ -29,7 +29,6 @@
   "dependencies": {
     "bluebird": "^3.7.2",
     "bson": "^6.0.0",
-    "connect-multiparty": "^2.1.1",
     "csv-parse": "^5.5.5",
     "csv-stringify": "^6.4.6",
     "dayjs": "^1.9.8",
