@@ -1,5 +1,11 @@
 # Changelog
 
+## UNRELEASED
+
+### Fixes
+
+* CSV imports should not require a `type` column when importing pieces.
+
 ## 3.3.0 (2025-08-06)
 
 ### Adds
