@@ -1116,6 +1116,34 @@ describe('@apostrophecms/import-export', function () {
       assert.equal(topics[0].main.items[0].content, '<p><em>rich</em> <strong>text</strong></p>');
     });
 
+    it('should import a piece from a csv file with no type, as long as the module name is known', async function() {
+      csv.input = async () => {
+        return {
+          docs: [
+            {
+              // type intentionally omitted
+              title: 'topic1',
+              description: 'description1',
+              main: '<p><em>rich</em> <strong>text</strong></p>'
+            }
+          ]
+        };
+      };
+
+      await importExportManager.import(getImportReq(), 'topic');
+
+      const topics = await apos.doc.db
+        .find({ type: 'topic' })
+        .toArray();
+
+      assert.equal(topics.length, 1);
+      assert.equal(topics[0].title, 'topic1');
+      assert.equal(topics[0].slug, 'topic1');
+      assert.equal(topics[0].aposMode, 'draft');
+      assert.equal(topics[0].description, 'description1');
+      assert.equal(topics[0].main.items[0].content, '<p><em>rich</em> <strong>text</strong></p>');
+    });
+
     it('should import a page from a csv file that was not made from the import-export module', async function() {
       csv.input = async () => {
         return {

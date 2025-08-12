@@ -298,6 +298,31 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
           assert.equal(topics[0].lastPublishedAt, undefined);
         });
 
+        it('should import a piece from a csv file without a type column, as long as the module name is known', async function() {
+          importExportManager.formats.csv.input = async () => {
+            return {
+              docs: [
+                {
+                  // type intentionally omitted
+                  title: 'topic1'
+                }
+              ]
+            };
+          };
+
+          await importExportManager.import(req, 'topic');
+
+          const topics = await apos.doc.db
+            .find({ type: 'topic' })
+            .toArray();
+
+          assert.equal(topics.length, 1);
+          assert.equal(topics[0]._id.endsWith(':en:draft'), true);
+          assert.equal(topics[0].aposMode, 'draft');
+          assert.equal(topics[0].aposLocale, 'en:draft');
+          assert.equal(topics[0].title, 'topic1');
+        });
+
         it('should import a page from a csv file that was not made from the import-export module, as draft only', async function() {
           importExportManager.formats.csv.input = async () => {
             return {
