@@ -5,6 +5,7 @@
 ### Fixes
 
 * CSV imports should not require a `type` column when importing pieces.
+* Removed unused `connect-multiparty` middleware, eliminating superfluous warnings.
 
 ## 3.3.0 (2025-08-06)
 
