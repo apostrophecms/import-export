@@ -1,6 +1,6 @@
 # Changelog
 
-## UNRELEASED
+## 3.3.1 (2025-09-03)
 
 ### Fixes
 
