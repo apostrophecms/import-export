@@ -918,7 +918,7 @@ describe('@apostrophecms/import-export:import-page', function () {
     const {
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -928,7 +928,7 @@ describe('@apostrophecms/import-export:import-page', function () {
         docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
         duplicatedDocs,
         importedAttachments,
-        exportPathId,
+        exportId,
         jobId,
         notificationId,
         formatLabel

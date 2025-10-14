@@ -130,7 +130,7 @@ export default () => {
             importDraftsOnly: event.importDraftsOnly,
             translate: event.translate,
             overrideLocale: true,
-            exportPathId: event.exportPathId,
+            exportId: event.exportId,
             formatLabel: event.formatLabel
           }
         });
@@ -148,7 +148,7 @@ export default () => {
     try {
       await apos.http.post('/api/v1/@apostrophecms/import-export/clean-export', {
         body: {
-          exportPathId: event.exportPathId
+          exportId: event.exportId
         }
       });
     } catch (error) {

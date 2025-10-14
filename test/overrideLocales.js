@@ -74,15 +74,15 @@ describe('#import - overriding locales integration tests', function() {
 
     it('should import pieces with related documents from the extracted export path when provided', async function() {
       // Since we are mocking this and not really uploading a file, we have to
-      // manually call setExportPathId to establish a mapping to a safe
+      // manually call setExportId to establish a mapping to a safe
       // unique identifier to share with the "browser"
       const expectedPath = '/custom/extracted-export-path';
-      await importExportManager.setExportPathId(expectedPath);
+      await importExportManager.setExportId(expectedPath);
 
       req = apos.task.getReq({
         locale: 'en',
         body: {
-          exportPathId: await importExportManager.getExportPathId(expectedPath),
+          exportId: await importExportManager.getExportId(expectedPath),
           formatLabel: 'gzip',
           overrideLocale: true
         }
@@ -369,15 +369,15 @@ describe('#import - overriding locales integration tests', function() {
 
     it('should rewrite the docs locale when the locale is different and the `overrideLocale` param is provided', async function() {
       // Since we are mocking this and not really uploading a file, we have to
-      // manually call setExportPathId to establish a mapping to a safe
+      // manually call setExportId to establish a mapping to a safe
       // unique identifier to share with the "browser"
       const expectedPath = '/custom/extracted-export-path';
-      await importExportManager.setExportPathId(expectedPath);
+      await importExportManager.setExportId(expectedPath);
 
       const req = apos.task.getReq({
         locale: 'en',
         body: {
-          exportPathId: await importExportManager.getExportPathId(expectedPath),
+          exportId: await importExportManager.getExportId(expectedPath),
           formatLabel: 'gzip',
           overrideLocale: true
         }

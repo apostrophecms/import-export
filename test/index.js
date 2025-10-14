@@ -494,7 +494,7 @@ describe('@apostrophecms/import-export', function () {
     const {
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -523,7 +523,7 @@ describe('@apostrophecms/import-export', function () {
       docIds,
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -660,7 +660,7 @@ describe('@apostrophecms/import-export', function () {
     const {
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -687,7 +687,7 @@ describe('@apostrophecms/import-export', function () {
       docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -766,7 +766,7 @@ describe('@apostrophecms/import-export', function () {
     const {
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -795,7 +795,7 @@ describe('@apostrophecms/import-export', function () {
         .map(({ aposDocId }) => aposDocId),
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -899,7 +899,7 @@ describe('@apostrophecms/import-export', function () {
     const {
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -909,7 +909,7 @@ describe('@apostrophecms/import-export', function () {
       docIds: duplicatedDocs.map(doc => doc.aposDocId),
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -1993,7 +1993,7 @@ describe('@apostrophecms/import-export', function () {
       const {
         duplicatedDocs,
         importedAttachments,
-        exportPathId,
+        exportId,
         jobId,
         notificationId,
         formatLabel
@@ -2018,7 +2018,7 @@ describe('@apostrophecms/import-export', function () {
         docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
         duplicatedDocs,
         importedAttachments,
-        exportPathId,
+        exportId,
         jobId,
         notificationId,
         formatLabel,

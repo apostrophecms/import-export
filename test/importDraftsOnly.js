@@ -393,7 +393,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         const {
           duplicatedDocs,
           importedAttachments,
-          exportPathId,
+          exportId,
           jobId,
           notificationId,
           formatLabel
@@ -405,7 +405,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
             docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
             duplicatedDocs,
             importedAttachments,
-            exportPathId,
+            exportId,
             jobId,
             notificationId,
             formatLabel
@@ -476,7 +476,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         const {
           duplicatedDocs,
           importedAttachments,
-          exportPathId,
+          exportId,
           jobId,
           notificationId,
           formatLabel
@@ -488,7 +488,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
             docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
             duplicatedDocs,
             importedAttachments,
-            exportPathId,
+            exportId,
             jobId,
             notificationId,
             formatLabel
