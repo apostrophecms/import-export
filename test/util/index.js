@@ -1,13 +1,15 @@
-const assert = require('assert');
-const path = require('path');
-const fs = require('fs/promises');
-const { createReadStream } = require('fs');
+const assert = require('node:assert');
+const path = require('node:path');
+const fs = require('node:fs/promises');
+const { createReadStream } = require('node:fs');
 const FormData = require('form-data');
+const { output: gzip } = require('../../lib/formats/gzip.js');
 
 module.exports = {
   getAppConfig,
   extractFileNames,
   getExtractedFiles,
+  compressFixtures,
   copyFixtures,
   cleanData,
   deletePiecesAndPages,
@@ -159,6 +161,23 @@ async function getExtractedFiles(extractPath) {
     attachments: JSON.parse(attachmentsData),
     attachmentFiles
   };
+}
+
+async function compressFixtures(apos) {
+  const fixturesPath = path.join(apos.rootDir, 'fixtures');
+  const directories = (await fs.readdir(fixturesPath))
+    .filter(entry => entry.isDirectory());
+  for (const directory of directories) {
+    const docs = await import(
+      path.join(fixturesPath, directory.name, 'aposDocs.json'),
+      { with: { type: 'json' } }
+    );
+    const attachments = await import(
+      path.join(fixturesPath, directory.name, 'aposAttachments.json'),
+      { with: { type: 'json' } }
+    );
+    await gzip(directory.name, { docs, attachments }, true);
+  }
 }
 
 async function copyFixtures(apos) {

@@ -1,0 +1,16 @@
+[
+  {
+    "_id": "4:en:draft",
+    "aposLocale": "en:draft",
+    "aposMode": "draft",
+    "title": "topic1 DRAFT",
+    "type": "topic"
+  },
+  {
+    "_id": "4:en:published",
+    "aposLocale": "en:published",
+    "aposMode": "published",
+    "title": "topic1 PUBLISHED",
+    "type": "topic"
+  }
+]

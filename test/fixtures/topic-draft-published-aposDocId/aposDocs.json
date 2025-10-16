@@ -1,0 +1,18 @@
+[
+  {
+    "_id": "4:en:draft",
+    "aposDocId": "4",
+    "aposLocale": "en:draft",
+    "aposMode": "draft",
+    "title": "topic1 DRAFT",
+    "type": "topic"
+  },
+  {
+    "_id": "4:en:published",
+    "aposDocId": "4",
+    "aposLocale": "en:published",
+    "aposMode": "published",
+    "title": "topic1 PUBLISHED",
+    "type": "topic"
+  }
+]

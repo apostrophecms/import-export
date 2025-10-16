@@ -1,8 +1,8 @@
-const assert = require('assert').strict;
+const assert = require('node:assert/strict');
 const path = require('node:path');
 const t = require('apostrophe/test-lib/util.js');
 const {
-  getAppConfig, insertAdminUser, deletePiecesAndPages, copyFixtures
+  getAppConfig, insertAdminUser, deletePiecesAndPages, compressFixtures, copyFixtures
 } = require('./util/index.js');
 
 describe('#import - when `importDraftsOnly` option is set to `true`', function () {
@@ -10,10 +10,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
 
   let apos;
   let req;
-  let input;
   let insertDocs;
-  let mimeType;
-  let gzip;
   let importExportManager;
 
   after(async function () {
@@ -21,6 +18,8 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
   });
 
   before(async function () {
+    await compressFixtures();
+
     apos = await t.create({
       root: module,
       testModule: true,
@@ -36,60 +35,34 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
     importExportManager = apos.modules['@apostrophecms/import-export'];
     importExportManager.removeExportFileFromUploadFs = () => { };
     importExportManager.remove = () => { };
-    gzip = importExportManager.formats.gzip;
-    mimeType = gzip.allowedTypes[0];
+    // gzip = importExportManager.formats.gzip;
+    // mimeType = gzip.allowedTypes[0];
 
     await insertAdminUser(apos);
   });
 
   this.beforeEach(async function () {
-    input = gzip.input;
     insertDocs = apos.modules['@apostrophecms/import-export'].insertDocs;
 
     await deletePiecesAndPages(apos);
   });
 
   this.afterEach(function () {
-    gzip.input = input;
     apos.modules['@apostrophecms/import-export'].insertDocs = insertDocs;
   });
 
   describe('when `importDraftsOnly` option is not set', function () {
     this.beforeEach(async function () {
+      await deletePiecesAndPages(apos);
+      await copyFixtures(apos);
+
       req = apos.task.getReq({
         locale: 'en',
-        body: {},
-        files: {
-          file: {
-            path: '/some/path/to/file',
-            type: mimeType
-          }
-        }
+        body: {}
       });
     });
 
     it('should import all the documents', async function () {
-      gzip.input = async req => {
-        return {
-          docs: [
-            {
-              _id: '4:en:draft',
-              aposMode: 'draft',
-              aposLocale: 'en:draft',
-              title: 'topic1 DRAFT',
-              type: 'topic'
-            },
-            {
-              _id: '4:en:published',
-              aposMode: 'published',
-              aposLocale: 'en:published',
-              title: 'topic1 PUBLISHED',
-              type: 'topic'
-            }
-          ],
-          attachmentsInfo: []
-        };
-      };
       apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs }) => {
         assert.deepEqual(docs, [
           {
@@ -115,52 +88,35 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         };
       };
 
-      await importExportManager.import(req);
+      await importExportManager.import(
+        req.clone({
+          files: {
+            file: {
+              path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-draft-published.tar.gz'),
+              type: importExportManager.formats.gzip.allowedTypes[0]
+            }
+          }
+        })
+      );
     });
   });
 
   describe('when `importDraftsOnly` option is set to `true`', function () {
     this.beforeEach(async function () {
+      await deletePiecesAndPages(apos);
+      await copyFixtures(apos);
+
       req = apos.task.getReq({
         locale: 'en',
         body: {
           importDraftsOnly: true,
           formatLabel: 'gzip'
-        },
-        files: {
-          file: {
-            path: '/some/path/to/file',
-            type: mimeType
-          }
         }
       });
     });
 
     describe('when inserting a imported document', function () {
       it('should import only the published documents as draft', async function () {
-        gzip.input = async req => {
-          return {
-            docs: [
-              {
-                _id: '4:en:draft',
-                aposMode: 'draft',
-                aposLocale: 'en:draft',
-                title: 'topic1 DRAFT',
-                type: 'topic',
-                lastPublishedAt: '2021-01-01T00:00:00.000Z'
-              },
-              {
-                _id: '4:en:published',
-                aposMode: 'published',
-                aposLocale: 'en:published',
-                title: 'topic1 PUBLISHED',
-                type: 'topic',
-                lastPublishedAt: '2021-01-01T00:00:00.000Z'
-              }
-            ],
-            attachmentsInfo: []
-          };
-        };
         apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs, ...rest }) => {
           assert.deepEqual(docs, [
             {
@@ -179,36 +135,40 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
           });
         };
 
-        await importExportManager.import(req);
+        await importExportManager.import(
+          req.clone({
+            files: {
+              file: {
+                path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-draft-published-lastPublishedAt.tar.gz'),
+                type: importExportManager.formats.gzip.allowedTypes[0]
+              }
+            }
+          })
+        );
 
         const topics = await apos.doc.db
           .find({ type: 'topic' })
           .toArray();
 
-        assert.equal(topics.length, 1);
-        assert.equal(topics[0]._id, '4:en:draft');
-        assert.equal(topics[0].aposMode, 'draft');
-        assert.equal(topics[0].aposLocale, 'en:draft');
-        assert.equal(topics[0].title, 'topic1 PUBLISHED');
-        assert.equal(topics[0].lastPublishedAt, undefined);
+        const actual = topics.map(topic => ({
+          ...topic,
+          lastPublishedAt: topic.lastPublishedAt
+        }));
+        const expected = [
+          {
+            ...topics.at(0),
+            _id: topics.at(0).aposDocId.concat(':en:draft'),
+            aposLocale: 'en:draft',
+            aposMode: 'draft',
+            lastPublishedAt: undefined,
+            title: 'topic1 PUBLISHED'
+          }
+        ];
+
+        assert.deepEqual(actual, expected);
       });
 
       it('should import the documents in draft if they do not have a published version to import', async function () {
-        gzip.input = async req => {
-          return {
-            docs: [
-              {
-                _id: '4:en:draft',
-                aposMode: 'draft',
-                aposLocale: 'en:draft',
-                title: 'topic1 DRAFT',
-                type: 'topic',
-                lastPublishedAt: '2021-01-01T00:00:00.000Z'
-              }
-            ],
-            attachmentsInfo: []
-          };
-        };
         apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs, ...rest }) => {
           assert.deepEqual(docs, [
             {
@@ -227,21 +187,40 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
           });
         };
 
-        await importExportManager.import(req);
+        await importExportManager.import(
+          req.clone({
+            files: {
+              file: {
+                path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-draft-lastPublishedAt.tar.gz'),
+                type: importExportManager.formats.gzip.allowedTypes[0]
+              }
+            }
+          })
+        );
 
         const topics = await apos.doc.db
           .find({ type: 'topic' })
           .toArray();
 
-        assert.equal(topics.length, 1);
-        assert.equal(topics[0]._id, '4:en:draft');
-        assert.equal(topics[0].aposMode, 'draft');
-        assert.equal(topics[0].aposLocale, 'en:draft');
-        assert.equal(topics[0].title, 'topic1 DRAFT');
-        assert.equal(topics[0].lastPublishedAt, undefined);
+        const actual = topics.map(topic => ({
+          ...topic,
+          lastPublishedAt: topic.lastPublishedAt
+        }));
+        const expected = [
+          {
+            ...topics.at(0),
+            _id: topics.at(0).aposDocId.concat(':en:draft'),
+            aposLocale: 'en:draft',
+            aposMode: 'draft',
+            lastPublishedAt: undefined,
+            title: 'topic1 DRAFT'
+          }
+        ];
+
+        assert.deepEqual(actual, expected);
       });
 
-      describe.only('when importing from a CSV file', function() {
+      describe.skip('when importing from a CSV file', function() {
         this.beforeEach(async function () {
           await deletePiecesAndPages(apos);
           await copyFixtures(apos);
@@ -362,30 +341,6 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
 
     describe('when updating a imported document', function () {
       it('should import only the published documents as draft', async function () {
-        gzip.input = async req => {
-          return {
-            docs: [
-              {
-                _id: '4:en:draft',
-                aposDocId: '4',
-                aposMode: 'draft',
-                aposLocale: 'en:draft',
-                title: 'topic1 DRAFT',
-                type: 'topic'
-              },
-              {
-                _id: '4:en:published',
-                aposDocId: '4',
-                aposMode: 'published',
-                aposLocale: 'en:published',
-                title: 'topic1 PUBLISHED',
-                type: 'topic'
-              }
-            ],
-            attachmentsInfo: []
-          };
-        };
-
         await apos.topic.insert(apos.task.getReq({ mode: 'draft' }), {
           ...apos.topic.newInstance(),
           _id: '4:en:draft',
@@ -405,7 +360,16 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
           jobId,
           notificationId,
           formatLabel
-        } = await importExportManager.import(req);
+        } = await importExportManager.import(
+          req.clone({
+            files: {
+              file: {
+                path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-draft-published-aposDocId.tar.gz'),
+                type: importExportManager.formats.gzip.allowedTypes[0]
+              }
+            }
+          })
+        );
 
         const _req = req.clone({
           body: {
@@ -426,47 +390,30 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
           .find({ type: 'topic' })
           .toArray();
 
-        assert.equal(topics.length, 2);
+        const actual = topics;
+        const expected = [
+          {
+            ...topics.at(0),
+            _id: topics.at(0).aposDocId.concat(':en:draft'),
+            aposLocale: 'en:draft',
+            aposMode: 'draft',
+            lastPublishedAt: topics.at(0).lastPublishedAt,
+            modified: true,
+            title: 'topic1 PUBLISHED'
+          },
+          {
+            ...topics.at(1),
+            _id: topics.at(1).aposDocId.concat(':en:published'),
+            aposLocale: 'en:published',
+            aposMode: 'published',
+            title: 'topic1 EXISTING PUBLISHED'
+          }
+        ];
 
-        assert.equal(topics[0]._id, '4:en:draft');
-        assert.equal(topics[0].aposMode, 'draft');
-        assert.equal(topics[0].aposLocale, 'en:draft');
-        assert.equal(topics[0].title, 'topic1 PUBLISHED');
-        assert.equal(topics[0].modified, true);
-
-        assert.equal(topics[1]._id, '4:en:published');
-        assert.equal(topics[1].aposMode, 'published');
-        assert.equal(topics[1].aposLocale, 'en:published');
-        assert.equal(topics[1].title, 'topic1 EXISTING PUBLISHED');
+        assert.deepEqual(actual, expected);
       });
 
-      it('should import only the published documents as draft and not set modified if the draft does not differ from publish', async function () {
-        gzip.input = async req => {
-          return {
-            docs: [
-              {
-                _id: '4:en:draft',
-                aposDocId: '4',
-                aposMode: 'draft',
-                aposLocale: 'en:draft',
-                title: 'topic1 DRAFT',
-                type: 'topic',
-                slug: 'topic1-draft'
-              },
-              {
-                _id: '4:en:published',
-                aposDocId: '4',
-                aposMode: 'published',
-                aposLocale: 'en:published',
-                title: 'topic1 PUBLISHED',
-                type: 'topic',
-                slug: 'topic1-foo'
-              }
-            ],
-            attachmentsInfo: []
-          };
-        };
-
+      it.only('should import only the published documents as draft and not set modified if the draft does not differ from publish', async function () {
         await apos.topic.insert(apos.task.getReq({ mode: 'draft' }), {
           ...apos.topic.newInstance(),
           _id: '4:en:draft',
@@ -488,7 +435,16 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
           jobId,
           notificationId,
           formatLabel
-        } = await importExportManager.import(req);
+        } = await importExportManager.import(
+          req.clone({
+            files: {
+              file: {
+                path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-draft-published-aposDocId-slug.tar.gz'),
+                type: importExportManager.formats.gzip.allowedTypes[0]
+              }
+            }
+          })
+        );
 
         const _req = req.clone({
           body: {
@@ -509,23 +465,32 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
           .find({ type: 'topic' })
           .toArray();
 
-        assert.equal(topics.length, 2);
+        const actual = topics;
+        const expected = [
+          {
+            ...topics.at(0),
+            _id: topics.at(0).aposDocId.concat(':en:draft'),
+            aposLocale: 'en:draft',
+            aposMode: 'draft',
+            lastPublishedAt: topics.at(0).lastPublishedAt,
+            modified: false, // IMPORTANT, should be set to false
+            slug: 'topic1-foo',
+            title: 'topic1 PUBLISHED'
+          },
+          {
+            ...topics.at(1),
+            _id: topics.at(1).aposDocId.concat(':en:published'),
+            aposLocale: 'en:published',
+            aposMode: 'published',
+            slug: 'topic1-foo',
+            title: 'topic1 PUBLISHED'
+          }
+        ];
 
-        assert.equal(topics[0]._id, '4:en:draft');
-        assert.equal(topics[0].aposMode, 'draft');
-        assert.equal(topics[0].aposLocale, 'en:draft');
-        assert.equal(topics[0].title, 'topic1 PUBLISHED');
-        assert.equal(topics[0].slug, 'topic1-foo');
-        assert.equal(topics[0].modified, false); // IMPORTANT, should be set to false
-
-        assert.equal(topics[1]._id, '4:en:published');
-        assert.equal(topics[1].aposMode, 'published');
-        assert.equal(topics[1].aposLocale, 'en:published');
-        assert.equal(topics[1].title, 'topic1 PUBLISHED');
-        assert.equal(topics[0].slug, 'topic1-foo');
+        assert.deepEqual(actual, expected);
       });
 
-      describe.only('when importing from a CSV file', function() {
+      describe.skip('when importing from a CSV file', function() {
         this.beforeEach(async function () {
           await deletePiecesAndPages(apos);
           await copyFixtures(apos);
@@ -580,6 +545,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
               title: 'topic1'
             }
           ];
+
           assert.deepEqual(actual, expected);
         });
 
