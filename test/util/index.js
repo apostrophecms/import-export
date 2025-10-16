@@ -165,18 +165,18 @@ async function getExtractedFiles(extractPath) {
 
 async function compressFixtures(apos) {
   const fixturesPath = path.join(apos.rootDir, 'fixtures');
-  const directories = (await fs.readdir(fixturesPath))
+  const directories = (await fs.readdir(path.join(fixturesPath, 'gzip'), { withFileTypes: true }))
     .filter(entry => entry.isDirectory());
   for (const directory of directories) {
-    const docs = await import(
-      path.join(fixturesPath, directory.name, 'aposDocs.json'),
+    const { default: docs } = await import(
+      path.join(directory.path, directory.name, 'aposDocs.json'),
       { with: { type: 'json' } }
     );
-    const attachments = await import(
-      path.join(fixturesPath, directory.name, 'aposAttachments.json'),
+    const { default: attachments } = await import(
+      path.join(directory.path, directory.name, 'aposAttachments.json'),
       { with: { type: 'json' } }
     );
-    await gzip(directory.name, { docs, attachments }, true);
+    await gzip(path.join(fixturesPath, `${directory.name}.tar.gz`), { docs, attachments }, async () => {});
   }
 }
 

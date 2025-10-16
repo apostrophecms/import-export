@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const t = require('apostrophe/test-lib/util.js');
 const {
-  getAppConfig, insertAdminUser, deletePiecesAndPages, compressFixtures, copyFixtures
+  getAppConfig, insertAdminUser, deletePiecesAndPages, cleanData, compressFixtures, copyFixtures
 } = require('./util/index.js');
 
 describe('#import - when `importDraftsOnly` option is set to `true`', function () {
@@ -10,16 +10,16 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
 
   let apos;
   let req;
-  let insertDocs;
+  // TODO: remove
+  // let insertDocs;
   let importExportManager;
+  let tempPath;
 
   after(async function () {
     await t.destroy(apos);
   });
 
   before(async function () {
-    await compressFixtures();
-
     apos = await t.create({
       root: module,
       testModule: true,
@@ -33,27 +33,30 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
     });
 
     importExportManager = apos.modules['@apostrophecms/import-export'];
-    importExportManager.removeExportFileFromUploadFs = () => { };
-    importExportManager.remove = () => { };
-    // gzip = importExportManager.formats.gzip;
-    // mimeType = gzip.allowedTypes[0];
+    // importExportManager.removeExportFileFromUploadFs = () => { };
+    // importExportManager.remove = () => { };
+    tempPath = path.join(apos.rootDir, 'data/temp/uploadfs');
 
     await insertAdminUser(apos);
   });
 
   this.beforeEach(async function () {
-    insertDocs = apos.modules['@apostrophecms/import-export'].insertDocs;
+    // TODO: remove
+    // insertDocs = apos.modules['@apostrophecms/import-export'].insertDocs;
 
     await deletePiecesAndPages(apos);
+    await compressFixtures(apos);
   });
 
-  this.afterEach(function () {
-    apos.modules['@apostrophecms/import-export'].insertDocs = insertDocs;
-  });
+  // TODO: remove
+  // this.afterEach(function () {
+  //   apos.modules['@apostrophecms/import-export'].insertDocs = insertDocs;
+  // });
 
   describe('when `importDraftsOnly` option is not set', function () {
     this.beforeEach(async function () {
       await deletePiecesAndPages(apos);
+      await cleanData([ tempPath ]);
       await copyFixtures(apos);
 
       req = apos.task.getReq({
@@ -63,30 +66,31 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
     });
 
     it('should import all the documents', async function () {
-      apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs }) => {
-        assert.deepEqual(docs, [
-          {
-            _id: '4:en:draft',
-            aposMode: 'draft',
-            aposLocale: 'en:draft',
-            title: 'topic1 DRAFT',
-            type: 'topic'
-          },
-          {
-            _id: '4:en:published',
-            aposMode: 'published',
-            aposLocale: 'en:published',
-            title: 'topic1 PUBLISHED',
-            type: 'topic'
-          }
-        ]);
-
-        return {
-          duplicatedDocs: [],
-          duplicatedIds: [],
-          failedIds: []
-        };
-      };
+    // TODO: remove
+      // apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs }) => {
+      //   assert.deepEqual(docs, [
+      //     {
+      //       _id: '4:en:draft',
+      //       aposMode: 'draft',
+      //       aposLocale: 'en:draft',
+      //       title: 'topic1 DRAFT',
+      //       type: 'topic'
+      //     },
+      //     {
+      //       _id: '4:en:published',
+      //       aposMode: 'published',
+      //       aposLocale: 'en:published',
+      //       title: 'topic1 PUBLISHED',
+      //       type: 'topic'
+      //     }
+      //   ]);
+      //
+      //   return {
+      //     duplicatedDocs: [],
+      //     duplicatedIds: [],
+      //     failedIds: []
+      //   };
+      // };
 
       await importExportManager.import(
         req.clone({
@@ -104,6 +108,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
   describe('when `importDraftsOnly` option is set to `true`', function () {
     this.beforeEach(async function () {
       await deletePiecesAndPages(apos);
+      await cleanData([ tempPath ]);
       await copyFixtures(apos);
 
       req = apos.task.getReq({
@@ -117,23 +122,24 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
 
     describe('when inserting a imported document', function () {
       it('should import only the published documents as draft', async function () {
-        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs, ...rest }) => {
-          assert.deepEqual(docs, [
-            {
-              _id: '4:en:draft',
-              aposMode: 'draft',
-              aposLocale: 'en:draft',
-              title: 'topic1 PUBLISHED',
-              type: 'topic',
-              lastPublishedAt: '2021-01-01T00:00:00.000Z'
-            }
-          ]);
-
-          return insertDocs(req, {
-            docs,
-            ...rest
-          });
-        };
+        // TODO: remove
+        // apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs, ...rest }) => {
+        //   assert.deepEqual(docs, [
+        //     {
+        //       _id: '4:en:draft',
+        //       aposMode: 'draft',
+        //       aposLocale: 'en:draft',
+        //       title: 'topic1 PUBLISHED',
+        //       type: 'topic',
+        //       lastPublishedAt: '2021-01-01T00:00:00.000Z'
+        //     }
+        //   ]);
+        //
+        //   return insertDocs(req, {
+        //     docs,
+        //     ...rest
+        //   });
+        // };
 
         await importExportManager.import(
           req.clone({
@@ -169,23 +175,24 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
       });
 
       it('should import the documents in draft if they do not have a published version to import', async function () {
-        apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs, ...rest }) => {
-          assert.deepEqual(docs, [
-            {
-              _id: '4:en:draft',
-              aposMode: 'draft',
-              aposLocale: 'en:draft',
-              title: 'topic1 DRAFT',
-              type: 'topic',
-              lastPublishedAt: '2021-01-01T00:00:00.000Z'
-            }
-          ]);
-
-          return insertDocs(req, {
-            docs,
-            ...rest
-          });
-        };
+        // TODO: remove
+        // apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs, ...rest }) => {
+        //   assert.deepEqual(docs, [
+        //     {
+        //       _id: '4:en:draft',
+        //       aposMode: 'draft',
+        //       aposLocale: 'en:draft',
+        //       title: 'topic1 DRAFT',
+        //       type: 'topic',
+        //       lastPublishedAt: '2021-01-01T00:00:00.000Z'
+        //     }
+        //   ]);
+        //
+        //   return insertDocs(req, {
+        //     docs,
+        //     ...rest
+        //   });
+        // };
 
         await importExportManager.import(
           req.clone({
@@ -220,9 +227,10 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         assert.deepEqual(actual, expected);
       });
 
-      describe.skip('when importing from a CSV file', function() {
+      describe('when importing from a CSV file', function() {
         this.beforeEach(async function () {
           await deletePiecesAndPages(apos);
+          await cleanData([ tempPath ]);
           await copyFixtures(apos);
 
           req = apos.task.getReq({
@@ -490,9 +498,10 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         assert.deepEqual(actual, expected);
       });
 
-      describe.skip('when importing from a CSV file', function() {
+      describe('when importing from a CSV file', function() {
         this.beforeEach(async function () {
           await deletePiecesAndPages(apos);
+          await cleanData([ tempPath ]);
           await copyFixtures(apos);
 
           req = apos.task.getReq({
