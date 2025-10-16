@@ -3,7 +3,7 @@ const path = require('node:path');
 const t = require('apostrophe/test-lib/util.js');
 const {
   getAppConfig, insertAdminUser, deletePiecesAndPages, copyFixtures
-} = require('./util');
+} = require('./util/index.js');
 
 describe('#import - when `importDraftsOnly` option is set to `true`', function () {
   this.timeout(t.timeout);
@@ -639,19 +639,6 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         });
 
         it('should import a page from a csv file that was not made from the import-export module, as draft only', async function() {
-          importExportManager.formats.csv.input = async () => {
-            return {
-              docs: [
-                {
-                  type: 'default-page',
-                  'title:key': 'page1',
-                  title: 'page1 - edited',
-                  lastPublishedAt: '2021-01-01T00:00:00.000Z'
-                }
-              ]
-            };
-          };
-
           await apos.page.insert(apos.task.getReq({ mode: 'published' }), '_home', 'lastChild', {
             ...apos.modules['default-page'].newInstance(),
             title: 'page1'
