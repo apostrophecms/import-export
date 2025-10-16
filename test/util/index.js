@@ -8,6 +8,7 @@ module.exports = {
   getAppConfig,
   extractFileNames,
   getExtractedFiles,
+  copyFixtures,
   cleanData,
   deletePiecesAndPages,
   deleteAttachments,
@@ -158,6 +159,13 @@ async function getExtractedFiles(extractPath) {
     attachments: JSON.parse(attachmentsData),
     attachmentFiles
   };
+}
+
+async function copyFixtures(apos) {
+  const fixturesPath = path.join(apos.rootDir, 'fixtures');
+  const tempPath = path.join(apos.rootDir, 'data/temp/uploadfs');
+
+  await fs.cp(fixturesPath, tempPath, { recursive: true });
 }
 
 async function cleanData(paths) {

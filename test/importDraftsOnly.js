@@ -1,7 +1,8 @@
 const assert = require('assert').strict;
+const path = require('node:path');
 const t = require('apostrophe/test-lib/util.js');
 const {
-  getAppConfig, insertAdminUser, deletePiecesAndPages
+  getAppConfig, insertAdminUser, deletePiecesAndPages, copyFixtures
 } = require('./util');
 
 describe('#import - when `importDraftsOnly` option is set to `true`', function () {
@@ -240,114 +241,121 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         assert.equal(topics[0].lastPublishedAt, undefined);
       });
 
-      describe('when importing from a man-made CSV file', function() {
-        let csv;
-        let input;
-
-        before(function() {
-          csv = importExportManager.formats.csv;
-        });
-
+      describe.only('when importing from a CSV file', function() {
         this.beforeEach(async function () {
+          await deletePiecesAndPages(apos);
+          await copyFixtures(apos);
+
           req = apos.task.getReq({
             locale: 'en',
             body: {
               importDraftsOnly: true,
               formatLabel: 'CSV'
-            },
-            files: {
-              file: {
-                path: null,
-                type: csv.allowedTypes[0]
-              }
             }
           });
-
-          input = csv.input;
-          await deletePiecesAndPages(apos);
-        });
-
-        this.afterEach(function() {
-          csv.input = input;
         });
 
         it('should import a piece from a csv file that was not made from the import-export module, as draft only', async function() {
-          importExportManager.formats.csv.input = async () => {
-            return {
-              docs: [
-                {
-                  type: 'topic',
-                  title: 'topic1',
-                  lastPublishedAt: '2021-01-01T00:00:00.000Z'
+          await importExportManager.import(
+            req.clone({
+              files: {
+                file: {
+                  path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-type-title-lastPublishedAt.csv'),
+                  type: importExportManager.formats.csv.allowedTypes[0]
                 }
-              ]
-            };
-          };
-
-          await importExportManager.import(req);
+              }
+            })
+          );
 
           const topics = await apos.doc.db
             .find({ type: 'topic' })
             .toArray();
 
-          assert.equal(topics.length, 1);
-          assert.equal(topics[0]._id.endsWith(':en:draft'), true);
-          assert.equal(topics[0].aposMode, 'draft');
-          assert.equal(topics[0].aposLocale, 'en:draft');
-          assert.equal(topics[0].title, 'topic1');
-          assert.equal(topics[0].lastPublishedAt, undefined);
+          const actual = topics.map(topic => ({
+            ...topic,
+            lastPublishedAt: topic.lastPublishedAt
+          }));
+          const expected = [
+            {
+              ...topics.at(0),
+              _id: topics.at(0).aposDocId.concat(':en:draft'),
+              aposMode: 'draft',
+              aposLocale: 'en:draft',
+              title: 'topic1',
+              lastPublishedAt: undefined
+            }
+          ];
+
+          assert.deepEqual(actual, expected);
         });
 
         it('should import a piece from a csv file without a type column, as long as the module name is known', async function() {
-          importExportManager.formats.csv.input = async () => {
-            return {
-              docs: [
-                {
-                  // type intentionally omitted
-                  title: 'topic1'
+          await importExportManager.import(
+            req.clone({
+              files: {
+                file: {
+                  path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-title.csv'),
+                  type: importExportManager.formats.csv.allowedTypes[0]
                 }
-              ]
-            };
-          };
-
-          await importExportManager.import(req, 'topic');
+              }
+            }),
+            'topic'
+          );
 
           const topics = await apos.doc.db
             .find({ type: 'topic' })
             .toArray();
 
-          assert.equal(topics.length, 1);
-          assert.equal(topics[0]._id.endsWith(':en:draft'), true);
-          assert.equal(topics[0].aposMode, 'draft');
-          assert.equal(topics[0].aposLocale, 'en:draft');
-          assert.equal(topics[0].title, 'topic1');
+          const actual = topics.map(topic => ({
+            ...topic,
+            lastPublishedAt: topic.lastPublishedAt
+          }));
+          const expected = [
+            {
+              ...topics.at(0),
+              _id: topics.at(0).aposDocId.concat(':en:draft'),
+              aposMode: 'draft',
+              aposLocale: 'en:draft',
+              title: 'topic1',
+              lastPublishedAt: undefined
+            }
+          ];
+
+          assert.deepEqual(actual, expected);
         });
 
         it('should import a page from a csv file that was not made from the import-export module, as draft only', async function() {
-          importExportManager.formats.csv.input = async () => {
-            return {
-              docs: [
-                {
-                  type: 'default-page',
-                  title: 'page1',
-                  lastPublishedAt: '2021-01-01T00:00:00.000Z'
+          await importExportManager.import(
+            req.clone({
+              files: {
+                file: {
+                  path: path.join(apos.rootDir, 'data/temp/uploadfs/default-page-type-title-lastPublishedAt.csv'),
+                  type: importExportManager.formats.csv.allowedTypes[0]
                 }
-              ]
-            };
-          };
-
-          await importExportManager.import(req);
+              }
+            })
+          );
 
           const pages = await apos.doc.db
             .find({ type: 'default-page' })
             .toArray();
 
-          assert.equal(pages.length, 1);
-          assert.equal(pages[0]._id.endsWith(':en:draft'), true);
-          assert.equal(pages[0].aposMode, 'draft');
-          assert.equal(pages[0].aposLocale, 'en:draft');
-          assert.equal(pages[0].title, 'page1');
-          assert.equal(pages[0].lastPublishedAt, undefined);
+          const actual = pages.map(page => ({
+            ...page,
+            lastPublishedAt: page.lastPublishedAt
+          }));
+          const expected = [
+            {
+              ...pages.at(0),
+              _id: pages.at(0).aposDocId.concat(':en:draft'),
+              aposLocale: 'en:draft',
+              aposMode: 'draft',
+              lastPublishedAt: undefined,
+              title: 'page1'
+            }
+          ];
+
+          assert.deepEqual(actual, expected);
         });
       });
     });
@@ -517,93 +525,65 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         assert.equal(topics[0].slug, 'topic1-foo');
       });
 
-      describe('when importing from a man-made CSV file', function() {
-        let csv;
-        let input;
-
-        before(function() {
-          csv = importExportManager.formats.csv;
-        });
-
+      describe.only('when importing from a CSV file', function() {
         this.beforeEach(async function () {
+          await deletePiecesAndPages(apos);
+          await copyFixtures(apos);
+
           req = apos.task.getReq({
             locale: 'en',
             body: {
               importDraftsOnly: true,
               formatLabel: 'CSV'
-            },
-            files: {
-              file: {
-                path: null,
-                type: csv.allowedTypes[0]
-              }
             }
           });
-
-          input = csv.input;
-          await deletePiecesAndPages(apos);
-        });
-
-        this.afterEach(function() {
-          csv.input = input;
         });
 
         it('should import a piece from a csv file that was not made from the import-export module, as draft only', async function() {
-          importExportManager.formats.csv.input = async () => {
-            return {
-              docs: [
-                {
-                  type: 'topic',
-                  'title:key': 'topic1',
-                  title: 'topic1 - edited',
-                  lastPublishedAt: '2021-01-01T00:00:00.000Z'
-                }
-              ]
-            };
-          };
-
           await apos.topic.insert(apos.task.getReq({ mode: 'published' }), {
             ...apos.topic.newInstance(),
             title: 'topic1'
           });
 
-          await importExportManager.import(req);
+          await importExportManager.import(
+            req.clone({
+              files: {
+                file: {
+                  path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-type-titleKey-title-lastPublishedAt.csv'),
+                  type: importExportManager.formats.csv.allowedTypes[0]
+                }
+              }
+            })
+          );
 
           const topics = await apos.doc.db
             .find({ type: 'topic' })
             .toArray();
 
-          assert.equal(topics.length, 2);
-
-          assert.equal(topics[0]._id.endsWith(':en:draft'), true);
-          assert.equal(topics[0].title, 'topic1 - edited');
-          assert.equal(topics[0].aposMode, 'draft');
-          assert.equal(topics[0].aposLocale, 'en:draft');
-          assert.equal(topics[0].modified, true);
-          assert(topics[0].lastPublishedAt);
-
-          assert.equal(topics[1]._id.endsWith(':en:published'), true);
-          assert.equal(topics[1].title, 'topic1');
-          assert.equal(topics[1].aposMode, 'published');
-          assert.equal(topics[1].aposLocale, 'en:published');
-          assert(topics[1].lastPublishedAt);
+          const actual = topics;
+          const expected = [
+            {
+              ...topics.at(0),
+              _id: topics.at(0).aposDocId.concat(':en:draft'),
+              aposLocale: 'en:draft',
+              aposMode: 'draft',
+              lastPublishedAt: topics.at(0).lastPublishedAt,
+              modified: true,
+              title: 'topic1 - edited'
+            },
+            {
+              ...topics.at(1),
+              _id: topics.at(1).aposDocId.concat(':en:published'),
+              aposLocale: 'en:published',
+              aposMode: 'published',
+              lastPublishedAt: topics.at(1).lastPublishedAt,
+              title: 'topic1'
+            }
+          ];
+          assert.deepEqual(actual, expected);
         });
 
         it('should import a piece from a csv file that was not made from the import-export module, as draft only and not set modified if the draft does not differ from publish', async function() {
-          importExportManager.formats.csv.input = async () => {
-            return {
-              docs: [
-                {
-                  type: 'topic',
-                  'title:key': 'topic1 aaa',
-                  title: 'topic1 bbb',
-                  slug: 'topic1-bbb',
-                  lastPublishedAt: '2021-01-01T00:00:00.000Z'
-                }
-              ]
-            };
-          };
-
           const piece = await apos.topic.insert(apos.task.getReq({ mode: 'published' }), {
             ...apos.topic.newInstance(),
             title: 'topic1 bbb',
@@ -617,28 +597,45 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
             }
           });
 
-          await importExportManager.import(req);
+          await importExportManager.import(
+            req.clone({
+              files: {
+                file: {
+                  path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-type-titleKey-title-slug-lastPublishedAt.csv'),
+                  type: importExportManager.formats.csv.allowedTypes[0]
+                }
+              }
+            })
+          );
 
           const topics = await apos.doc.db
             .find({ type: 'topic' })
             .toArray();
 
-          assert.equal(topics.length, 2);
+          const actual = topics;
+          const expected = [
+            {
+              ...topics.at(0),
+              _id: topics.at(0).aposDocId.concat(':en:draft'),
+              aposLocale: 'en:draft',
+              aposMode: 'draft',
+              lastPublishedAt: topics.at(0).lastPublishedAt,
+              modified: false, // IMPORTANT, should be set to false
+              slug: 'topic1-bbb',
+              title: 'topic1 bbb'
+            },
+            {
+              ...topics.at(1),
+              _id: topics.at(1).aposDocId.concat(':en:published'),
+              aposLocale: 'en:published',
+              aposMode: 'published',
+              lastPublishedAt: topics.at(1).lastPublishedAt,
+              slug: 'topic1-bbb',
+              title: 'topic1 bbb'
+            }
+          ];
 
-          assert.equal(topics[0]._id.endsWith(':en:draft'), true);
-          assert.equal(topics[0].title, 'topic1 bbb');
-          assert.equal(topics[0].slug, 'topic1-bbb');
-          assert.equal(topics[0].aposMode, 'draft');
-          assert.equal(topics[0].aposLocale, 'en:draft');
-          assert.equal(topics[0].modified, false); // IMPORTANT, should be set to false
-          assert(topics[0].lastPublishedAt);
-
-          assert.equal(topics[1]._id.endsWith(':en:published'), true);
-          assert.equal(topics[1].title, 'topic1 bbb');
-          assert.equal(topics[1].slug, 'topic1-bbb');
-          assert.equal(topics[1].aposMode, 'published');
-          assert.equal(topics[1].aposLocale, 'en:published');
-          assert(topics[1].lastPublishedAt);
+          assert.deepEqual(actual, expected);
         });
 
         it('should import a page from a csv file that was not made from the import-export module, as draft only', async function() {
@@ -660,43 +657,46 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
             title: 'page1'
           });
 
-          await importExportManager.import(req);
+          await importExportManager.import(
+            req.clone({
+              files: {
+                file: {
+                  path: path.join(apos.rootDir, 'data/temp/uploadfs/default-page-type-titleKey-title-lastPublishedAt.csv'),
+                  type: importExportManager.formats.csv.allowedTypes[0]
+                }
+              }
+            })
+          );
 
           const pages = await apos.doc.db
             .find({ type: 'default-page' })
             .toArray();
 
-          assert.equal(pages.length, 2);
+          const actual = pages;
+          const expected = [
+            {
+              ...pages.at(0),
+              _id: pages.at(0).aposDocId.concat(':en:draft'),
+              aposLocale: 'en:draft',
+              aposMode: 'draft',
+              lastPublishedAt: pages.at(0).lastPublishedAt,
+              modified: true,
+              title: 'page1 - edited'
+            },
+            {
+              ...pages.at(1),
+              _id: pages.at(1).aposDocId.concat(':en:published'),
+              aposLocale: 'en:published',
+              aposMode: 'published',
+              lastPublishedAt: pages.at(1).lastPublishedAt,
+              title: 'page1'
+            }
+          ];
 
-          assert.equal(pages[0]._id.endsWith(':en:draft'), true);
-          assert.equal(pages[0].title, 'page1 - edited');
-          assert.equal(pages[0].aposMode, 'draft');
-          assert.equal(pages[0].aposLocale, 'en:draft');
-          assert.equal(pages[0].modified, true);
-          assert(pages[0].lastPublishedAt);
-
-          assert.equal(pages[1]._id.endsWith(':en:published'), true);
-          assert.equal(pages[1].title, 'page1');
-          assert.equal(pages[1].aposMode, 'published');
-          assert.equal(pages[1].aposLocale, 'en:published');
-          assert(pages[1].lastPublishedAt);
+          assert.deepEqual(actual, expected);
         });
 
         it('should import a page from a csv file that was not made from the import-export module, as draft only and not set modified if the draft does not differ from publish', async function() {
-          importExportManager.formats.csv.input = async () => {
-            return {
-              docs: [
-                {
-                  type: 'default-page',
-                  'title:key': 'page1 aaa',
-                  title: 'page1 bbb',
-                  slug: '/page1-bbb',
-                  lastPublishedAt: '2021-01-01T00:00:00.000Z'
-                }
-              ]
-            };
-          };
-
           const page = await apos.page.insert(apos.task.getReq({ mode: 'published' }), '_home', 'lastChild', {
             ...apos.modules['default-page'].newInstance(),
             title: 'page1 bbb',
@@ -710,28 +710,45 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
             }
           });
 
-          await importExportManager.import(req);
+          await importExportManager.import(
+            req.clone({
+              files: {
+                file: {
+                  path: path.join(apos.rootDir, 'data/temp/uploadfs/default-page-type-titleKey-title-slug-lastPublishedAt.csv'),
+                  type: importExportManager.formats.csv.allowedTypes[0]
+                }
+              }
+            })
+          );
 
           const pages = await apos.doc.db
             .find({ type: 'default-page' })
             .toArray();
 
-          assert.equal(pages.length, 2);
+          const actual = pages;
+          const expected = [
+            {
+              ...pages.at(0),
+              _id: pages.at(0).aposDocId.concat(':en:draft'),
+              aposLocale: 'en:draft',
+              aposMode: 'draft',
+              lastPublishedAt: pages.at(0).lastPublishedAt,
+              modified: false, // IMPORTANT, should be set to false
+              slug: '/page1-bbb',
+              title: 'page1 bbb'
+            },
+            {
+              ...pages.at(1),
+              _id: pages.at(1).aposDocId.concat(':en:published'),
+              aposLocale: 'en:published',
+              aposMode: 'published',
+              lastPublishedAt: pages.at(1).lastPublishedAt,
+              slug: '/page1-bbb',
+              title: 'page1 bbb'
+            }
+          ];
 
-          assert.equal(pages[0]._id.endsWith(':en:draft'), true);
-          assert.equal(pages[0].title, 'page1 bbb');
-          assert.equal(pages[0].slug, '/page1-bbb');
-          assert.equal(pages[0].aposMode, 'draft');
-          assert.equal(pages[0].aposLocale, 'en:draft');
-          assert.equal(pages[0].modified, false); // IMPORTANT, should be set to false
-          assert(pages[0].lastPublishedAt);
-
-          assert.equal(pages[1]._id.endsWith(':en:published'), true);
-          assert.equal(pages[1].title, 'page1 bbb');
-          assert.equal(pages[1].slug, '/page1-bbb');
-          assert.equal(pages[1].aposMode, 'published');
-          assert.equal(pages[1].aposLocale, 'en:published');
-          assert(pages[1].lastPublishedAt);
+          assert.deepEqual(actual, expected);
         });
       });
     });

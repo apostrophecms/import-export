@@ -1,9 +1,9 @@
-const fs = require('fs');
-const path = require('path');
-const handlers = require('./lib/handlers');
-const methods = require('./lib/methods');
-const apiRoutes = require('./lib/apiRoutes');
-const formats = require('./lib/formats');
+const fs = require('node:fs');
+const path = require('node:path');
+const handlers = require('./lib/handlers.js');
+const methods = require('./lib/methods/index.js');
+const apiRoutes = require('./lib/apiRoutes.js');
+const formats = require('./lib/formats/index.js');
 
 module.exports = {
   bundle: {
