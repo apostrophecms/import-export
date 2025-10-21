@@ -1,7 +1,7 @@
-const assert = require('assert').strict;
+const assert = require('node:assert/strict');
+const fs = require('node:fs/promises');
+const path = require('node:path');
 const t = require('apostrophe/test-lib/util.js');
-const fs = require('fs/promises');
-const path = require('path');
 const {
   getAppConfig,
   insertAdminUser,
@@ -11,7 +11,7 @@ const {
   cleanData,
   getExtractedFiles,
   extractFileNames
-} = require('./util');
+} = require('./util/index.js');
 
 describe('@apostrophecms/import-export', function () {
   let apos;
@@ -19,8 +19,6 @@ describe('@apostrophecms/import-export', function () {
   let tempPath;
   let attachmentPath;
   let exportsPath;
-  let gzip;
-  let mimeType;
   let piecesTgzPath;
   let pageTgzPath;
 
@@ -48,10 +46,6 @@ describe('@apostrophecms/import-export', function () {
     attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
     exportsPath = path.join(apos.rootDir, 'public/uploads/exports');
     importExportManager = apos.modules['@apostrophecms/import-export'];
-    importExportManager.removeFromUploadFs = () => {};
-    importExportManager.remove = () => {};
-    gzip = importExportManager.formats.gzip;
-    mimeType = gzip.allowedTypes[0];
 
     await insertAdminUser(apos);
   });
@@ -403,7 +397,7 @@ describe('@apostrophecms/import-export', function () {
     req.files = {
       file: {
         path: importFilePath,
-        type: mimeType
+        type: importExportManager.formats.gzip.allowedTypes[0]
       }
     };
     await importExportManager.import(req);
@@ -465,7 +459,7 @@ describe('@apostrophecms/import-export', function () {
     assert.deepEqual(actual, expected);
   });
 
-  it('should return duplicates pieces when already existing and override them', async function() {
+  it.only('should return duplicates pieces when already existing and override them', async function() {
     const req = apos.task.getReq();
     const articles = await apos.article.find(req).toArray();
     const manager = apos.article;
@@ -482,12 +476,13 @@ describe('@apostrophecms/import-export', function () {
     const exportFilePath = path.join(exportsPath, fileName);
     const importFilePath = path.join(tempPath, fileName);
     await fs.copyFile(exportFilePath, importFilePath);
+    console.log({ fileName });
 
     req.body = {};
     req.files = {
       file: {
         path: importFilePath,
-        type: mimeType
+        type: importExportManager.formats.gzip.allowedTypes[0]
       }
     };
 
@@ -602,7 +597,7 @@ describe('@apostrophecms/import-export', function () {
     req.files = {
       file: {
         path: importFilePath,
-        type: mimeType
+        type: importExportManager.formats.gzip.allowedTypes[0]
       }
     };
 
@@ -653,7 +648,7 @@ describe('@apostrophecms/import-export', function () {
     req.files = {
       file: {
         path: importFilePath,
-        type: mimeType
+        type: importExportManager.formats.gzip.allowedTypes[0]
       }
     };
 
@@ -759,7 +754,7 @@ describe('@apostrophecms/import-export', function () {
     req.files = {
       file: {
         path: importFilePath,
-        type: mimeType
+        type: importExportManager.formats.gzip.allowedTypes[0]
       }
     };
 
@@ -892,7 +887,7 @@ describe('@apostrophecms/import-export', function () {
     req.files = {
       file: {
         path: importFilePath,
-        type: mimeType
+        type: importExportManager.formats.gzip.allowedTypes[0]
       }
     };
 
@@ -1067,14 +1062,14 @@ describe('@apostrophecms/import-export', function () {
       files: {
         file: {
           path: null,
-          type: mimeType
+          type: importExportManager.formats.gzip.allowedTypes[0]
         }
       }
     });
 
     this.beforeEach(async function() {
       csv = importExportManager.formats.csv;
-      mimeType = csv.allowedTypes[0];
+      importExportManager.formats.gzip.allowedTypes[0] = csv.allowedTypes[0];
 
       notify = apos.notify;
       input = csv.input;
@@ -1828,10 +1823,6 @@ describe('@apostrophecms/import-export', function () {
       attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
       exportsPath = path.join(apos.rootDir, 'public/uploads/exports');
       importExportManager = apos.modules['@apostrophecms/import-export'];
-      importExportManager.removeFromUploadFs = () => {};
-      importExportManager.remove = () => {};
-      gzip = importExportManager.formats.gzip;
-      mimeType = gzip.allowedTypes[0];
 
       await insertAdminUser(apos);
     });
@@ -1860,7 +1851,7 @@ describe('@apostrophecms/import-export', function () {
       req.files = {
         file: {
           path: importFilePath,
-          type: mimeType
+          type: importExportManager.formats.gzip.allowedTypes[0]
         }
       };
       const params = await importExportManager.import(req);
@@ -1986,7 +1977,7 @@ describe('@apostrophecms/import-export', function () {
       req.files = {
         file: {
           path: importFilePath,
-          type: mimeType
+          type: importExportManager.formats.gzip.allowedTypes[0]
         }
       };
 
@@ -2148,10 +2139,6 @@ describe('@apostrophecms/import-export', function () {
       attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
       exportsPath = path.join(apos.rootDir, 'public/uploads/exports');
       importExportManager = apos.modules['@apostrophecms/import-export'];
-      importExportManager.removeFromUploadFs = () => {};
-      importExportManager.remove = () => {};
-      gzip = importExportManager.formats.gzip;
-      mimeType = gzip.allowedTypes[0];
 
       await insertAdminUser(apos);
     });
@@ -2180,7 +2167,7 @@ describe('@apostrophecms/import-export', function () {
       req.files = {
         file: {
           path: importFilePath,
-          type: mimeType
+          type: importExportManager.formats.gzip.allowedTypes[0]
         }
       };
       const params = await importExportManager.import(req);

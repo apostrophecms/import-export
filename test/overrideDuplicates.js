@@ -1,13 +1,13 @@
-const assert = require('assert').strict;
+const assert = require('node:assert/strict');
+const path = require('node:path');
 const t = require('apostrophe/test-lib/util.js');
-const path = require('path');
 const {
   getAppConfig,
   insertAdminUser,
   insertPiecesAndPages,
   deletePiecesAndPages,
   deleteAttachments
-} = require('./util');
+} = require('./util/index.js');
 
 describe('#overrideDuplicates - overriding locales integration tests', function() {
   this.timeout(t.timeout);
