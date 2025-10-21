@@ -934,7 +934,7 @@ describe('@apostrophecms/import-export:import-page', function () {
         formatLabel
       }
     });
-    await await apos.modules['@apostrophecms/import-export'].overrideDuplicates(importDuplicateReq);
+    await apos.modules['@apostrophecms/import-export'].overrideDuplicates(importDuplicateReq);
 
     const importedDocs = await apos.doc.db
       .find({ type: /@apostrophecms\/image|@apostrophecms\/image-tag|custom-page|test-page/ })
