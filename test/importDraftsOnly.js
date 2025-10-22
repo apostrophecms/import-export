@@ -10,8 +10,6 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
 
   let apos;
   let req;
-  // TODO: remove
-  // let insertDocs;
   let importExportManager;
   let tempPath;
 
@@ -33,25 +31,15 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
     });
 
     importExportManager = apos.modules['@apostrophecms/import-export'];
-    // importExportManager.removeExportFileFromUploadFs = () => { };
-    // importExportManager.remove = () => { };
     tempPath = path.join(apos.rootDir, 'data/temp/uploadfs');
 
     await insertAdminUser(apos);
   });
 
   this.beforeEach(async function () {
-    // TODO: remove
-    // insertDocs = apos.modules['@apostrophecms/import-export'].insertDocs;
-
     await deletePiecesAndPages(apos);
     await compressFixtures(apos);
   });
-
-  // TODO: remove
-  // this.afterEach(function () {
-  //   apos.modules['@apostrophecms/import-export'].insertDocs = insertDocs;
-  // });
 
   describe('when `importDraftsOnly` option is not set', function () {
     this.beforeEach(async function () {
@@ -66,32 +54,6 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
     });
 
     it('should import all the documents', async function () {
-    // TODO: remove
-      // apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs }) => {
-      //   assert.deepEqual(docs, [
-      //     {
-      //       _id: '4:en:draft',
-      //       aposMode: 'draft',
-      //       aposLocale: 'en:draft',
-      //       title: 'topic1 DRAFT',
-      //       type: 'topic'
-      //     },
-      //     {
-      //       _id: '4:en:published',
-      //       aposMode: 'published',
-      //       aposLocale: 'en:published',
-      //       title: 'topic1 PUBLISHED',
-      //       type: 'topic'
-      //     }
-      //   ]);
-      //
-      //   return {
-      //     duplicatedDocs: [],
-      //     duplicatedIds: [],
-      //     failedIds: []
-      //   };
-      // };
-
       await importExportManager.import(
         req.clone({
           files: {
@@ -102,6 +64,32 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
           }
         })
       );
+
+      const topics = await apos.doc.db
+        .find({ type: 'topic' })
+        .toArray();
+
+      const actual = topics;
+      const expected = [
+        {
+          ...topics.at(0),
+          _id: topics.at(0).aposDocId.concat(':en:draft'),
+          aposMode: 'draft',
+          aposLocale: 'en:draft',
+          title: 'topic1 DRAFT',
+          type: 'topic'
+        },
+        {
+          ...topics.at(1),
+          _id: topics.at(1).aposDocId.concat(':en:published'),
+          aposMode: 'published',
+          aposLocale: 'en:published',
+          title: 'topic1 PUBLISHED',
+          type: 'topic'
+        }
+      ];
+
+      assert.deepEqual(actual, expected);
     });
   });
 
@@ -122,25 +110,6 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
 
     describe('when inserting a imported document', function () {
       it('should import only the published documents as draft', async function () {
-        // TODO: remove
-        // apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs, ...rest }) => {
-        //   assert.deepEqual(docs, [
-        //     {
-        //       _id: '4:en:draft',
-        //       aposMode: 'draft',
-        //       aposLocale: 'en:draft',
-        //       title: 'topic1 PUBLISHED',
-        //       type: 'topic',
-        //       lastPublishedAt: '2021-01-01T00:00:00.000Z'
-        //     }
-        //   ]);
-        //
-        //   return insertDocs(req, {
-        //     docs,
-        //     ...rest
-        //   });
-        // };
-
         await importExportManager.import(
           req.clone({
             files: {
@@ -175,25 +144,6 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
       });
 
       it('should import the documents in draft if they do not have a published version to import', async function () {
-        // TODO: remove
-        // apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs, ...rest }) => {
-        //   assert.deepEqual(docs, [
-        //     {
-        //       _id: '4:en:draft',
-        //       aposMode: 'draft',
-        //       aposLocale: 'en:draft',
-        //       title: 'topic1 DRAFT',
-        //       type: 'topic',
-        //       lastPublishedAt: '2021-01-01T00:00:00.000Z'
-        //     }
-        //   ]);
-        //
-        //   return insertDocs(req, {
-        //     docs,
-        //     ...rest
-        //   });
-        // };
-
         await importExportManager.import(
           req.clone({
             files: {
@@ -405,7 +355,6 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
             _id: topics.at(0).aposDocId.concat(':en:draft'),
             aposLocale: 'en:draft',
             aposMode: 'draft',
-            lastPublishedAt: topics.at(0).lastPublishedAt,
             modified: true,
             title: 'topic1 PUBLISHED'
           },
@@ -421,7 +370,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         assert.deepEqual(actual, expected);
       });
 
-      it.only('should import only the published documents as draft and not set modified if the draft does not differ from publish', async function () {
+      it('should import only the published documents as draft and not set modified if the draft does not differ from publish', async function () {
         await apos.topic.insert(apos.task.getReq({ mode: 'draft' }), {
           ...apos.topic.newInstance(),
           _id: '4:en:draft',
@@ -480,7 +429,6 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
             _id: topics.at(0).aposDocId.concat(':en:draft'),
             aposLocale: 'en:draft',
             aposMode: 'draft',
-            lastPublishedAt: topics.at(0).lastPublishedAt,
             modified: false, // IMPORTANT, should be set to false
             slug: 'topic1-foo',
             title: 'topic1 PUBLISHED'
