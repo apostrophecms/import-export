@@ -297,7 +297,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
       });
     });
 
-    describe('when updating a imported document', function () {
+    describe('when updating an imported document', function () {
       it('should import only the published documents as draft', async function () {
         await apos.topic.insert(apos.task.getReq({ mode: 'draft' }), {
           ...apos.topic.newInstance(),
