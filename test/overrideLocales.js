@@ -8,44 +8,19 @@ const {
   deletePiecesAndPages,
   deleteAttachments,
   cleanData,
-  compressFixtures,
-  copyFixtures
+  buildFixtures,
+  copyFixtures,
+  cleanFixtures
 } = require('./util/index.js');
 
 describe('#import - overriding locales integration tests', function() {
   this.timeout(t.timeout);
 
   let apos;
-  let notify;
-  // let input;
-  let rewriteDocsWithCurrentLocale;
-  let insertDocs;
-  let gzip;
   let importExportManager;
   let attachmentPath;
-  let tempPath;
 
   describe('when the site has only one locale', function() {
-    this.beforeEach(async function() {
-      notify = apos.notify;
-      rewriteDocsWithCurrentLocale = apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale;
-      insertDocs = apos.modules['@apostrophecms/import-export'].insertDocs;
-
-      await deletePiecesAndPages(apos);
-      await deleteAttachments(apos, attachmentPath);
-
-      await compressFixtures(apos);
-      await cleanData([ tempPath ]);
-      await copyFixtures(apos);
-    });
-
-    this.afterEach(function() {
-      apos.notify = notify;
-      // gzip.input = input;
-      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = rewriteDocsWithCurrentLocale;
-      apos.modules['@apostrophecms/import-export'].insertDocs = insertDocs;
-    });
-
     before(async function() {
       apos = await t.create({
         root: module,
@@ -54,11 +29,7 @@ describe('#import - overriding locales integration tests', function() {
       });
 
       attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
-      tempPath = path.join(apos.rootDir, 'data/temp/uploadfs');
       importExportManager = apos.modules['@apostrophecms/import-export'];
-      importExportManager.removeFromUploadFs = () => {};
-      importExportManager.remove = () => {};
-      gzip = importExportManager.formats.gzip;
 
       await insertAdminUser(apos);
     });
@@ -67,7 +38,17 @@ describe('#import - overriding locales integration tests', function() {
       await t.destroy(apos);
     });
 
-    it.only('should import pieces with related documents from the extracted export path when provided', async function() {
+    this.beforeEach(async function() {
+      await deletePiecesAndPages(apos);
+      await deleteAttachments(apos, attachmentPath);
+      await insertPiecesAndPages(apos);
+      // await cleanData([ tempPath, uploadsPath, uploadFSPath ]);
+      await cleanFixtures(apos);
+      await copyFixtures(apos);
+      await buildFixtures(apos);
+    });
+
+    it('should import pieces with related documents from the extracted export path when provided', async function() {
       // Since we are mocking this and not really uploading a file, we have to
       // manually call setExportId to establish a mapping to a safe
       // unique identifier to share with the "browser"
@@ -109,13 +90,13 @@ describe('#import - overriding locales integration tests', function() {
     });
 
     // FIX
-    it.only('should not rewrite the docs locale nor ask about it when the locale is not different', async function() {
+    it('should not rewrite the docs locale nor ask about it when the locale is the same', async function() {
       const req = apos.task.getReq({
         locale: 'en',
         body: {},
         files: {
           file: {
-            path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-draft.tar.gz'),
+            path: path.join(apos.rootDir, 'data/tmp/uploads/topic-draft.tar.gz'),
             type: importExportManager.formats.gzip.allowedTypes[0]
           }
         }
@@ -147,13 +128,13 @@ describe('#import - overriding locales integration tests', function() {
     });
 
     // FIX
-    it.only('should rewrite the docs locale without asking about it when the locale is different', async function() {
+    it('should rewrite the docs locale without asking about it when the locale is different', async function() {
       const req = apos.task.getReq({
         locale: 'fr',
         body: {},
         files: {
           file: {
-            path: path.join(apos.rootDir, 'data/temp/uploadfs/fr-topic-draft.tar.gz'),
+            path: path.join(apos.rootDir, 'data/tmp/uploads/fr-topic-draft.tar.gz'),
             type: importExportManager.formats.gzip.allowedTypes[0]
           }
         }
@@ -201,18 +182,6 @@ describe('#import - overriding locales integration tests', function() {
   });
 
   describe('when the site has multiple locales', function() {
-    let apos;
-    let importExportManager;
-
-    let notify;
-    let input;
-    let rewriteDocsWithCurrentLocale;
-    let insertDocs;
-
-    after(async function() {
-      await t.destroy(apos);
-    });
-
     before(async function() {
       apos = await t.create({
         root: module,
@@ -239,70 +208,141 @@ describe('#import - overriding locales integration tests', function() {
       });
 
       importExportManager = apos.modules['@apostrophecms/import-export'];
-      importExportManager.removeExportFileFromUploadFs = () => {};
-      importExportManager.remove = () => {};
 
       await insertAdminUser(apos);
-      await insertPiecesAndPages(apos);
+    });
+
+    after(async function() {
+      await t.destroy(apos);
     });
 
     this.beforeEach(async function() {
-      notify = apos.notify;
-      input = gzip.input;
-      rewriteDocsWithCurrentLocale = apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale;
-      insertDocs = apos.modules['@apostrophecms/import-export'].insertDocs;
-
       await deletePiecesAndPages(apos);
       await deleteAttachments(apos, attachmentPath);
+      await insertPiecesAndPages(apos);
+      // await cleanData([ tempPath, uploadsPath, uploadFSPath ]);
+      await cleanFixtures(apos);
+      await copyFixtures(apos);
+      await buildFixtures(apos);
     });
 
-    this.afterEach(function() {
-      apos.notify = notify;
-      gzip.input = input;
-      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = rewriteDocsWithCurrentLocale;
-      apos.modules['@apostrophecms/import-export'].insertDocs = insertDocs;
-    });
-
-    it('should not rewrite the docs locale nor ask about it when the locale is not different', async function() {
+    it('should not rewrite the docs locale nor ask about it when the locale is the same', async function() {
       const req = apos.task.getReq({
         locale: 'fr',
         body: {},
         files: {
           file: {
-            path: path.join(apos.rootDir, 'data/temp/uploadfs/fr-topic-draft.tar.gz'),
+            path: path.join(apos.rootDir, 'data/tmp/uploads/fr-topic-draft.tar.gz'),
             type: importExportManager.formats.gzip.allowedTypes[0]
           }
         }
       });
 
-      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = () => {
-        throw new Error('rewriteDocsWithCurrentLocale should not have been called');
-      };
-      apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs }) => {
-        assert.deepEqual(docs, [
-          {
-            _id: '4:fr:draft',
-            aposMode: 'draft',
-            aposLocale: 'fr:draft',
-            title: 'topic1',
-            type: 'topic'
-          }
-        ]);
-
-        return {
-          duplicatedDocs: [],
-          duplicatedIds: [],
-          failedIds: []
-        };
-      };
-      apos.notify = async (req, message, options) => {
-        if (options?.event?.name === 'import-export-import-locale-differs') {
-          throw new Error('notify should not have been called with event "import-locale-differ"');
+      await apos.topic.insert(
+        apos.task.getReq({
+          locale: 'fr',
+          mode: 'draft'
+        }),
+        {
+          ...apos.topic.newInstance(),
+          _id: '4:fr:draft',
+          title: 'topic1 EXISTING DRAFT'
         }
-        return {};
-      };
+      );
 
-      await importExportManager.import(req);
+      await apos.topic.insert(
+        apos.task.getReq({
+          locale: 'fr',
+          mode: 'published'
+        }),
+        {
+          ...apos.topic.newInstance(),
+          _id: '4:fr:published',
+          title: 'topic1 EXISTING PUBLISHED'
+        }
+      );
+
+      // apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs }) => {
+      //   assert.deepEqual(docs, [
+      //     {
+      //       _id: '4:fr:draft',
+      //       aposMode: 'draft',
+      //       aposLocale: 'fr:draft',
+      //       title: 'topic1',
+      //       type: 'topic'
+      //     }
+      //   ]);
+      //
+      //   return {
+      //     duplicatedDocs: [],
+      //     duplicatedIds: [],
+      //     failedIds: []
+      //   };
+      // };
+      // apos.notify = async (req, message, options) => {
+      //   if (options?.event?.name === 'import-export-import-locale-differs') {
+      //     throw new Error('notify should not have been called with event "import-locale-differ"');
+      //   }
+      //   return {};
+      // };
+
+      const {
+        duplicatedDocs,
+        importedAttachments,
+        exportId,
+        jobId,
+        notificationId,
+        formatLabel
+      } = await importExportManager.import(
+        req.clone({
+          files: {
+            file: {
+              path: path.join(apos.rootDir, 'data/tmp/uploads/topic-draft.tar.gz'),
+              type: importExportManager.formats.gzip.allowedTypes[0]
+            }
+          }
+        })
+      );
+
+      const _req = req.clone({
+        body: {
+          ...req.body,
+          docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
+          duplicatedDocs,
+          importedAttachments,
+          exportId,
+          jobId,
+          notificationId,
+          formatLabel
+        }
+      });
+
+      await importExportManager.overrideDuplicates(_req);
+
+      const topics = await apos.doc.db
+        .find({ type: 'topic' })
+        .toArray();
+
+      const actual = topics;
+      const expected = [
+        {
+          ...topics.at(0),
+          _id: topics.at(0).aposDocId.concat(':fr:draft'),
+          aposLocale: 'fr:draft',
+          aposMode: 'draft',
+          modified: true,
+          title: 'topic1'
+        },
+        {
+          ...topics.at(1),
+          _id: topics.at(1).aposDocId.concat(':fr:published'),
+          aposLocale: 'fr:published',
+          aposMode: 'published',
+          title: 'topic1'
+        }
+      ];
+
+      assert.deepEqual(actual, expected);
     });
 
     it('should not rewrite the docs locales nor insert them but ask about it when the locale is different', async function() {
@@ -311,7 +351,7 @@ describe('#import - overriding locales integration tests', function() {
         body: {},
         files: {
           file: {
-            path: path.join(apos.rootDir, 'data/temp/uploadfs/fr-topic-draft.tar.gz'),
+            path: path.join(apos.rootDir, 'data/tmp/uploads/fr-topic-draft.tar.gz'),
             type: importExportManager.formats.gzip.allowedTypes[0]
           }
         }

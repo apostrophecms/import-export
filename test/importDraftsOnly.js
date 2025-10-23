@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const t = require('apostrophe/test-lib/util.js');
 const {
-  getAppConfig, insertAdminUser, deletePiecesAndPages, cleanData, compressFixtures, copyFixtures
+  getAppConfig, insertAdminUser, deletePiecesAndPages, cleanData, buildFixtures, copyFixtures
 } = require('./util/index.js');
 
 describe('#import - when `importDraftsOnly` option is set to `true`', function () {
@@ -38,7 +38,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
 
   this.beforeEach(async function () {
     await deletePiecesAndPages(apos);
-    await compressFixtures(apos);
+    await buildFixtures(apos);
   });
 
   describe('when `importDraftsOnly` option is not set', function () {

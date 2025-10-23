@@ -9,8 +9,9 @@ module.exports = {
   getAppConfig,
   extractFileNames,
   getExtractedFiles,
-  compressFixtures,
+  buildFixtures,
   copyFixtures,
+  cleanFixtures,
   cleanData,
   deletePiecesAndPages,
   deleteAttachments,
@@ -168,9 +169,9 @@ async function getExtractedFiles(extractPath) {
   };
 }
 
-async function compressFixtures(apos) {
-  const fixturesPath = path.join(apos.rootDir, 'fixtures');
-  const directories = (await fs.readdir(path.join(fixturesPath, 'gzip'), { withFileTypes: true }))
+async function buildFixtures(apos) {
+  const target = path.join(apos.rootDir, 'data/tmp/uploads');
+  const directories = (await fs.readdir(path.join(target, 'gzip'), { withFileTypes: true }))
     .filter(entry => entry.isDirectory());
   for (const directory of directories) {
     const { default: docs } = await import(
@@ -181,27 +182,33 @@ async function compressFixtures(apos) {
       path.join(directory.path, directory.name, 'aposAttachments.json'),
       { with: { type: 'json' } }
     );
-    await gzip(path.join(fixturesPath, `${directory.name}.tar.gz`), { docs, attachments }, async () => {});
+    await gzip(path.join(target, `${directory.name}.tar.gz`), { docs, attachments }, async () => {});
   }
 }
 
 async function copyFixtures(apos) {
-  const fixturesPath = path.join(apos.rootDir, 'fixtures');
-  const tempPath = path.join(apos.rootDir, 'data/temp/uploadfs');
+  const source = path.join(apos.rootDir, 'fixtures');
+  const target = path.join(apos.rootDir, 'data/tmp/uploads');
 
-  await fs.cp(fixturesPath, tempPath, { recursive: true });
+  await fs.cp(source, target, { recursive: true });
+}
+
+async function cleanFixtures(apos) {
+  const target = path.join(apos.rootDir, 'data/tmp/uploads');
+
+  try {
+    await cleanData([ target ]);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 async function cleanData(paths) {
-  try {
-    for (const filePath of paths) {
-      const files = await fs.readdir(filePath);
-      for (const name of files) {
-        await fs.rm(path.join(filePath, name), { recursive: true });
-      }
+  for (const filePath of paths) {
+    const files = await fs.readdir(filePath);
+    for (const name of files) {
+      await fs.rm(path.join(filePath, name), { recursive: true });
     }
-  } catch (err) {
-    assert(!err);
   }
 }
 
