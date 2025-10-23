@@ -2,20 +2,21 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const t = require('apostrophe/test-lib/util.js');
 const {
-  getAppConfig, insertAdminUser, deletePiecesAndPages, cleanData, buildFixtures, copyFixtures
+  getAppConfig,
+  insertAdminUser,
+  deletePiecesAndPages,
+  deleteAttachments,
+  buildFixtures,
+  copyFixtures,
+  cleanFixtures
 } = require('./util/index.js');
 
 describe('#import - when `importDraftsOnly` option is set to `true`', function () {
   this.timeout(t.timeout);
 
   let apos;
-  let req;
   let importExportManager;
-  let tempPath;
-
-  after(async function () {
-    await t.destroy(apos);
-  });
+  let attachmentPath;
 
   before(async function () {
     apos = await t.create({
@@ -30,35 +31,36 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
       })
     });
 
+    attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
     importExportManager = apos.modules['@apostrophecms/import-export'];
-    tempPath = path.join(apos.rootDir, 'data/temp/uploadfs');
 
     await insertAdminUser(apos);
   });
 
-  this.beforeEach(async function () {
-    await deletePiecesAndPages(apos);
-    await buildFixtures(apos);
+  after(async function () {
+    await t.destroy(apos);
   });
 
   describe('when `importDraftsOnly` option is not set', function () {
     this.beforeEach(async function () {
       await deletePiecesAndPages(apos);
-      await cleanData([ tempPath ]);
+      await deleteAttachments(apos, attachmentPath);
+      await cleanFixtures(apos);
       await copyFixtures(apos);
-
-      req = apos.task.getReq({
-        locale: 'en',
-        body: {}
-      });
+      await buildFixtures(apos);
     });
 
     it('should import all the documents', async function () {
+      const req = apos.task.getReq({
+        locale: 'en',
+        body: {}
+      });
+
       await importExportManager.import(
         req.clone({
           files: {
             file: {
-              path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-draft-published.tar.gz'),
+              path: path.join(apos.rootDir, 'data/tmp/uploads/topic-draft-published.tar.gz'),
               type: importExportManager.formats.gzip.allowedTypes[0]
             }
           }
@@ -96,25 +98,27 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
   describe('when `importDraftsOnly` option is set to `true`', function () {
     this.beforeEach(async function () {
       await deletePiecesAndPages(apos);
-      await cleanData([ tempPath ]);
+      await deleteAttachments(apos, attachmentPath);
+      await cleanFixtures(apos);
       await copyFixtures(apos);
-
-      req = apos.task.getReq({
-        locale: 'en',
-        body: {
-          importDraftsOnly: true,
-          formatLabel: 'gzip'
-        }
-      });
+      await buildFixtures(apos);
     });
 
     describe('when inserting a imported document', function () {
       it('should import only the published documents as draft', async function () {
+        const req = apos.task.getReq({
+          locale: 'en',
+          body: {
+            importDraftsOnly: true,
+            formatLabel: 'gzip'
+          }
+        });
+
         await importExportManager.import(
           req.clone({
             files: {
               file: {
-                path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-draft-published-lastPublishedAt.tar.gz'),
+                path: path.join(apos.rootDir, 'data/tmp/uploads/topic-draft-published-lastPublishedAt.tar.gz'),
                 type: importExportManager.formats.gzip.allowedTypes[0]
               }
             }
@@ -144,11 +148,19 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
       });
 
       it('should import the documents in draft if they do not have a published version to import', async function () {
+        const req = apos.task.getReq({
+          locale: 'en',
+          body: {
+            importDraftsOnly: true,
+            formatLabel: 'gzip'
+          }
+        });
+
         await importExportManager.import(
           req.clone({
             files: {
               file: {
-                path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-draft-lastPublishedAt.tar.gz'),
+                path: path.join(apos.rootDir, 'data/tmp/uploads/topic-draft-lastPublishedAt.tar.gz'),
                 type: importExportManager.formats.gzip.allowedTypes[0]
               }
             }
@@ -180,24 +192,26 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
       describe('when importing from a CSV file', function() {
         this.beforeEach(async function () {
           await deletePiecesAndPages(apos);
-          await cleanData([ tempPath ]);
+          await deleteAttachments(apos, attachmentPath);
+          await cleanFixtures(apos);
           await copyFixtures(apos);
+          await buildFixtures(apos);
+        });
 
-          req = apos.task.getReq({
+        it('should import a piece from a csv file that was not made from the import-export module, as draft only', async function() {
+          const req = apos.task.getReq({
             locale: 'en',
             body: {
               importDraftsOnly: true,
               formatLabel: 'CSV'
             }
           });
-        });
 
-        it('should import a piece from a csv file that was not made from the import-export module, as draft only', async function() {
           await importExportManager.import(
             req.clone({
               files: {
                 file: {
-                  path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-type-title-lastPublishedAt.csv'),
+                  path: path.join(apos.rootDir, 'data/tmp/uploads/topic-type-title-lastPublishedAt.csv'),
                   type: importExportManager.formats.csv.allowedTypes[0]
                 }
               }
@@ -227,11 +241,19 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         });
 
         it('should import a piece from a csv file without a type column, as long as the module name is known', async function() {
+          const req = apos.task.getReq({
+            locale: 'en',
+            body: {
+              importDraftsOnly: true,
+              formatLabel: 'CSV'
+            }
+          });
+
           await importExportManager.import(
             req.clone({
               files: {
                 file: {
-                  path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-title.csv'),
+                  path: path.join(apos.rootDir, 'data/tmp/uploads/topic-title.csv'),
                   type: importExportManager.formats.csv.allowedTypes[0]
                 }
               }
@@ -262,11 +284,19 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         });
 
         it('should import a page from a csv file that was not made from the import-export module, as draft only', async function() {
+          const req = apos.task.getReq({
+            locale: 'en',
+            body: {
+              importDraftsOnly: true,
+              formatLabel: 'CSV'
+            }
+          });
+
           await importExportManager.import(
             req.clone({
               files: {
                 file: {
-                  path: path.join(apos.rootDir, 'data/temp/uploadfs/default-page-type-title-lastPublishedAt.csv'),
+                  path: path.join(apos.rootDir, 'data/tmp/uploads/default-page-type-title-lastPublishedAt.csv'),
                   type: importExportManager.formats.csv.allowedTypes[0]
                 }
               }
@@ -299,6 +329,14 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
 
     describe('when updating an imported document', function () {
       it('should import only the published documents as draft', async function () {
+        const req = apos.task.getReq({
+          locale: 'en',
+          body: {
+            importDraftsOnly: true,
+            formatLabel: 'gzip'
+          }
+        });
+
         await apos.topic.insert(apos.task.getReq({ mode: 'draft' }), {
           ...apos.topic.newInstance(),
           _id: '4:en:draft',
@@ -322,7 +360,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
           req.clone({
             files: {
               file: {
-                path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-draft-published-aposDocId.tar.gz'),
+                path: path.join(apos.rootDir, 'data/tmp/uploads/topic-draft-published-aposDocId.tar.gz'),
                 type: importExportManager.formats.gzip.allowedTypes[0]
               }
             }
@@ -371,6 +409,14 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
       });
 
       it('should import only the published documents as draft and not set modified if the draft does not differ from publish', async function () {
+        const req = apos.task.getReq({
+          locale: 'en',
+          body: {
+            importDraftsOnly: true,
+            formatLabel: 'gzip'
+          }
+        });
+
         await apos.topic.insert(apos.task.getReq({ mode: 'draft' }), {
           ...apos.topic.newInstance(),
           _id: '4:en:draft',
@@ -396,7 +442,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
           req.clone({
             files: {
               file: {
-                path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-draft-published-aposDocId-slug.tar.gz'),
+                path: path.join(apos.rootDir, 'data/tmp/uploads/topic-draft-published-aposDocId-slug.tar.gz'),
                 type: importExportManager.formats.gzip.allowedTypes[0]
               }
             }
@@ -449,19 +495,21 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
       describe('when importing from a CSV file', function() {
         this.beforeEach(async function () {
           await deletePiecesAndPages(apos);
-          await cleanData([ tempPath ]);
+          await deleteAttachments(apos, attachmentPath);
+          await cleanFixtures(apos);
           await copyFixtures(apos);
+          await buildFixtures(apos);
+        });
 
-          req = apos.task.getReq({
+        it('should import a piece from a csv file that was not made from the import-export module, as draft only', async function() {
+          const req = apos.task.getReq({
             locale: 'en',
             body: {
               importDraftsOnly: true,
               formatLabel: 'CSV'
             }
           });
-        });
 
-        it('should import a piece from a csv file that was not made from the import-export module, as draft only', async function() {
           await apos.topic.insert(apos.task.getReq({ mode: 'published' }), {
             ...apos.topic.newInstance(),
             title: 'topic1'
@@ -471,7 +519,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
             req.clone({
               files: {
                 file: {
-                  path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-type-titleKey-title-lastPublishedAt.csv'),
+                  path: path.join(apos.rootDir, 'data/tmp/uploads/topic-type-titleKey-title-lastPublishedAt.csv'),
                   type: importExportManager.formats.csv.allowedTypes[0]
                 }
               }
@@ -507,6 +555,14 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         });
 
         it('should import a piece from a csv file that was not made from the import-export module, as draft only and not set modified if the draft does not differ from publish', async function() {
+          const req = apos.task.getReq({
+            locale: 'en',
+            body: {
+              importDraftsOnly: true,
+              formatLabel: 'CSV'
+            }
+          });
+
           const piece = await apos.topic.insert(apos.task.getReq({ mode: 'published' }), {
             ...apos.topic.newInstance(),
             title: 'topic1 bbb',
@@ -524,7 +580,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
             req.clone({
               files: {
                 file: {
-                  path: path.join(apos.rootDir, 'data/temp/uploadfs/topic-type-titleKey-title-slug-lastPublishedAt.csv'),
+                  path: path.join(apos.rootDir, 'data/tmp/uploads/topic-type-titleKey-title-slug-lastPublishedAt.csv'),
                   type: importExportManager.formats.csv.allowedTypes[0]
                 }
               }
@@ -562,6 +618,14 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         });
 
         it('should import a page from a csv file that was not made from the import-export module, as draft only', async function() {
+          const req = apos.task.getReq({
+            locale: 'en',
+            body: {
+              importDraftsOnly: true,
+              formatLabel: 'CSV'
+            }
+          });
+
           await apos.page.insert(apos.task.getReq({ mode: 'published' }), '_home', 'lastChild', {
             ...apos.modules['default-page'].newInstance(),
             title: 'page1'
@@ -571,7 +635,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
             req.clone({
               files: {
                 file: {
-                  path: path.join(apos.rootDir, 'data/temp/uploadfs/default-page-type-titleKey-title-lastPublishedAt.csv'),
+                  path: path.join(apos.rootDir, 'data/tmp/uploads/default-page-type-titleKey-title-lastPublishedAt.csv'),
                   type: importExportManager.formats.csv.allowedTypes[0]
                 }
               }
@@ -607,6 +671,14 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         });
 
         it('should import a page from a csv file that was not made from the import-export module, as draft only and not set modified if the draft does not differ from publish', async function() {
+          const req = apos.task.getReq({
+            locale: 'en',
+            body: {
+              importDraftsOnly: true,
+              formatLabel: 'CSV'
+            }
+          });
+
           const page = await apos.page.insert(apos.task.getReq({ mode: 'published' }), '_home', 'lastChild', {
             ...apos.modules['default-page'].newInstance(),
             title: 'page1 bbb',
@@ -624,7 +696,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
             req.clone({
               files: {
                 file: {
-                  path: path.join(apos.rootDir, 'data/temp/uploadfs/default-page-type-titleKey-title-slug-lastPublishedAt.csv'),
+                  path: path.join(apos.rootDir, 'data/tmp/uploads/default-page-type-titleKey-title-slug-lastPublishedAt.csv'),
                   type: importExportManager.formats.csv.allowedTypes[0]
                 }
               }

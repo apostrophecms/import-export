@@ -7,7 +7,6 @@ const {
   insertPiecesAndPages,
   deletePiecesAndPages,
   deleteAttachments,
-  cleanData,
   buildFixtures,
   copyFixtures,
   cleanFixtures
@@ -42,7 +41,6 @@ describe('#import - overriding locales integration tests', function() {
       await deletePiecesAndPages(apos);
       await deleteAttachments(apos, attachmentPath);
       await insertPiecesAndPages(apos);
-      // await cleanData([ tempPath, uploadsPath, uploadFSPath ]);
       await cleanFixtures(apos);
       await copyFixtures(apos);
       await buildFixtures(apos);
@@ -220,7 +218,6 @@ describe('#import - overriding locales integration tests', function() {
       await deletePiecesAndPages(apos);
       await deleteAttachments(apos, attachmentPath);
       await insertPiecesAndPages(apos);
-      // await cleanData([ tempPath, uploadsPath, uploadFSPath ]);
       await cleanFixtures(apos);
       await copyFixtures(apos);
       await buildFixtures(apos);

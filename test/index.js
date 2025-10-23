@@ -476,7 +476,6 @@ describe('@apostrophecms/import-export', function () {
     const exportFilePath = path.join(exportsPath, fileName);
     const importFilePath = path.join(tempPath, fileName);
     await fs.copyFile(exportFilePath, importFilePath);
-    console.log({ fileName });
 
     req.body = {};
     req.files = {
