@@ -27,6 +27,11 @@ function getAppConfig(modules = {}, options = {}) {
       }
     },
     '@apostrophecms/import-export': {},
+    '@apostrophecms/uploadfs': {
+      options: {
+        storage: 'local'
+      }
+    },
     'home-page': {
       extend: '@apostrophecms/page-type'
     },
