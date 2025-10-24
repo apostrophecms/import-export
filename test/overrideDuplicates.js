@@ -4,12 +4,12 @@ const t = require('apostrophe/test-lib/util.js');
 const {
   getAppConfig,
   insertAdminUser,
-  insertPiecesAndPages,
   deletePiecesAndPages,
   deleteAttachments,
   buildFixtures,
   copyFixtures,
-  cleanFixtures
+  cleanFixtures,
+  insertPiecesAndPages
 } = require('./util/index.js');
 
 describe('#overrideDuplicates - overriding locales integration tests', function() {
@@ -40,13 +40,12 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
     this.beforeEach(async function () {
       await deletePiecesAndPages(apos);
       await deleteAttachments(apos, attachmentPath);
-      await insertPiecesAndPages(apos);
       await cleanFixtures(apos);
       await copyFixtures(apos);
       await buildFixtures(apos);
     });
 
-    it.only('should not rewrite the docs locale when the locale is the same', async function() {
+    it('should not rewrite the docs locale when the locale is the same', async function() {
       const req = apos.task.getReq({
         locale: 'en',
         body: {
@@ -57,12 +56,14 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
       await apos.topic.insert(apos.task.getReq({ mode: 'draft' }), {
         ...apos.topic.newInstance(),
         _id: '4:en:draft',
+        slug: 'topic1-existing-draft',
         title: 'topic1 EXISTING DRAFT'
       });
 
       await apos.topic.insert(apos.task.getReq({ mode: 'published' }), {
         ...apos.topic.newInstance(),
         _id: '4:en:published',
+        slug: 'topic1-existing-published',
         title: 'topic1 EXISTING PUBLISHED'
       });
 
@@ -111,6 +112,7 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
           aposLocale: 'en:draft',
           aposMode: 'draft',
           modified: true,
+          slug: 'topic1',
           title: 'topic1'
         },
         {
@@ -118,7 +120,8 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
           _id: topics.at(1).aposDocId.concat(':en:published'),
           aposLocale: 'en:published',
           aposMode: 'published',
-          title: 'topic1'
+          slug: 'topic1-existing-published',
+          title: 'topic1 EXISTING PUBLISHED'
         }
       ];
 
@@ -136,12 +139,14 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
       await apos.topic.insert(apos.task.getReq({ mode: 'draft' }), {
         ...apos.topic.newInstance(),
         _id: '4:en:draft',
+        slug: 'topic1-existing-draft',
         title: 'topic1 EXISTING DRAFT'
       });
 
       await apos.topic.insert(apos.task.getReq({ mode: 'published' }), {
         ...apos.topic.newInstance(),
         _id: '4:en:published',
+        slug: 'topic1-existing-published',
         title: 'topic1 EXISTING PUBLISHED'
       });
 
@@ -186,11 +191,11 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
       const expected = [
         {
           ...topics.at(0),
-          __originalLocale: 'fr',
           _id: topics.at(0).aposDocId.concat(':en:draft'),
           aposMode: 'draft',
           aposLocale: 'en:draft',
-          title: 'topic1',
+          slug: 'topic1-fr',
+          title: 'topic1 FR',
           type: 'topic'
         },
         {
@@ -198,6 +203,7 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
           _id: topics.at(1).aposDocId.concat(':en:published'),
           aposMode: 'published',
           aposLocale: 'en:published',
+          slug: 'topic1-existing-published',
           title: 'topic1 EXISTING PUBLISHED',
           type: 'topic'
         }
@@ -258,13 +264,14 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
     this.beforeEach(async function () {
       await deletePiecesAndPages(apos);
       await deleteAttachments(apos, attachmentPath);
-      await insertPiecesAndPages(apos);
       await cleanFixtures(apos);
       await copyFixtures(apos);
       await buildFixtures(apos);
     });
 
     it('should check if documents to import have duplicates in the current locale', async function() {
+      await insertPiecesAndPages(apos);
+
       const req = apos.task.getReq({ mode: 'draft' });
       const frReq = apos.task.getReq({
         locale: 'fr',
@@ -333,12 +340,14 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
       await apos.topic.insert(apos.task.getReq({ mode: 'draft' }), {
         ...apos.topic.newInstance(),
         _id: '4:en:draft',
+        slug: 'topic1-existing-draft',
         title: 'topic1 EXISTING DRAFT'
       });
 
       await apos.topic.insert(apos.task.getReq({ mode: 'published' }), {
         ...apos.topic.newInstance(),
         _id: '4:en:published',
+        slug: 'topic1-existing-published',
         title: 'topic1 EXISTING PUBLISHED'
       });
 
@@ -387,13 +396,15 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
           aposLocale: 'en:draft',
           aposMode: 'draft',
           modified: true,
-          title: 'topic1 PUBLISHED'
+          slug: 'topic1',
+          title: 'topic1'
         },
         {
           ...topics.at(1),
           _id: topics.at(1).aposDocId.concat(':en:published'),
           aposLocale: 'en:published',
           aposMode: 'published',
+          slug: 'topic1-existing-published',
           title: 'topic1 EXISTING PUBLISHED'
         }
       ];
@@ -412,12 +423,14 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
       await apos.topic.insert(apos.task.getReq({ mode: 'draft' }), {
         ...apos.topic.newInstance(),
         _id: '4:en:draft',
+        slug: 'topic1-existing-draft',
         title: 'topic1 EXISTING DRAFT'
       });
 
       await apos.topic.insert(apos.task.getReq({ mode: 'published' }), {
         ...apos.topic.newInstance(),
         _id: '4:en:published',
+        slug: 'topic1-existing-published',
         title: 'topic1 EXISTING PUBLISHED'
       });
 
@@ -478,20 +491,20 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
       const expected = [
         {
           ...topics.at(0),
-          __originalLocale: 'fr',
           _id: topics.at(0).aposDocId.concat(':en:draft'),
           aposLocale: 'en:draft',
           aposMode: 'draft',
           modified: true,
-          title: 'topic1'
+          slug: 'topic1-fr',
+          title: 'topic1 FR'
         },
         {
           ...topics.at(1),
-          __originalLocale: 'fr',
           _id: topics.at(1).aposDocId.concat(':en:published'),
           aposLocale: 'en:published',
           aposMode: 'published',
-          title: 'topic1'
+          slug: 'topic1-existing-published',
+          title: 'topic1 EXISTING PUBLISHED'
         }
       ];
 

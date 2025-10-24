@@ -8,7 +8,9 @@ const {
   insertPiecesAndPages,
   deletePiecesAndPages,
   deleteAttachments,
-  cleanData,
+  buildFixtures,
+  copyFixtures,
+  cleanFixtures,
   getExtractedFiles,
   extractFileNames
 } = require('./util/index.js');
