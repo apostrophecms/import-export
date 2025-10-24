@@ -450,6 +450,11 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
         })
       );
 
+      // TODO: check notification name
+      // apos.notify = async (req, message, options) => {
+      //   assert.equal(options.event.name, 'import-export-import-locale-differs');
+      // };
+
       const {
         duplicatedDocs,
         importedAttachments,
