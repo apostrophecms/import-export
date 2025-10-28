@@ -450,10 +450,10 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
         })
       );
 
-      // TODO: check notification name
-      // apos.notify = async (req, message, options) => {
-      //   assert.equal(options.event.name, 'import-export-import-locale-differs');
-      // };
+      // // TODO: check notification name
+      // // apos.notify = async (req, message, options) => {
+      // //   assert.equal(options.event.name, 'import-export-import-locale-differs');
+      // // };
 
       const {
         duplicatedDocs,
@@ -479,6 +479,7 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
           docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
           duplicatedDocs,
           importedAttachments,
+          overrideLocale: true,
           exportId,
           jobId,
           notificationId,
@@ -497,19 +498,21 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
         {
           ...topics.at(0),
           _id: topics.at(0).aposDocId.concat(':en:draft'),
-          aposLocale: 'en:draft',
           aposMode: 'draft',
+          aposLocale: 'en:draft',
           modified: true,
           slug: 'topic1-fr',
-          title: 'topic1 FR'
+          title: 'topic1 FR',
+          type: 'topic'
         },
         {
           ...topics.at(1),
           _id: topics.at(1).aposDocId.concat(':en:published'),
-          aposLocale: 'en:published',
           aposMode: 'published',
+          aposLocale: 'en:published',
           slug: 'topic1-existing-published',
-          title: 'topic1 EXISTING PUBLISHED'
+          title: 'topic1 EXISTING PUBLISHED',
+          type: 'topic'
         }
       ];
 
