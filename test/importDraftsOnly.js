@@ -427,7 +427,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
         await apos.topic.insert(apos.task.getReq({ mode: 'published' }), {
           ...apos.topic.newInstance(),
           _id: '4:en:published',
-          slug: 'topic1-foo',
+          slug: 'topic1-published',
           title: 'topic1 PUBLISHED'
         });
 
@@ -442,7 +442,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
           req.clone({
             files: {
               file: {
-                path: path.join(apos.rootDir, 'data/tmp/uploads/topic-draft-published-aposDocId-slug.tar.gz'),
+                path: path.join(apos.rootDir, 'data/tmp/uploads/topic-draft-published-aposDocId.tar.gz'),
                 type: importExportManager.formats.gzip.allowedTypes[0]
               }
             }
@@ -476,7 +476,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
             aposLocale: 'en:draft',
             aposMode: 'draft',
             modified: false, // IMPORTANT, should be set to false
-            slug: 'topic1-foo',
+            slug: 'topic1-published',
             title: 'topic1 PUBLISHED'
           },
           {
@@ -484,7 +484,7 @@ describe('#import - when `importDraftsOnly` option is set to `true`', function (
             _id: topics.at(1).aposDocId.concat(':en:published'),
             aposLocale: 'en:published',
             aposMode: 'published',
-            slug: 'topic1-foo',
+            slug: 'topic1-published',
             title: 'topic1 PUBLISHED'
           }
         ];
