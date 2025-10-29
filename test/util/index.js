@@ -174,6 +174,7 @@ async function buildFixtures(apos) {
   const directories = (await fs.readdir(path.join(target, 'gzip'), { withFileTypes: true }))
     .filter(entry => entry.isDirectory());
   for (const directory of directories) {
+    console.log({ directory }); // eslint-disable-line no-console
     const { default: docs } = await import(
       path.join(directory.path, directory.name, 'aposDocs.json'),
       { with: { type: 'json' } }
