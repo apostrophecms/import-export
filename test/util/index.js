@@ -1,13 +1,17 @@
-const assert = require('assert');
-const path = require('path');
-const fs = require('fs/promises');
-const { createReadStream } = require('fs');
+const assert = require('node:assert');
+const path = require('node:path');
+const fs = require('node:fs/promises');
+const { createReadStream } = require('node:fs');
 const FormData = require('form-data');
+const { output: gzip } = require('../../lib/formats/gzip.js');
 
 module.exports = {
   getAppConfig,
   extractFileNames,
   getExtractedFiles,
+  buildFixtures,
+  copyFixtures,
+  cleanFixtures,
   cleanData,
   deletePiecesAndPages,
   deleteAttachments,
@@ -24,6 +28,11 @@ function getAppConfig(modules = {}, options = {}) {
       }
     },
     '@apostrophecms/import-export': {},
+    '@apostrophecms/uploadfs': {
+      options: {
+        storage: 'local'
+      }
+    },
     'home-page': {
       extend: '@apostrophecms/page-type'
     },
@@ -160,16 +169,53 @@ async function getExtractedFiles(extractPath) {
   };
 }
 
+async function buildFixtures(apos) {
+  const target = path.join(apos.rootDir, 'data/tmp/uploads');
+  const directories = (await fs.readdir(path.join(target, 'gzip'), { withFileTypes: true }))
+    .filter(entry => entry.isDirectory());
+  for (const directory of directories) {
+    const { default: docs } = await import(
+      path.join(directory.parentPath, directory.name, 'aposDocs.json'),
+      { with: { type: 'json' } }
+    );
+    const { default: attachments } = await import(
+      path.join(directory.parentPath, directory.name, 'aposAttachments.json'),
+      { with: { type: 'json' } }
+    );
+    await gzip(
+      path.join(target, `${directory.name}.tar.gz`),
+      {
+        docs,
+        attachments
+      },
+      async () => {}
+    );
+  }
+}
+
+async function copyFixtures(apos) {
+  const source = path.join(apos.rootDir, 'fixtures');
+  const target = path.join(apos.rootDir, 'data/tmp/uploads');
+
+  await fs.cp(source, target, { recursive: true });
+}
+
+async function cleanFixtures(apos) {
+  const target = path.join(apos.rootDir, 'data/tmp/uploads');
+
+  await cleanData([ target ]);
+}
+
 async function cleanData(paths) {
-  try {
-    for (const filePath of paths) {
+  for (const filePath of paths) {
+    try {
       const files = await fs.readdir(filePath);
       for (const name of files) {
         await fs.rm(path.join(filePath, name), { recursive: true });
       }
+    } catch (error) {
+      console.error(error); // eslint-disable-line no-console
     }
-  } catch (err) {
-    assert(!err);
   }
 }
 

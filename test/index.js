@@ -1,7 +1,7 @@
-const assert = require('assert').strict;
+const assert = require('node:assert/strict');
+const fs = require('node:fs/promises');
+const path = require('node:path');
 const t = require('apostrophe/test-lib/util.js');
-const fs = require('fs/promises');
-const path = require('path');
 const {
   getAppConfig,
   insertAdminUser,
@@ -9,9 +9,12 @@ const {
   deletePiecesAndPages,
   deleteAttachments,
   cleanData,
+  buildFixtures,
+  copyFixtures,
+  cleanFixtures,
   getExtractedFiles,
   extractFileNames
-} = require('./util');
+} = require('./util/index.js');
 
 describe('@apostrophecms/import-export', function () {
   let apos;
@@ -19,8 +22,6 @@ describe('@apostrophecms/import-export', function () {
   let tempPath;
   let attachmentPath;
   let exportsPath;
-  let gzip;
-  let mimeType;
   let piecesTgzPath;
   let pageTgzPath;
 
@@ -48,10 +49,6 @@ describe('@apostrophecms/import-export', function () {
     attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
     exportsPath = path.join(apos.rootDir, 'public/uploads/exports');
     importExportManager = apos.modules['@apostrophecms/import-export'];
-    importExportManager.removeFromUploadFs = () => {};
-    importExportManager.remove = () => {};
-    gzip = importExportManager.formats.gzip;
-    mimeType = gzip.allowedTypes[0];
 
     await insertAdminUser(apos);
   });
@@ -84,7 +81,9 @@ describe('@apostrophecms/import-export', function () {
     const { url } = await importExportManager.export(req, manager);
     const fileName = path.basename(url);
 
-    const { exportPath } = await gzip.input(path.join(exportsPath, fileName));
+    const { exportPath } = await importExportManager.formats.gzip.input(
+      path.join(exportsPath, fileName)
+    );
 
     const {
       docs, attachments, attachmentFiles
@@ -123,7 +122,7 @@ describe('@apostrophecms/import-export', function () {
     const fileName = path.basename(url);
 
     piecesTgzPath = path.join(exportsPath, fileName);
-    const { exportPath } = await gzip.input(piecesTgzPath);
+    const { exportPath } = await importExportManager.formats.gzip.input(piecesTgzPath);
 
     const {
       docs, attachments, attachmentFiles
@@ -254,7 +253,7 @@ describe('@apostrophecms/import-export', function () {
     const fileName = path.basename(url);
 
     piecesTgzPath = path.join(exportsPath, fileName);
-    const { exportPath } = await gzip.input(piecesTgzPath);
+    const { exportPath } = await importExportManager.formats.gzip.input(piecesTgzPath);
 
     const {
       docs, attachments, attachmentFiles
@@ -329,7 +328,7 @@ describe('@apostrophecms/import-export', function () {
     const fileName = path.basename(url);
 
     pageTgzPath = path.join(exportsPath, fileName);
-    const { exportPath } = await gzip.input(pageTgzPath);
+    const { exportPath } = await importExportManager.formats.gzip.input(pageTgzPath);
 
     const {
       docs, attachments, attachmentFiles
@@ -403,7 +402,7 @@ describe('@apostrophecms/import-export', function () {
     req.files = {
       file: {
         path: importFilePath,
-        type: mimeType
+        type: importExportManager.formats.gzip.allowedTypes[0]
       }
     };
     await importExportManager.import(req);
@@ -487,14 +486,14 @@ describe('@apostrophecms/import-export', function () {
     req.files = {
       file: {
         path: importFilePath,
-        type: mimeType
+        type: importExportManager.formats.gzip.allowedTypes[0]
       }
     };
 
     const {
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -523,7 +522,7 @@ describe('@apostrophecms/import-export', function () {
       docIds,
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -602,7 +601,7 @@ describe('@apostrophecms/import-export', function () {
     req.files = {
       file: {
         path: importFilePath,
-        type: mimeType
+        type: importExportManager.formats.gzip.allowedTypes[0]
       }
     };
 
@@ -653,14 +652,14 @@ describe('@apostrophecms/import-export', function () {
     req.files = {
       file: {
         path: importFilePath,
-        type: mimeType
+        type: importExportManager.formats.gzip.allowedTypes[0]
       }
     };
 
     const {
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -687,7 +686,7 @@ describe('@apostrophecms/import-export', function () {
       docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -759,14 +758,14 @@ describe('@apostrophecms/import-export', function () {
     req.files = {
       file: {
         path: importFilePath,
-        type: mimeType
+        type: importExportManager.formats.gzip.allowedTypes[0]
       }
     };
 
     const {
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -795,7 +794,7 @@ describe('@apostrophecms/import-export', function () {
         .map(({ aposDocId }) => aposDocId),
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -892,14 +891,14 @@ describe('@apostrophecms/import-export', function () {
     req.files = {
       file: {
         path: importFilePath,
-        type: mimeType
+        type: importExportManager.formats.gzip.allowedTypes[0]
       }
     };
 
     const {
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -909,7 +908,7 @@ describe('@apostrophecms/import-export', function () {
       docIds: duplicatedDocs.map(doc => doc.aposDocId),
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -1058,51 +1057,34 @@ describe('@apostrophecms/import-export', function () {
 
   describe('#import - man-made CSV file', function() {
     let notify;
-    let input;
-    let csv;
 
-    const getImportReq = () => apos.task.getReq({
+    const getImportReq = (filePath) => apos.task.getReq({
       locale: 'en',
       body: {},
       files: {
         file: {
-          path: null,
-          type: mimeType
+          path: filePath,
+          type: importExportManager.formats.csv.allowedTypes[0]
         }
       }
     });
 
     this.beforeEach(async function() {
-      csv = importExportManager.formats.csv;
-      mimeType = csv.allowedTypes[0];
-
       notify = apos.notify;
-      input = csv.input;
 
       await deletePiecesAndPages(apos);
       await deleteAttachments(apos, attachmentPath);
+      await cleanFixtures(apos);
+      await copyFixtures(apos);
+      await buildFixtures(apos);
     });
 
     this.afterEach(function() {
       apos.notify = notify;
-      csv.input = input;
     });
 
     it('should import a piece from a csv file that was not made from the import-export module', async function() {
-      csv.input = async () => {
-        return {
-          docs: [
-            {
-              type: 'topic',
-              title: 'topic1',
-              description: 'description1',
-              main: '<p><em>rich</em> <strong>text</strong></p>'
-            }
-          ]
-        };
-      };
-
-      await importExportManager.import(getImportReq());
+      await importExportManager.import(getImportReq(path.join(apos.rootDir, 'data/tmp/uploads/topic-type-title-description-main.csv')));
 
       const topics = await apos.doc.db
         .find({ type: 'topic' })
@@ -1117,20 +1099,8 @@ describe('@apostrophecms/import-export', function () {
     });
 
     it('should import a piece from a csv file with no type, as long as the module name is known', async function() {
-      csv.input = async () => {
-        return {
-          docs: [
-            {
-              // type intentionally omitted
-              title: 'topic1',
-              description: 'description1',
-              main: '<p><em>rich</em> <strong>text</strong></p>'
-            }
-          ]
-        };
-      };
-
-      await importExportManager.import(getImportReq(), 'topic');
+      // type intentionally omitted
+      await importExportManager.import(getImportReq(path.join(apos.rootDir, 'data/tmp/uploads/topic-title-description-main.csv')), 'topic');
 
       const topics = await apos.doc.db
         .find({ type: 'topic' })
@@ -1145,19 +1115,7 @@ describe('@apostrophecms/import-export', function () {
     });
 
     it('should import a page from a csv file that was not made from the import-export module', async function() {
-      csv.input = async () => {
-        return {
-          docs: [
-            {
-              type: 'default-page',
-              title: 'page1',
-              main: '<p><em>rich</em> <strong>text</strong></p>'
-            }
-          ]
-        };
-      };
-
-      await importExportManager.import(getImportReq());
+      await importExportManager.import(getImportReq(path.join(apos.rootDir, 'data/tmp/uploads/default-page-type-title-main.csv')));
 
       const pages = await apos.doc.db
         .find({ type: 'default-page' })
@@ -1171,21 +1129,7 @@ describe('@apostrophecms/import-export', function () {
     });
 
     it('should insert a piece as draft and published when there is an update key that does not match any existing doc', async function() {
-      csv.input = async () => {
-        return {
-          docs: [
-            {
-              type: 'topic',
-              'title:key': 'topic1',
-              title: 'topic1 - edited',
-              description: 'description1 - edited',
-              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
-            }
-          ]
-        };
-      };
-
-      await importExportManager.import(getImportReq());
+      await importExportManager.import(getImportReq(path.join(apos.rootDir, 'data/tmp/uploads/topic-type-titleKey-title-description-main.csv')));
 
       const topics = await apos.doc.db
         .find({ type: 'topic' })
@@ -1207,20 +1151,7 @@ describe('@apostrophecms/import-export', function () {
     });
 
     it('should insert a page as draft and published when there is an update key that does not match any existing doc', async function() {
-      csv.input = async () => {
-        return {
-          docs: [
-            {
-              type: 'default-page',
-              'title:key': 'page1',
-              title: 'page1 - edited',
-              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
-            }
-          ]
-        };
-      };
-
-      await importExportManager.import(getImportReq());
+      await importExportManager.import(getImportReq(path.join(apos.rootDir, 'data/tmp/uploads/default-page-type-titleKey-title-main.csv')));
 
       const pages = await apos.doc.db
         .find({ type: 'default-page' })
@@ -1240,21 +1171,7 @@ describe('@apostrophecms/import-export', function () {
     });
 
     it('should insert a piece as draft and published when there is an empty update key', async function() {
-      csv.input = async () => {
-        return {
-          docs: [
-            {
-              type: 'topic',
-              'title:key': '',
-              title: 'topic1 - edited',
-              description: 'description1 - edited',
-              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
-            }
-          ]
-        };
-      };
-
-      await importExportManager.import(getImportReq());
+      await importExportManager.import(getImportReq(path.join(apos.rootDir, 'data/tmp/uploads/topic-type-titleKey-title-description-main.csv')));
 
       const topics = await apos.doc.db
         .find({ type: 'topic' })
@@ -1276,20 +1193,7 @@ describe('@apostrophecms/import-export', function () {
     });
 
     it('should insert a page as draft and published when there is an empty update key', async function() {
-      csv.input = async () => {
-        return {
-          docs: [
-            {
-              type: 'default-page',
-              'title:key': '',
-              title: 'page1 - edited',
-              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
-            }
-          ]
-        };
-      };
-
-      await importExportManager.import(getImportReq());
+      await importExportManager.import(getImportReq(path.join(apos.rootDir, 'data/tmp/uploads/default-page-type-titleKey-title-main.csv')));
 
       const pages = await apos.doc.db
         .find({ type: 'default-page' })
@@ -1309,20 +1213,6 @@ describe('@apostrophecms/import-export', function () {
     });
 
     it('should update a piece draft and published versions when there is an update key that matches an existing doc', async function() {
-      csv.input = async () => {
-        return {
-          docs: [
-            {
-              type: 'topic',
-              'title:key': 'topic1',
-              title: 'topic1 - edited',
-              description: 'description1 - edited',
-              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
-            }
-          ]
-        };
-      };
-
       const topic = await apos.topic.insert(apos.task.getReq(), {
         ...apos.topic.newInstance(),
         title: 'topic1',
@@ -1330,7 +1220,7 @@ describe('@apostrophecms/import-export', function () {
         main: '<p><em>rich</em> <strong>text</strong></p>'
       });
 
-      await importExportManager.import(getImportReq());
+      await importExportManager.import(getImportReq(path.join(apos.rootDir, 'data/tmp/uploads/topic-type-titleKey-title-description-main.csv')));
 
       const topics = await apos.doc.db
         .find({ type: 'topic' })
@@ -1355,26 +1245,13 @@ describe('@apostrophecms/import-export', function () {
     });
 
     it('should update a page draft and published versions when there is an update key that matches an existing doc', async function() {
-      csv.input = async () => {
-        return {
-          docs: [
-            {
-              type: 'default-page',
-              'title:key': 'page1',
-              title: 'page1 - edited',
-              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
-            }
-          ]
-        };
-      };
-
       const page = await apos.page.insert(apos.task.getReq(), '_home', 'lastChild', {
         ...apos.modules['default-page'].newInstance(),
         title: 'page1',
         main: '<p><em>rich</em> <strong>text</strong></p>'
       });
 
-      await importExportManager.import(getImportReq());
+      await importExportManager.import(getImportReq(path.join(apos.rootDir, 'data/tmp/uploads/default-page-type-titleKey-title-main.csv')));
 
       const pages = await apos.doc.db
         .find({ type: 'default-page' })
@@ -1397,20 +1274,6 @@ describe('@apostrophecms/import-export', function () {
     });
 
     it('should update a piece draft and published versions when there is an update key that only matches the existing draft doc', async function() {
-      csv.input = async () => {
-        return {
-          docs: [
-            {
-              type: 'topic',
-              'title:key': 'topic1',
-              title: 'topic1 - edited',
-              description: 'description1 - edited',
-              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
-            }
-          ]
-        };
-      };
-
       const topic = await apos.topic.insert(apos.task.getReq(), {
         ...apos.topic.newInstance(),
         title: 'topic1',
@@ -1431,7 +1294,7 @@ describe('@apostrophecms/import-export', function () {
         }
       );
 
-      await importExportManager.import(getImportReq());
+      await importExportManager.import(getImportReq(path.join(apos.rootDir, 'data/tmp/uploads/topic-type-titleKey-title-description-main.csv')));
 
       const topics = await apos.doc.db
         .find({ type: 'topic' })
@@ -1456,19 +1319,6 @@ describe('@apostrophecms/import-export', function () {
     });
 
     it('should update a page draft and published versions when there is an update key that only matches the existing draft doc', async function() {
-      csv.input = async () => {
-        return {
-          docs: [
-            {
-              type: 'default-page',
-              'title:key': 'page1',
-              title: 'page1 - edited',
-              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
-            }
-          ]
-        };
-      };
-
       const page = await apos.page.insert(apos.task.getReq(), '_home', 'lastChild', {
         ...apos.modules['default-page'].newInstance(),
         title: 'page1',
@@ -1488,7 +1338,7 @@ describe('@apostrophecms/import-export', function () {
         }
       );
 
-      await importExportManager.import(getImportReq());
+      await importExportManager.import(getImportReq(path.join(apos.rootDir, 'data/tmp/uploads/default-page-type-titleKey-title-main.csv')));
 
       const pages = await apos.doc.db
         .find({ type: 'default-page' })
@@ -1511,20 +1361,6 @@ describe('@apostrophecms/import-export', function () {
     });
 
     it('should update a piece draft and published versions when there is an update key that matches only the existing published doc', async function() {
-      csv.input = async () => {
-        return {
-          docs: [
-            {
-              type: 'topic',
-              'title:key': 'topic1',
-              title: 'topic1 - edited',
-              description: 'description1 - edited',
-              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
-            }
-          ]
-        };
-      };
-
       const topic = await apos.topic.insert(apos.task.getReq(), {
         ...apos.topic.newInstance(),
         title: 'topic1',
@@ -1545,7 +1381,7 @@ describe('@apostrophecms/import-export', function () {
         }
       );
 
-      await importExportManager.import(getImportReq());
+      await importExportManager.import(getImportReq(path.join(apos.rootDir, 'data/tmp/uploads/topic-type-titleKey-title-description-main.csv')));
 
       const topics = await apos.doc.db
         .find({ type: 'topic' })
@@ -1570,19 +1406,6 @@ describe('@apostrophecms/import-export', function () {
     });
 
     it('should update a page draft and published versions when there is an update key that only matches the existing published doc', async function() {
-      csv.input = async () => {
-        return {
-          docs: [
-            {
-              type: 'default-page',
-              'title:key': 'page1',
-              title: 'page1 - edited',
-              main: '<p><em>rich</em> <strong>text</strong> - edited</p>'
-            }
-          ]
-        };
-      };
-
       const page = await apos.page.insert(apos.task.getReq(), '_home', 'lastChild', {
         ...apos.modules['default-page'].newInstance(),
         title: 'page1',
@@ -1602,7 +1425,7 @@ describe('@apostrophecms/import-export', function () {
         }
       );
 
-      await importExportManager.import(getImportReq());
+      await importExportManager.import(getImportReq(path.join(apos.rootDir, 'data/tmp/uploads/default-page-type-titleKey-title-main.csv')));
 
       const pages = await apos.doc.db
         .find({ type: 'default-page' })
@@ -1828,10 +1651,6 @@ describe('@apostrophecms/import-export', function () {
       attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
       exportsPath = path.join(apos.rootDir, 'public/uploads/exports');
       importExportManager = apos.modules['@apostrophecms/import-export'];
-      importExportManager.removeFromUploadFs = () => {};
-      importExportManager.remove = () => {};
-      gzip = importExportManager.formats.gzip;
-      mimeType = gzip.allowedTypes[0];
 
       await insertAdminUser(apos);
     });
@@ -1860,7 +1679,7 @@ describe('@apostrophecms/import-export', function () {
       req.files = {
         file: {
           path: importFilePath,
-          type: mimeType
+          type: importExportManager.formats.gzip.allowedTypes[0]
         }
       };
       const params = await importExportManager.import(req);
@@ -1986,14 +1805,14 @@ describe('@apostrophecms/import-export', function () {
       req.files = {
         file: {
           path: importFilePath,
-          type: mimeType
+          type: importExportManager.formats.gzip.allowedTypes[0]
         }
       };
 
       const {
         duplicatedDocs,
         importedAttachments,
-        exportPathId,
+        exportId,
         jobId,
         notificationId,
         formatLabel
@@ -2018,7 +1837,7 @@ describe('@apostrophecms/import-export', function () {
         docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
         duplicatedDocs,
         importedAttachments,
-        exportPathId,
+        exportId,
         jobId,
         notificationId,
         formatLabel,
@@ -2148,10 +1967,6 @@ describe('@apostrophecms/import-export', function () {
       attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
       exportsPath = path.join(apos.rootDir, 'public/uploads/exports');
       importExportManager = apos.modules['@apostrophecms/import-export'];
-      importExportManager.removeFromUploadFs = () => {};
-      importExportManager.remove = () => {};
-      gzip = importExportManager.formats.gzip;
-      mimeType = gzip.allowedTypes[0];
 
       await insertAdminUser(apos);
     });
@@ -2180,7 +1995,7 @@ describe('@apostrophecms/import-export', function () {
       req.files = {
         file: {
           path: importFilePath,
-          type: mimeType
+          type: importExportManager.formats.gzip.allowedTypes[0]
         }
       };
       const params = await importExportManager.import(req);

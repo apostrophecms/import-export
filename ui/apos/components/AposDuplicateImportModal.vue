@@ -129,7 +129,7 @@ export default {
       type: Array,
       required: true
     },
-    exportPathId: {
+    exportId: {
       type: String,
       required: true
     },
@@ -206,7 +206,7 @@ export default {
       try {
         await apos.http.post('/api/v1/@apostrophecms/import-export/clean-export', {
           body: {
-            exportPathId: this.exportPathId,
+            exportId: this.exportId,
             jobId: this.jobId,
             notificationId: this.notificationId
           }
@@ -229,7 +229,7 @@ export default {
           docIds: this.checked,
           duplicatedDocs: this.duplicatedDocs,
           importedAttachments: this.importedAttachments,
-          exportPathId: this.exportPathId,
+          exportId: this.exportId,
           jobId: this.jobId,
           importDraftsOnly: this.importDraftsOnly,
           translate: this.translate,

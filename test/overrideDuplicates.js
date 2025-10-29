@@ -1,51 +1,25 @@
-const assert = require('assert').strict;
+const assert = require('node:assert/strict');
+const path = require('node:path');
 const t = require('apostrophe/test-lib/util.js');
-const path = require('path');
 const {
   getAppConfig,
   insertAdminUser,
-  insertPiecesAndPages,
   deletePiecesAndPages,
-  deleteAttachments
-} = require('./util');
+  deleteAttachments,
+  buildFixtures,
+  copyFixtures,
+  cleanFixtures,
+  insertPiecesAndPages
+} = require('./util/index.js');
 
 describe('#overrideDuplicates - overriding locales integration tests', function() {
   this.timeout(t.timeout);
 
-  let req;
-  let input;
-  let rewriteDocsWithCurrentLocale;
-  let jobManager;
   let apos;
   let importExportManager;
   let attachmentPath;
-  let gzip;
 
   describe('when the site has only one locale', function() {
-    this.beforeEach(async function() {
-      req = apos.task.getReq({
-        locale: 'en',
-        body: {
-          formatLabel: 'gzip'
-        }
-      });
-      jobManager = apos.modules['@apostrophecms/job'];
-      input = gzip.input;
-      rewriteDocsWithCurrentLocale = apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale;
-
-      jobManager.success = () => {};
-      jobManager.failure = () => {};
-
-      await deletePiecesAndPages(apos);
-      await deleteAttachments(apos, attachmentPath);
-    });
-
-    this.afterEach(function() {
-      gzip.input = input;
-      apos.modules['@apostrophecms/job'].jobManager = jobManager;
-      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = rewriteDocsWithCurrentLocale;
-    });
-
     before(async function() {
       apos = await t.create({
         root: module,
@@ -55,9 +29,6 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
 
       attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
       importExportManager = apos.modules['@apostrophecms/import-export'];
-      importExportManager.removeFromUploadFs = () => {};
-      importExportManager.remove = () => {};
-      gzip = importExportManager.formats.gzip;
 
       await insertAdminUser(apos);
     });
@@ -66,72 +37,183 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
       await t.destroy(apos);
     });
 
-    it('should not rewrite the docs locale when the locale is not different', async function() {
-      gzip.input = async exportPath => {
-        return {
-          docs: [
-            {
-              _id: '4:en:draft',
-              aposMode: 'draft',
-              aposLocale: 'en:draft',
-              title: 'topic1',
-              type: 'topic'
-            }
-          ],
-          attachmentsInfo: []
-        };
-      };
-      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
-        throw new Error('rewriteDocsWithCurrentLocale should not have been called');
-      };
+    this.beforeEach(async function () {
+      await deletePiecesAndPages(apos);
+      await deleteAttachments(apos, attachmentPath);
+      await cleanFixtures(apos);
+      await copyFixtures(apos);
+      await buildFixtures(apos);
+    });
 
-      await importExportManager.overrideDuplicates(req);
+    it('should not rewrite the docs locale when the locale is the same', async function() {
+      const req = apos.task.getReq({
+        locale: 'en',
+        body: {
+          formatLabel: 'gzip'
+        }
+      });
+
+      await apos.topic.insert(apos.task.getReq({ mode: 'draft' }), {
+        ...apos.topic.newInstance(),
+        _id: '4:en:draft',
+        slug: 'topic1-existing-draft',
+        title: 'topic1 EXISTING DRAFT'
+      });
+
+      await apos.topic.insert(apos.task.getReq({ mode: 'published' }), {
+        ...apos.topic.newInstance(),
+        _id: '4:en:published',
+        slug: 'topic1-existing-published',
+        title: 'topic1 EXISTING PUBLISHED'
+      });
+
+      const {
+        duplicatedDocs,
+        importedAttachments,
+        exportId,
+        jobId,
+        notificationId,
+        formatLabel
+      } = await importExportManager.import(
+        req.clone({
+          files: {
+            file: {
+              path: path.join(apos.rootDir, 'data/tmp/uploads/topic-draft.tar.gz'),
+              type: importExportManager.formats.gzip.allowedTypes[0]
+            }
+          }
+        })
+      );
+
+      const _req = req.clone({
+        body: {
+          ...req.body,
+          docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
+          duplicatedDocs,
+          importedAttachments,
+          exportId,
+          jobId,
+          notificationId,
+          formatLabel
+        }
+      });
+
+      await importExportManager.overrideDuplicates(_req);
+
+      const topics = await apos.doc.db
+        .find({ type: 'topic' })
+        .toArray();
+
+      const actual = topics;
+      const expected = [
+        {
+          ...topics.at(0),
+          _id: topics.at(0).aposDocId.concat(':en:draft'),
+          aposLocale: 'en:draft',
+          aposMode: 'draft',
+          modified: true,
+          slug: 'topic1',
+          title: 'topic1'
+        },
+        {
+          ...topics.at(1),
+          _id: topics.at(1).aposDocId.concat(':en:published'),
+          aposLocale: 'en:published',
+          aposMode: 'published',
+          slug: 'topic1-existing-published',
+          title: 'topic1 EXISTING PUBLISHED'
+        }
+      ];
+
+      assert.deepEqual(actual, expected);
     });
 
     it('should rewrite the docs locale when the locale is different', async function() {
-      gzip.input = async exportPath => {
-        return {
-          docs: [
-            {
-              _id: '4:fr:draft',
-              aposMode: 'draft',
-              aposLocale: 'fr:draft',
-              title: 'topic1',
-              type: 'topic'
+      const req = apos.task.getReq({
+        locale: 'en',
+        body: {
+          formatLabel: 'gzip'
+        }
+      });
+
+      await apos.topic.insert(apos.task.getReq({ mode: 'draft' }), {
+        ...apos.topic.newInstance(),
+        _id: '4:en:draft',
+        slug: 'topic1-existing-draft',
+        title: 'topic1 EXISTING DRAFT'
+      });
+
+      await apos.topic.insert(apos.task.getReq({ mode: 'published' }), {
+        ...apos.topic.newInstance(),
+        _id: '4:en:published',
+        slug: 'topic1-existing-published',
+        title: 'topic1 EXISTING PUBLISHED'
+      });
+
+      const {
+        duplicatedDocs,
+        importedAttachments,
+        exportId,
+        jobId,
+        notificationId,
+        formatLabel
+      } = await importExportManager.import(
+        req.clone({
+          files: {
+            file: {
+              path: path.join(apos.rootDir, 'data/tmp/uploads/fr-topic-draft.tar.gz'),
+              type: importExportManager.formats.gzip.allowedTypes[0]
             }
-          ],
-          attachmentsInfo: []
-        };
-      };
-      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
-        assert.deepEqual(docs, [
-          {
-            _id: '4:fr:draft',
-            aposMode: 'draft',
-            aposLocale: 'fr:draft',
-            title: 'topic1',
-            type: 'topic'
           }
-        ]);
+        })
+      );
 
-        return rewriteDocsWithCurrentLocale(req, docs);
-      };
+      const _req = req.clone({
+        body: {
+          ...req.body,
+          docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
+          duplicatedDocs,
+          importedAttachments,
+          exportId,
+          jobId,
+          notificationId,
+          formatLabel
+        }
+      });
 
-      await importExportManager.overrideDuplicates(req);
+      await importExportManager.overrideDuplicates(_req);
+
+      const topics = await apos.doc.db
+        .find({ type: 'topic' })
+        .toArray();
+
+      const actual = topics;
+      const expected = [
+        {
+          ...topics.at(0),
+          _id: topics.at(0).aposDocId.concat(':en:draft'),
+          aposMode: 'draft',
+          aposLocale: 'en:draft',
+          slug: 'topic1-fr',
+          title: 'topic1 FR',
+          type: 'topic'
+        },
+        {
+          ...topics.at(1),
+          _id: topics.at(1).aposDocId.concat(':en:published'),
+          aposMode: 'published',
+          aposLocale: 'en:published',
+          slug: 'topic1-existing-published',
+          title: 'topic1 EXISTING PUBLISHED',
+          type: 'topic'
+        }
+      ];
+
+      assert.deepEqual(actual, expected);
     });
   });
 
   describe('when the site has multiple locales', function() {
-    let apos;
-    let importExportManager;
-
-    let input;
-    let rewriteDocsWithCurrentLocale;
-
-    after(async function() {
-      await t.destroy(apos);
-    });
-
     before(async function() {
       apos = await t.create({
         root: module,
@@ -171,42 +253,25 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
 
       attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
       importExportManager = apos.modules['@apostrophecms/import-export'];
-      importExportManager.removeFromUploadFs = () => {};
-      importExportManager.remove = () => {};
-      gzip = importExportManager.formats.gzip;
-
-      importExportManager = apos.modules['@apostrophecms/import-export'];
-      importExportManager.removeExportFileFromUploadFs = () => {};
-      importExportManager.remove = () => {};
 
       await insertAdminUser(apos);
     });
 
-    this.beforeEach(async function() {
-      req = apos.task.getReq({
-        locale: 'en',
-        body: {
-          formatLabel: 'gzip'
-        }
-      });
-      input = gzip.input;
-      rewriteDocsWithCurrentLocale = apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale;
-
-      jobManager = apos.modules['@apostrophecms/job'];
-      jobManager.success = () => {};
-      jobManager.failure = () => {};
-
-      await insertPiecesAndPages(apos);
+    after(async function() {
+      await t.destroy(apos);
     });
 
-    this.afterEach(async function() {
+    this.beforeEach(async function () {
       await deletePiecesAndPages(apos);
       await deleteAttachments(apos, attachmentPath);
-      gzip.input = input;
-      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = rewriteDocsWithCurrentLocale;
+      await cleanFixtures(apos);
+      await copyFixtures(apos);
+      await buildFixtures(apos);
     });
 
     it('should check if documents to import have duplicates in the current locale', async function() {
+      await insertPiecesAndPages(apos);
+
       const req = apos.task.getReq({ mode: 'draft' });
       const frReq = apos.task.getReq({
         locale: 'fr',
@@ -261,69 +326,197 @@ describe('#overrideDuplicates - overriding locales integration tests', function(
         frDuplicates: [ false, true, 4, 3 ]
       };
 
-      assert.deepStrictEqual(actual, expected);
+      assert.deepEqual(actual, expected);
     });
 
-    it('should not rewrite the docs locale when the locale is not different', async function() {
-      gzip.input = async exportPath => {
-        return {
-          docs: [
-            {
-              _id: '4:en:draft',
-              aposMode: 'draft',
-              aposLocale: 'en:draft',
-              title: 'topic1',
-              type: 'topic'
-            }
-          ],
-          attachmentsInfo: []
-        };
-      };
-      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
-        throw new Error('rewriteDocsWithCurrentLocale should not have been called');
-      };
+    it('should not rewrite the docs locale when the locale is the same', async function() {
+      const req = apos.task.getReq({
+        locale: 'en',
+        body: {
+          formatLabel: 'gzip'
+        }
+      });
 
-      await importExportManager.overrideDuplicates(req);
+      await apos.topic.insert(apos.task.getReq({ mode: 'draft' }), {
+        ...apos.topic.newInstance(),
+        _id: '4:en:draft',
+        slug: 'topic1-existing-draft',
+        title: 'topic1 EXISTING DRAFT'
+      });
+
+      await apos.topic.insert(apos.task.getReq({ mode: 'published' }), {
+        ...apos.topic.newInstance(),
+        _id: '4:en:published',
+        slug: 'topic1-existing-published',
+        title: 'topic1 EXISTING PUBLISHED'
+      });
+
+      const {
+        duplicatedDocs,
+        importedAttachments,
+        exportId,
+        jobId,
+        notificationId,
+        formatLabel
+      } = await importExportManager.import(
+        req.clone({
+          files: {
+            file: {
+              path: path.join(apos.rootDir, 'data/tmp/uploads/topic-draft.tar.gz'),
+              type: importExportManager.formats.gzip.allowedTypes[0]
+            }
+          }
+        })
+      );
+
+      const _req = req.clone({
+        body: {
+          ...req.body,
+          docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
+          duplicatedDocs,
+          importedAttachments,
+          exportId,
+          jobId,
+          notificationId,
+          formatLabel
+        }
+      });
+
+      await importExportManager.overrideDuplicates(_req);
+
+      const topics = await apos.doc.db
+        .find({ type: 'topic' })
+        .toArray();
+
+      const actual = topics;
+      const expected = [
+        {
+          ...topics.at(0),
+          _id: topics.at(0).aposDocId.concat(':en:draft'),
+          aposLocale: 'en:draft',
+          aposMode: 'draft',
+          modified: true,
+          slug: 'topic1',
+          title: 'topic1'
+        },
+        {
+          ...topics.at(1),
+          _id: topics.at(1).aposDocId.concat(':en:published'),
+          aposLocale: 'en:published',
+          aposMode: 'published',
+          slug: 'topic1-existing-published',
+          title: 'topic1 EXISTING PUBLISHED'
+        }
+      ];
+
+      assert.deepEqual(actual, expected);
     });
 
     it('should rewrite the docs locale when the locale is different and the `overrideLocale` param is provided', async function() {
       const req = apos.task.getReq({
         locale: 'en',
         body: {
-          formatLabel: 'gzip',
-          overrideLocale: true
+          formatLabel: 'gzip'
         }
       });
 
-      gzip.input = async exportPath => {
-        return {
-          docs: [
-            {
-              _id: '4:fr:draft',
-              aposMode: 'draft',
-              aposLocale: 'fr:draft',
-              title: 'topic1',
-              type: 'topic'
+      await apos.topic.insert(apos.task.getReq({ mode: 'draft' }), {
+        ...apos.topic.newInstance(),
+        _id: '4:en:draft',
+        slug: 'topic1-existing-draft',
+        title: 'topic1 EXISTING DRAFT'
+      });
+
+      await apos.topic.insert(apos.task.getReq({ mode: 'published' }), {
+        ...apos.topic.newInstance(),
+        _id: '4:en:published',
+        slug: 'topic1-existing-published',
+        title: 'topic1 EXISTING PUBLISHED'
+      });
+
+      const {
+        exportId,
+        formatLabel,
+        importDraftsOnly,
+        translate
+      } = await importExportManager.import(
+        req.clone({
+          files: {
+            file: {
+              path: path.join(apos.rootDir, 'data/tmp/uploads/fr-topic-draft.tar.gz'),
+              type: importExportManager.formats.gzip.allowedTypes[0]
             }
-          ],
-          attachmentsInfo: []
-        };
-      };
-      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
-        assert.deepEqual(docs, [
-          {
-            _id: '4:fr:draft',
-            aposMode: 'draft',
-            aposLocale: 'fr:draft',
-            title: 'topic1',
-            type: 'topic'
           }
-        ]);
+        })
+      );
 
-        return rewriteDocsWithCurrentLocale(req, docs);
-      };
+      // // TODO: check notification name
+      // // apos.notify = async (req, message, options) => {
+      // //   assert.equal(options.event.name, 'import-export-import-locale-differs');
+      // // };
 
-      await importExportManager.overrideDuplicates(req);
+      const {
+        duplicatedDocs,
+        importedAttachments,
+        jobId,
+        notificationId
+      } = await importExportManager.import(
+        req.clone({
+          body: {
+            ...req.body,
+            importDraftsOnly,
+            translate,
+            overrideLocale: true,
+            exportId,
+            formatLabel
+          }
+        })
+      );
+
+      const _req = req.clone({
+        body: {
+          ...req.body,
+          docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
+          duplicatedDocs,
+          importedAttachments,
+          overrideLocale: true,
+          exportId,
+          jobId,
+          notificationId,
+          formatLabel
+        }
+      });
+
+      await importExportManager.overrideDuplicates(_req);
+
+      const topics = await apos.doc.db
+        .find({ type: 'topic' })
+        .toArray();
+
+      const actual = topics;
+      const expected = [
+        {
+          ...topics.at(0),
+          _id: topics.at(0).aposDocId.concat(':en:draft'),
+          aposMode: 'draft',
+          aposLocale: 'en:draft',
+          modified: true,
+          slug: 'topic1-fr',
+          title: 'topic1 FR',
+          type: 'topic'
+        },
+        {
+          ...topics.at(1),
+          _id: topics.at(1).aposDocId.concat(':en:published'),
+          aposMode: 'published',
+          aposLocale: 'en:published',
+          slug: 'topic1-existing-published',
+          title: 'topic1 EXISTING PUBLISHED',
+          type: 'topic'
+        }
+      ];
+
+      assert.deepEqual(actual, expected);
     });
   });
 });

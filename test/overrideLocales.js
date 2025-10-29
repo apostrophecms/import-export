@@ -1,56 +1,24 @@
-const assert = require('assert').strict;
+const assert = require('node:assert/strict');
+const path = require('node:path');
 const t = require('apostrophe/test-lib/util.js');
-const path = require('path');
 const {
   getAppConfig,
   insertAdminUser,
-  insertPiecesAndPages,
   deletePiecesAndPages,
-  deleteAttachments
-} = require('./util');
+  deleteAttachments,
+  buildFixtures,
+  copyFixtures,
+  cleanFixtures
+} = require('./util/index.js');
 
 describe('#import - overriding locales integration tests', function() {
   this.timeout(t.timeout);
 
   let apos;
-  let req;
-  let notify;
-  let input;
-  let rewriteDocsWithCurrentLocale;
-  let insertDocs;
-  let mimeType;
-  let gzip;
   let importExportManager;
   let attachmentPath;
 
   describe('when the site has only one locale', function() {
-    this.beforeEach(async function() {
-      req = apos.task.getReq({
-        locale: 'en',
-        body: {},
-        files: {
-          file: {
-            path: '/some/path/to/file',
-            type: mimeType
-          }
-        }
-      });
-      notify = apos.notify;
-      input = gzip.input;
-      rewriteDocsWithCurrentLocale = apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale;
-      insertDocs = apos.modules['@apostrophecms/import-export'].insertDocs;
-
-      await deletePiecesAndPages(apos);
-      await deleteAttachments(apos, attachmentPath);
-    });
-
-    this.afterEach(function() {
-      apos.notify = notify;
-      gzip.input = input;
-      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = rewriteDocsWithCurrentLocale;
-      apos.modules['@apostrophecms/import-export'].insertDocs = insertDocs;
-    });
-
     before(async function() {
       apos = await t.create({
         root: module,
@@ -60,10 +28,6 @@ describe('#import - overriding locales integration tests', function() {
 
       attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
       importExportManager = apos.modules['@apostrophecms/import-export'];
-      importExportManager.removeFromUploadFs = () => {};
-      importExportManager.remove = () => {};
-      gzip = importExportManager.formats.gzip;
-      mimeType = gzip.allowedTypes[0];
 
       await insertAdminUser(apos);
     });
@@ -72,156 +36,125 @@ describe('#import - overriding locales integration tests', function() {
       await t.destroy(apos);
     });
 
-    it('should import pieces with related documents from the extracted export path when provided', async function() {
-      // Since we are mocking this and not really uploading a file, we have to
-      // manually call setExportPathId to establish a mapping to a safe
-      // unique identifier to share with the "browser"
-      const expectedPath = '/custom/extracted-export-path';
-      await importExportManager.setExportPathId(expectedPath);
-
-      req = apos.task.getReq({
-        locale: 'en',
-        body: {
-          exportPathId: await importExportManager.getExportPathId(expectedPath),
-          formatLabel: 'gzip',
-          overrideLocale: true
-        }
-      });
-
-      gzip.input = async exportPath => {
-        assert.equal(exportPath, expectedPath);
-
-        return {
-          docs: [
-            {
-              _id: '4:en:draft',
-              aposMode: 'draft',
-              aposLocale: 'en:draft',
-              title: 'topic1',
-              type: 'topic'
-            }
-          ],
-          attachmentsInfo: []
-        };
-      };
-
-      await importExportManager.import(req);
+    this.beforeEach(async function() {
+      await deletePiecesAndPages(apos);
+      await deleteAttachments(apos, attachmentPath);
+      await cleanFixtures(apos);
+      await copyFixtures(apos);
+      await buildFixtures(apos);
     });
 
-    // FIX
-    it('should not rewrite the docs locale nor ask about it when the locale is not different', async function() {
-      gzip.input = async () => {
-        return {
-          docs: [
-            {
-              _id: '4:en:draft',
-              aposMode: 'draft',
-              aposLocale: 'en:draft',
-              title: 'topic1',
-              type: 'topic'
+    it('should not rewrite the docs locale nor ask about it when the locale is the same', async function() {
+      const req = apos.task.getReq({
+        locale: 'en',
+        body: {}
+      });
+
+      const {
+        duplicatedDocs,
+        notificationId
+      } = await importExportManager.import(
+        req.clone({
+          files: {
+            file: {
+              path: path.join(apos.rootDir, 'data/tmp/uploads/topic-draft.tar.gz'),
+              type: importExportManager.formats.gzip.allowedTypes[0]
             }
-          ],
-          attachmentsInfo: []
-        };
+          }
+        })
+      );
+
+      const notification = await apos.notification.db
+        .findOne({ _id: notificationId });
+      const topics = await apos.doc.db
+        .find({ type: 'topic' })
+        .toArray();
+
+      const actual = {
+        duplicatedDocs,
+        notification: {
+          name: notification.event?.name
+        },
+        topics
       };
-      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
-        throw new Error('rewriteDocsWithCurrentLocale should not have been called');
-      };
-      apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs }) => {
-        assert.deepEqual(docs, [
+      const expected = {
+        duplicatedDocs: [],
+        notification: {
+          name: undefined
+        },
+        topics: [
           {
-            _id: '4:en:draft',
+            ...topics.at(0),
+            _id: topics.at(0).aposDocId.concat(':en:draft'),
             aposMode: 'draft',
             aposLocale: 'en:draft',
+            slug: 'topic1',
             title: 'topic1',
             type: 'topic'
           }
-        ]);
-
-        return [];
-      };
-      apos.notify = async (req, message, options) => {
-        if (options?.event?.name === 'import-export-import-locale-differs') {
-          throw new Error('notify should not have been called with event "import-locale-differ"');
-        }
-        return {};
+        ]
       };
 
-      await importExportManager.import(req);
+      assert.deepEqual(actual, expected);
     });
 
     // FIX
     it('should rewrite the docs locale without asking about it when the locale is different', async function() {
-      gzip.input = async () => {
-        return {
-          docs: [
-            {
-              _id: '4:fr:draft',
-              aposMode: 'draft',
-              aposLocale: 'fr:draft',
-              title: 'topic1',
-              type: 'topic'
-            }
-          ],
-          attachmentsInfo: []
-        };
-      };
-      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
-        assert.deepEqual(docs, [
-          {
-            _id: '4:fr:draft',
-            aposMode: 'draft',
-            aposLocale: 'fr:draft',
-            title: 'topic1',
-            type: 'topic'
-          }
-        ]);
+      const req = apos.task.getReq({
+        locale: 'en',
+        body: {}
+      });
 
-        return rewriteDocsWithCurrentLocale(req, docs);
+      const {
+        duplicatedDocs,
+        notificationId
+      } = await importExportManager.import(
+        req.clone({
+          files: {
+            file: {
+              path: path.join(apos.rootDir, 'data/tmp/uploads/fr-topic-draft.tar.gz'),
+              type: importExportManager.formats.gzip.allowedTypes[0]
+            }
+          }
+        })
+      );
+
+      const notification = await apos.notification.db
+        .findOne({ _id: notificationId });
+      const topics = await apos.doc.db
+        .find({ type: 'topic' })
+        .toArray();
+
+      const actual = {
+        duplicatedDocs,
+        notification: {
+          name: notification.event?.name
+        },
+        topics
       };
-      apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs }) => {
-        assert.deepEqual(docs, [
+      const expected = {
+        duplicatedDocs: [],
+        notification: {
+          name: undefined
+        },
+        topics: [
           {
-            _id: '4:en:draft',
+            ...topics.at(0),
+            _id: topics.at(0).aposDocId.concat(':en:draft'),
             aposMode: 'draft',
             aposLocale: 'en:draft',
-            title: 'topic1',
-            type: 'topic',
-            __originalLocale: 'fr'
+            slug: 'topic1-fr',
+            title: 'topic1 FR',
+            type: 'topic'
           }
-        ]);
-
-        return {
-          duplicatedDocs: [],
-          duplicatedIds: [],
-          failedIds: []
-        };
-      };
-      apos.notify = async (req, message, options) => {
-        if (options?.event?.name === 'import-export-import-locale-differs') {
-          throw new Error('notify should not have been called with event "import-locale-differ"');
-        }
-        return {};
+        ]
       };
 
-      await importExportManager.import(req);
+      assert.deepEqual(actual, expected);
     });
   });
 
   describe('when the site has multiple locales', function() {
-    let apos;
-    let importExportManager;
-
-    let req;
-    let notify;
-    let input;
-    let rewriteDocsWithCurrentLocale;
-    let insertDocs;
-
-    after(async function() {
-      await t.destroy(apos);
-    });
-
     before(async function() {
       apos = await t.create({
         root: module,
@@ -247,192 +180,250 @@ describe('#import - overriding locales integration tests', function() {
         })
       });
 
+      attachmentPath = path.join(apos.rootDir, 'public/uploads/attachments');
       importExportManager = apos.modules['@apostrophecms/import-export'];
-      importExportManager.removeExportFileFromUploadFs = () => {};
-      importExportManager.remove = () => {};
 
       await insertAdminUser(apos);
-      await insertPiecesAndPages(apos);
+    });
+
+    after(async function() {
+      await t.destroy(apos);
     });
 
     this.beforeEach(async function() {
-      req = apos.task.getReq({
-        locale: 'en',
-        body: {},
-        files: {
-          file: {
-            path: '/some/path/to/file',
-            type: mimeType
-          }
-        }
-      });
-      notify = apos.notify;
-      input = gzip.input;
-      rewriteDocsWithCurrentLocale = apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale;
-      insertDocs = apos.modules['@apostrophecms/import-export'].insertDocs;
-
       await deletePiecesAndPages(apos);
       await deleteAttachments(apos, attachmentPath);
+      await cleanFixtures(apos);
+      await copyFixtures(apos);
+      await buildFixtures(apos);
     });
 
-    this.afterEach(function() {
-      apos.notify = notify;
-      gzip.input = input;
-      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = rewriteDocsWithCurrentLocale;
-      apos.modules['@apostrophecms/import-export'].insertDocs = insertDocs;
-    });
-
-    it('should not rewrite the docs locale nor ask about it when the locale is not different', async function() {
+    it('should not rewrite the docs locale nor ask about it when the locale is the same', async function() {
       const req = apos.task.getReq({
         locale: 'fr',
-        body: {},
-        files: {
-          file: {
-            path: '/some/path/to/file',
-            type: mimeType
+        body: {}
+      });
+
+      await apos.topic.insert(
+        apos.task.getReq({
+          locale: 'fr',
+          mode: 'draft'
+        }),
+        {
+          ...apos.topic.newInstance(),
+          _id: '4:fr:draft',
+          slug: 'topic1-fr-existing-draft',
+          title: 'topic1 FR EXISTING DRAFT'
+        }
+      );
+
+      await apos.topic.insert(
+        apos.task.getReq({
+          locale: 'fr',
+          mode: 'published'
+        }),
+        {
+          ...apos.topic.newInstance(),
+          _id: '4:fr:published',
+          slug: 'topic1-fr-existing-published',
+          title: 'topic1 FR EXISTING PUBLISHED'
+        }
+      );
+
+      const {
+        duplicatedDocs,
+        importedAttachments,
+        exportId,
+        jobId,
+        notificationId,
+        formatLabel
+      } = await importExportManager.import(
+        req.clone({
+          files: {
+            file: {
+              path: path.join(apos.rootDir, 'data/tmp/uploads/fr-topic-draft.tar.gz'),
+              type: importExportManager.formats.gzip.allowedTypes[0]
+            }
           }
+        })
+      );
+
+      const _req = req.clone({
+        body: {
+          ...req.body,
+          docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
+          duplicatedDocs,
+          importedAttachments,
+          exportId,
+          jobId,
+          notificationId,
+          formatLabel
         }
       });
 
-      gzip.input = async req => {
-        return {
-          docs: [
-            {
-              _id: '4:fr:draft',
-              aposMode: 'draft',
-              aposLocale: 'fr:draft',
-              title: 'topic1',
-              type: 'topic'
-            }
-          ],
-          attachmentsInfo: []
-        };
+      await importExportManager.overrideDuplicates(_req);
+
+      const notification = await apos.notification.db
+        .findOne({ _id: notificationId });
+      const topics = await apos.doc.db
+        .find({ type: 'topic' })
+        .toArray();
+
+      const actual = {
+        notification: {
+          name: notification.event?.name
+        },
+        topics
       };
-      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = () => {
-        throw new Error('rewriteDocsWithCurrentLocale should not have been called');
-      };
-      apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs }) => {
-        assert.deepEqual(docs, [
+      const expected = {
+        notification: {
+          name: undefined
+        },
+        topics: [
           {
-            _id: '4:fr:draft',
-            aposMode: 'draft',
+            ...topics.at(0),
+            _id: topics.at(0).aposDocId.concat(':fr:draft'),
             aposLocale: 'fr:draft',
-            title: 'topic1',
-            type: 'topic'
+            aposMode: 'draft',
+            modified: true,
+            slug: 'topic1-fr',
+            title: 'topic1 FR'
+          },
+          {
+            ...topics.at(1),
+            _id: topics.at(1).aposDocId.concat(':fr:published'),
+            aposLocale: 'fr:published',
+            aposMode: 'published',
+            slug: 'topic1-fr-existing-published',
+            title: 'topic1 FR EXISTING PUBLISHED'
           }
-        ]);
 
-        return {
-          duplicatedDocs: [],
-          duplicatedIds: [],
-          failedIds: []
-        };
-      };
-      apos.notify = async (req, message, options) => {
-        if (options?.event?.name === 'import-export-import-locale-differs') {
-          throw new Error('notify should not have been called with event "import-locale-differ"');
-        }
-        return {};
+        ]
       };
 
-      await importExportManager.import(req);
+      assert.deepEqual(actual, expected);
     });
 
     it('should not rewrite the docs locales nor insert them but ask about it when the locale is different', async function() {
-      gzip.input = async req => {
-        return {
-          docs: [
-            {
-              _id: '4:fr:draft',
-              aposMode: 'draft',
-              aposLocale: 'fr:draft',
-              title: 'topic1',
-              type: 'topic'
+      const req = apos.task.getReq({
+        locale: 'fr',
+        body: {}
+      });
+
+      const {
+        notificationId
+      } = await importExportManager.import(
+        req.clone({
+          files: {
+            file: {
+              path: path.join(apos.rootDir, 'data/tmp/uploads/topic-draft.tar.gz'),
+              type: importExportManager.formats.gzip.allowedTypes[0]
             }
-          ],
-          attachmentsInfo: []
-        };
+          }
+        })
+      );
+
+      const notification = await apos.notification.db
+        .findOne({ _id: notificationId });
+      const topics = await apos.doc.db
+        .find({ type: 'topic' })
+        .toArray();
+
+      const actual = {
+        notification: {
+          name: notification.event.name
+        },
+        topics
+      };
+      const expected = {
+        notification: {
+          name: 'import-export-import-locale-differs'
+        },
+        topics: []
       };
 
-      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = () => {
-        throw new Error('rewriteDocsWithCurrentLocale should not have been called');
-      };
-      apos.modules['@apostrophecms/import-export'].insertDocs = async (req, docs) => {
-        throw new Error('insertDocs should not have been called');
-      };
-      apos.notify = async (req, message, options) => {
-        assert.equal(options.event.name, 'import-export-import-locale-differs');
-      };
-
-      await importExportManager.import(req);
+      assert.deepEqual(actual, expected);
     });
 
     it('should rewrite the docs locale when the locale is different and the `overrideLocale` param is provided', async function() {
-      // Since we are mocking this and not really uploading a file, we have to
-      // manually call setExportPathId to establish a mapping to a safe
-      // unique identifier to share with the "browser"
-      const expectedPath = '/custom/extracted-export-path';
-      await importExportManager.setExportPathId(expectedPath);
-
       const req = apos.task.getReq({
         locale: 'en',
-        body: {
-          exportPathId: await importExportManager.getExportPathId(expectedPath),
-          formatLabel: 'gzip',
-          overrideLocale: true
-        }
+        body: {}
       });
 
-      gzip.input = async req => {
-        return {
-          docs: [
-            {
-              _id: '4:fr:draft',
-              aposMode: 'draft',
-              aposLocale: 'fr:draft',
-              title: 'topic1',
-              type: 'topic'
+      const {
+        exportId,
+        formatLabel,
+        importDraftsOnly,
+        translate,
+        notificationId: notificationId1
+      } = await importExportManager.import(
+        req.clone({
+          files: {
+            file: {
+              path: path.join(apos.rootDir, 'data/tmp/uploads/fr-topic-draft.tar.gz'),
+              type: importExportManager.formats.gzip.allowedTypes[0]
             }
-          ],
-          attachmentsInfo: []
-        };
-      };
-
-      apos.modules['@apostrophecms/import-export'].rewriteDocsWithCurrentLocale = (req, docs) => {
-        assert.deepEqual(docs, [
-          {
-            _id: '4:fr:draft',
-            aposMode: 'draft',
-            aposLocale: 'fr:draft',
-            title: 'topic1',
-            type: 'topic'
           }
-        ]);
+        })
+      );
 
-        return rewriteDocsWithCurrentLocale(req, docs);
+      const {
+        duplicatedDocs,
+        notificationId: notificationId2
+      } = await importExportManager.import(
+        req.clone({
+          body: {
+            ...req.body,
+            importDraftsOnly,
+            translate,
+            overrideLocale: true,
+            exportId,
+            formatLabel
+          }
+        })
+      );
+
+      const notification1 = await apos.notification.db
+        .findOne({ _id: notificationId1 });
+      const notification2 = await apos.notification.db
+        .findOne({ _id: notificationId2 });
+      const topics = await apos.doc.db
+        .find({ type: 'topic' })
+        .toArray();
+
+      const actual = {
+        duplicatedDocs,
+        notification1: {
+          name: notification1.event?.name
+        },
+        notification2: {
+          name: notification2.event?.name
+        },
+        topics
       };
-      apos.modules['@apostrophecms/import-export'].insertDocs = async (req, { docs }) => {
-        assert.deepEqual(docs, [
+      const expected = {
+        duplicatedDocs: [],
+        notification1: {
+          name: 'import-export-import-locale-differs'
+        },
+        notification2: {
+          name: undefined
+        },
+        topics: [
           {
-            _id: '4:en:draft',
+            ...topics.at(0),
+            _id: topics.at(0).aposDocId.concat(':en:draft'),
             aposMode: 'draft',
             aposLocale: 'en:draft',
-            title: 'topic1',
-            type: 'topic',
-            __originalLocale: 'fr'
+            slug: 'topic1-fr',
+            title: 'topic1 FR',
+            type: 'topic'
           }
-        ]);
-
-        return [];
-      };
-      apos.notify = async (req, message, options) => {
-        if (options?.event?.name === 'import-export-import-locale-differs') {
-          throw new Error('notify should not have been called with event "import-locale-differ"');
-        }
-        return {};
+        ]
       };
 
-      await importExportManager.import(req);
+      assert.deepEqual(actual, expected);
     });
   });
 });

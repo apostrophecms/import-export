@@ -918,7 +918,7 @@ describe('@apostrophecms/import-export:import-page', function () {
     const {
       duplicatedDocs,
       importedAttachments,
-      exportPathId,
+      exportId,
       jobId,
       notificationId,
       formatLabel
@@ -928,13 +928,13 @@ describe('@apostrophecms/import-export:import-page', function () {
         docIds: duplicatedDocs.map(({ aposDocId }) => aposDocId),
         duplicatedDocs,
         importedAttachments,
-        exportPathId,
+        exportId,
         jobId,
         notificationId,
         formatLabel
       }
     });
-    await await apos.modules['@apostrophecms/import-export'].overrideDuplicates(importDuplicateReq);
+    await apos.modules['@apostrophecms/import-export'].overrideDuplicates(importDuplicateReq);
 
     const importedDocs = await apos.doc.db
       .find({ type: /@apostrophecms\/image|@apostrophecms\/image-tag|custom-page|test-page/ })
