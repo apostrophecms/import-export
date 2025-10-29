@@ -179,7 +179,7 @@ async function buildFixtures(apos) {
       { with: { type: 'json' } }
     );
     const { default: attachments } = await import(
-      path.join(directory.path, directory.name, 'aposAttachments.json'),
+      path.join(directory.parentPath, directory.name, 'aposAttachments.json'),
       { with: { type: 'json' } }
     );
     await gzip(
