@@ -20,7 +20,7 @@
   "devDependencies": {
     "@apostrophecms-pro/automatic-translation": "github:apostrophecms/automatic-translation",
     "apostrophe": "github:apostrophecms/apostrophe",
-    "eslint-config-apostrophe": "^5.0.0",
+    "eslint-config-apostrophe": "^6.0.2",
     "form-data": "^4.0.0",
     "mocha": "^10.2.0",
     "stylelint": "^16.0.0",

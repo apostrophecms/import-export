@@ -182,7 +182,14 @@ async function buildFixtures(apos) {
       path.join(directory.path, directory.name, 'aposAttachments.json'),
       { with: { type: 'json' } }
     );
-    await gzip(path.join(target, `${directory.name}.tar.gz`), { docs, attachments }, async () => {});
+    await gzip(
+      path.join(target, `${directory.name}.tar.gz`),
+      {
+        docs,
+        attachments
+      },
+      async () => {}
+    );
   }
 }
 
@@ -196,18 +203,18 @@ async function copyFixtures(apos) {
 async function cleanFixtures(apos) {
   const target = path.join(apos.rootDir, 'data/tmp/uploads');
 
-  try {
-    await cleanData([ target ]);
-  } catch (error) {
-    console.error(error);
-  }
+  await cleanData([ target ]);
 }
 
 async function cleanData(paths) {
   for (const filePath of paths) {
-    const files = await fs.readdir(filePath);
-    for (const name of files) {
-      await fs.rm(path.join(filePath, name), { recursive: true });
+    try {
+      const files = await fs.readdir(filePath);
+      for (const name of files) {
+        await fs.rm(path.join(filePath, name), { recursive: true });
+      }
+    } catch (error) {
+      console.error(error); // eslint-disable-line no-console
     }
   }
 }

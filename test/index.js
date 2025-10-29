@@ -65,11 +65,7 @@ describe('@apostrophecms/import-export', function () {
   afterEach(async function() {
     await deletePiecesAndPages(apos);
     await deleteAttachments(apos, attachmentPath);
-    try {
-      await cleanData([ tempPath, exportsPath ]);
-    } catch (error) {
-      console.error(error);
-    }
+    await cleanData([ tempPath, exportsPath ]);
   });
 
   it('should generate a zip file for pieces without related documents but with attachments', async function () {
