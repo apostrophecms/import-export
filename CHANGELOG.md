@@ -1,5 +1,11 @@
 # Changelog
 
+## UNRELEASED
+
+### Changes
+
+* Save import files in uploadfs. Import-export now works on projects using multiple node servers.
+
 ## 3.3.1 (2025-09-03)
 
 ### Fixes
@@ -55,7 +61,7 @@ This version correctly handles inserts of documents before their related images 
 ### Changes
 
 * **Major version change:** 3.0.0 because this release is compatible only with ApostropheCMS 4.x. If you have not upgraded to ApostropheCMS 4.x, [you should do so.](https://docs.apostrophecms.org/guide/migration/upgrading-3-to-4.html#how-to-upgrade-your-project). For your ApostropheCMS 4.x project, make sure you change the dependency in `package.json` to `^3.0.0` to get this version.
-* Hide the `importDraftsOnly` checkbox for autopublished documents. 
+* Hide the `importDraftsOnly` checkbox for autopublished documents.
 
 ### Adds
 
@@ -109,7 +115,7 @@ This version correctly handles inserts of documents before their related images 
 
 ### Fixes
 
-* Exported related documents now contain the entire document and not only the projected fields. 
+* Exported related documents now contain the entire document and not only the projected fields.
 * The `related` route also returns the related types of the exported documents related documents.
 * Greatly improved performance when imports involve attachments that already exist on the target site.
 * Cropped images are imported properly.
@@ -120,7 +126,7 @@ This version correctly handles inserts of documents before their related images 
 
 ### Adds
 
-* Add a scrollbar to the duplicate import modal to handle too many duplicates, and fixed the "Type" column to display the correct document type. Thanks to (Borel Kuomo)(https://github.com/borelkoumo) for this contribution.
+* Add a scrollbar to the duplicate import modal to handle too many duplicates, and fixed the "Type" column to display the correct document type. Thanks to (Borel Kuomo)(<https://github.com/borelkoumo>) for this contribution.
 
 ### Fixes
 
