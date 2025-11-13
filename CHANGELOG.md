@@ -1,5 +1,11 @@
 # Changelog
 
+## UNRELEASED
+
+### Adds
+
+* Adds failed export batch notifications.
+
 ## 3.4.0 (2025-10-30)
 
 ### Changes

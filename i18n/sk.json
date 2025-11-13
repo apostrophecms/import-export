@@ -13,6 +13,8 @@
   "exportModalRelatedDocumentDescription": "Zahrnúť nasledujúce typy dokumentov tam, kde je to relevantné",
   "exportModalSettingsLabel": "Nastavenia exportu",
   "exported": "Exportované {{ count }} {{ type }}",
+  "exportedFailed": "Exportovanie {{ type }} zlyhalo",
+  "exportedWithFailures": "Exportované {{ count }} {{ type }} ({{ bad }} z {{ total }} zlyhalo)",
   "exporting": "Exportovanie {{ type }}...",
   "import": "Importovať {{ type }}",
   "importCleanFailed": "Údržba importovaného súboru na serveri zlyhala.",

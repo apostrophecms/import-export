@@ -31,6 +31,8 @@ module.exports = {
           messages: {
             progress: 'aposImportExport:exporting',
             completed: 'aposImportExport:exported',
+            completedWithFailures: 'aposImportExport:exportedWithFailures',
+            failed: 'aposImportExport:exportedFailed',
             icon: 'database-export-icon',
             resultsEventName: 'import-export-export-download'
           },
