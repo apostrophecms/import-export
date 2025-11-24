@@ -13,6 +13,8 @@
   "exportModalRelatedDocumentDescription": "Die folgenden Dokumenttypen bei Bedarf einbeziehen",
   "exportModalSettingsLabel": "Exporteinstellungen",
   "exported": "Exportiert {{ count }} {{ type }}",
+  "exportedFailed": "Export von {{ type }} fehlgeschlagen",
+  "exportedWithFailures": "Exportiert {{ count }} {{ type }} ({{ bad }} von {{ total }} fehlgeschlagen)",
   "exporting": "Exportiere {{ type }}...",
   "import": "Importiere {{ type }}",
   "importCleanFailed": "Die Bereinigung der importierten Datei auf dem Server ist fehlgeschlagen.",

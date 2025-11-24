@@ -16,6 +16,8 @@
   "exportModalSettingsLabel": "Export Settings",
   "exportModalToggleAllRelated": "Toggle all",
   "exported": "Exported {{ count }} {{ type }}",
+  "exportedFailed": "Exporting {{ type }} failed",
+  "exportedWithFailures": "Exported {{ count }} {{ type }} ({{ bad }} of {{ total }} failed)",
   "exporting": "Exporting {{ type }}...",
   "import": "Import {{ type }}",
   "importCleanFailed": "The cleaning of the imported file on the server failed.",
